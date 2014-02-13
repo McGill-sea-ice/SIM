@@ -1,0 +1,1605 @@
+changeset:   316:fd9ac933622b
+tag:         tip
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Mon Apr 15 10:16:21 2013 -0400
+summary:     Removed river input stuff as it was not used anyway
+
+changeset:   315:c327e58e7de1
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Apr 05 13:51:14 2013 -0400
+summary:     Removed zetamin which is always set to zero anyway
+
+changeset:   314:b54d207b0a8a
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Apr 05 10:18:00 2013 -0400
+summary:     Corrected a small bug for open bc. See the preconds and matrix_operation (Funk) for changes. When an open boundary is on the left for exemple, the bc is u1=(4u2-u3)/3. If mask(3,j)=0, the problem is that u3=0 and u1=4/3u2. This leads to velocities larger than the freedrift when this occurs. The mask should be built  such that it does not occur. The code now has the condition that if mask(3,j)=0, u1=u2 (1st order accuracy).
+
+changeset:   313:2df5f5399abe
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Wed Mar 13 09:10:32 2013 -0400
+summary:     Just did a clean up. Ok I am done with these changes
+
+changeset:   312:a3d9a013bf1b
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Wed Mar 13 08:59:56 2013 -0400
+summary:     Ok the bug is corrected for IMEX. Solution is the same with standard model
+
+changeset:   311:f128bf897778
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Wed Mar 13 08:39:23 2013 -0400
+summary:     I found a bug for IMEX. I am in the process of fixing it. I have to move one calc in wind_forcing in bvect_ind I also changed the name of ut1 to un1 (same idea for h,A and v) to match our papers
+
+changeset:   310:5d8075c5e580
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Mar 05 09:47:07 2013 -0500
+summary:     Changes to make conv faster: new alp_e=1.5, dropini = 1.5 and klinsearch=2. These changes were possible because of Bouillon approach for calc of viscous coeff and the use of linesearch
+
+changeset:   309:013e59362dbd
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Mon Feb 18 10:57:45 2013 -0500
+summary:     After reading Bouillon et at 2013 (The EVP revisited), I have implemented their approach for the calc of the viscous coeff. The model is now significantly more robust. See viscouscoefficient.f90 for details.
+
+changeset:   308:13accb971ed5
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Thu Jan 24 12:55:44 2013 -0500
+summary:     There was an inconsistency in linesearch with IMEX. Ok now.
+
+changeset:   307:36c1a1db1ff3
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Thu Jan 24 10:40:14 2013 -0500
+summary:     changed the name of forcing term (linear tolerance) eta_e to gamma so that it is more consistent with our JFNK papers
+
+changeset:   306:946378b8f5b6
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Thu Jan 24 10:21:38 2013 -0500
+summary:     Cleaned the code in stepper and both prep_fgmres
+
+changeset:   305:db3843996f6d
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Thu Jan 24 09:14:51 2013 -0500
+summary:     I added the IMEX methods 1(Picard) and 2 (JFNK). With IMEX =0 it is just the regular splitting in time approach
+
+changeset:   304:ab815386c335
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Wed Jan 23 15:42:54 2013 -0500
+summary:     In the process of adding the IMEX method. I have modified the advection routine and added the upwindRK2 option
+
+changeset:   303:13f6e6cac86e
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Jan 11 09:06:22 2013 -0500
+summary:     Following some tests (p. 30, EC-4), the solver is more robust if the linesearch is applied after a certain nb of Newton iterations (klinesearch): this allows the residual to go up hill at the beginning and later find the 0 with the linesearch (if needed).
+
+changeset:   302:a47126f02bda
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Wed Jan 09 10:48:42 2013 -0500
+summary:     globalization=1 is now the default (linesearch method), I have modified the code also to limit the redundant calculations because of the linesearch
+
+changeset:   301:6dc6eccfc000
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Dec 21 16:11:47 2012 -0500
+summary:     res_t is not defined anymore as a function of Deltax. It is just the L2norm at the 1st Newton ite divided by dropini...dropini is set to 2 for the moment
+
+changeset:   300:736e8a5af985
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Dec 21 15:56:52 2012 -0500
+summary:     Small modif: added globalization integer in numerical module. If = 0, no globalization. If = 1 linesearch method is used.
+
+changeset:   299:a824475e4b31
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Thu Dec 20 15:40:05 2012 -0500
+summary:     Added a routine to perform the linesearch method
+
+changeset:   298:6b52e743232e
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Sep 07 13:20:34 2012 -0400
+summary:     I added a minimum of 1d-10 to the calculation of Cdwc in bvect.f90...this can prevent an instability in certain very idealized exp (like P*=0, uice=vice=0, h=0)
+
+changeset:   297:755362adf1aa
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Aug 31 09:38:55 2012 -0400
+summary:     Added replacement closure (see Kreysher et al. 2000). I have tested it and when the ice starts form rest and the forcing is zero, the ice does not move...i.e. the dP/dx term does not cause ice movement in the absence of forcing.
+
+changeset:   296:7cbc8a3c0af4
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Jul 10 09:37:02 2012 -0400
+summary:     forgot to remove a print statement
+
+changeset:   295:aa8af5bb45de
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Jul 10 09:34:55 2012 -0400
+summary:     added as an option the Kreysher et al. 2000 regularization for the viscous coeffs (the other one being the tanh
+
+changeset:   294:af53f68154bd
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Jul 10 08:59:33 2012 -0400
+summary:     Removed some hard coding in viscouscoefficients + small bug fix in locate max residual
+
+changeset:   293:2cdd425cfb7d
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Thu May 10 10:05:39 2012 -0400
+summary:     small modif to prep_fgmres.f90 so that the linear tolerance is a bit looser in the first 5 outerloop
+
+changeset:   292:a0d15f8c757b
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Mar 27 13:35:38 2012 -0400
+summary:     very minor modif to call to stress_strain
+
+changeset:   291:c937967ee12d
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Sun Nov 13 20:33:25 2011 -0500
+summary:     changed NLmax=200 and gamma=0.99 if k .gt. 100, default dt is 20 min also
+
+changeset:   290:8906dcb1c541
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Sun Nov 13 13:53:15 2011 -0500
+summary:     removed some code in evpsolver due to the changes in viscouscoefficients
+
+changeset:   289:3a1160465f51
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Oct 28 15:03:56 2011 -0400
+summary:     I added some comments to stepper
+
+changeset:   288:8290fdbcccf3
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Oct 25 13:20:21 2011 -0400
+summary:     Minor changes to viscouscoeff to eliminate unnecessary flops
+
+changeset:   287:9df78cc8c2fa
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Oct 25 07:20:57 2011 -0400
+summary:     Just changed some comments to viscouscoefficients.f90
+
+changeset:   286:e9d4b263b20d
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Sun Oct 23 13:25:29 2011 -0400
+summary:     Longuer sims have shown that there are still some failures. I realized there was something inconsistent in my definition of eta at the node. I was using P at the tracer ptn instead of at the node. Now, the deformations are calculated correctly at the node but I do an average (spreading) of P to get P at the node. This is however not second order accurate. I think what I will have to do is to get the stress directly at the node...check this out. So this is just a temporary commit until I find the solution
+
+changeset:   285:da397c02b493
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Oct 21 08:20:39 2011 -0400
+summary:     The Picard solver is also robust. It ran for 2 months with gamma_nl=10-3 and never failed. I therefore go back to uice (uk-1) to linearize the viscous coefficients. Minor changes to viscous coeffcicients as well
+
+changeset:   284:f309dbff771a
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Thu Oct 20 15:42:44 2011 -0400
+summary:     Big ohhhhh yeahhhhh...I found why the solvers were sometimes failing. The treatment of etaB near the coast was not 2nd order accurate while it was for etaC everywhere. There is now a new viscouscoeff routine
+
+changeset:   283:67bdae96eba0
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Wed Oct 19 07:43:20 2011 -0400
+summary:     Changes to stepper. I had changed before the linearization of the viscous coeff for the Picard solver. When using uk1 (uice) to linearize, the solver is faster but less robust. Over a 2 month run (15 min time step, dx=40km), there are 192 failures with this approach while there are only 14 when linearizing with ul = (uk1+uk2)/2. I therefore set it back to ul
+
+changeset:   282:ef26aa138128
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Oct 14 08:34:15 2011 -0400
+summary:     small modif in stepper to count nb of failures of the NL solver during the run
+
+changeset:   281:80a0158840b2
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Mon Oct 10 14:24:47 2011 -0400
+summary:     small modif to stress_strain.f90
+
+changeset:   280:bfc856c121b1
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Oct 07 09:31:15 2011 -0400
+summary:     minor modif to stress_strain.f90
+
+changeset:   279:5a7bacc68cbb
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Wed Oct 05 11:35:17 2011 -0400
+summary:     modif to stress_strain to output zetaC
+
+changeset:   278:005f6a9c9d7c
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Oct 04 09:50:23 2011 -0400
+summary:     I have removed res_nomrNL.f90 routine which is not used anymore
+
+changeset:   277:aa815238bacf
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Oct 04 09:46:07 2011 -0400
+summary:     minor change to locate_max_residual
+
+changeset:   276:1579730b50f3
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Mon Oct 03 12:35:28 2011 -0400
+summary:     minor modif to stepper.f90 (a print statement) and to prep_fgmres.f90
+
+changeset:   275:ac06d7520706
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Sep 30 15:54:31 2011 -0400
+summary:     new routine (locate_max_residual) to find the location of the maximum absolute value of the residual
+
+changeset:   274:ffbf167ea1e4
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Sep 30 14:35:01 2011 -0400
+summary:     Minor modif again to failure.f90
+
+changeset:   273:7b7134558a23
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Sep 30 14:26:44 2011 -0400
+summary:     minor modif to failure.f90 routine
+
+changeset:   272:a847703c29a8
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Sep 30 11:13:50 2011 -0400
+summary:     small modif to stress_strain.f90 so that the fields outputted have dim 0:nx+1,0:ny+1 to match h and A and hence help plotting stuff
+
+changeset:   271:0c1c2c6b85ff
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Sep 30 10:03:40 2011 -0400
+summary:     Modifs to failure.f90 to also output uice and vice
+
+changeset:   270:f047dd55952f
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Wed Sep 28 08:53:16 2011 -0400
+summary:     res_t is now in numerical_VP module. Its value depends on the resolution and follows the values given in Lemieux_et_al_2010
+
+changeset:   269:657e67553746
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Wed Sep 28 08:34:01 2011 -0400
+summary:     changed the name of the routine residual_on_grid.f90 to failure.f90
+
+changeset:   268:8a6147f80c28
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Wed Sep 28 08:27:37 2011 -0400
+summary:     minor change to stepper so that the copy uk2=uice, ul=uice ... is done only when solver=1
+
+changeset:   267:8a3b4d1ec6a9
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Mon Sep 26 09:56:37 2011 -0400
+summary:     modifs to residual_on_grid to have also A and h outputted
+
+changeset:   266:6d33f9491f23
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Sep 23 14:43:49 2011 -0400
+summary:     R1 and R2 are now outputted in debuging routine residual_on_grid. This allows one to see how the forcing looks like when it does not converge
+
+changeset:   265:db0a3746afa5
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Mon Sep 12 09:35:08 2011 -0400
+summary:     small modif to residual_on_grid routine to be able to plot the residual at the tracer point only where there is ocean
+
+changeset:   264:d5a4b51ebf21
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Sep 09 14:39:05 2011 -0400
+summary:     fixed minor problem in info file routine
+
+changeset:   263:82402bdf4303
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Sep 09 14:05:57 2011 -0400
+summary:     fixed minor bug in stepper. NLtol was not set at the beginning and this was sometimes causing trouble
+
+changeset:   262:39254e25630b
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Sep 09 09:15:00 2011 -0400
+summary:     minor modif to stepper
+
+changeset:   261:7e787d1caff4
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Sep 09 09:10:22 2011 -0400
+summary:     new routine to plot residual on the grid
+
+changeset:   260:09c67aa0baa2
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Wed Sep 07 09:00:00 2011 -0400
+summary:     Minor change to ice.f90 and input_restart. When starting from fields on 1990 01 01 for exemple, the model changes the now_date right away by adding Deltat. This way with Deltat=30 min for exemple, the first tstep to be calculated is at 1990 01 01 30 instead as what it was before where we had to write 1990 01 01 30 as the starting date. It was confusing as we had to take into account the time step in the input file.
+
+changeset:   259:1e63014969c7
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Sep 06 09:49:37 2011 -0400
+summary:     Stresses for evp are now saved from one tstep to the next. They are calculated based on the VP approach only for tstep =1 and s=1 to get s-1 value. There is also the option to set them to 0.0 for tstep=1and s=1.
+
+changeset:   258:c022b65238cb
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Sep 02 08:56:55 2011 -0400
+summary:     in the process of changing the calc of the initial stress for the evp solver
+
+changeset:   257:e05022c8c95e
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Wed Aug 31 09:35:14 2011 -0400
+summary:     added comment to stepper and now send expno to stepper so that it can be used by stress_strain.f90
+
+changeset:   256:4ad15faafca5
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Wed Aug 31 09:28:15 2011 -0400
+summary:     I have added the routine stress_strain.f90 in src (it was an offline routine and therefore difficult to maintain)
+
+changeset:   255:9c534574cd3c
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Thu Mar 17 15:23:34 2011 -0400
+summary:     minor modif to ice.f90 so that the info file is completed after 1 time step
+
+changeset:   254:c6d63607376c
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Thu Mar 17 09:16:53 2011 -0400
+summary:     IMPORTANT CHANGE: eta and zeta for the Picard solver (the standard solver) are now calc with only the last iterate as opposed to the average of the last two. This is to speed up convergence. Note that the water drag is linearized with the past two to insure stability (no change here).
+
+changeset:   253:82f738ae5d8f
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Wed Mar 16 16:32:40 2011 -0400
+summary:     there is the same nl croterion for Picard than for JFNK, i.e. a decrease in the nl residual instead of a fixed nb of OL iteratins
+
+changeset:   252:f9d10b22adbd
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Wed Mar 16 11:00:37 2011 -0400
+summary:     minor change to res_normNL to use Deltax2
+
+changeset:   251:f655b1673890
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Mar 15 09:55:27 2011 -0400
+summary:     forgot to add matrix_operations file
+
+changeset:   250:ef30038dbbe1
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Mar 15 09:54:14 2011 -0400
+summary:     added a subroutine to calc the forcing_term for JFNK
+
+changeset:   249:f762480c2f62
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Mar 15 09:40:49 2011 -0400
+summary:     I have put Jacfreevec, Fu_NK and matvec in a common file called matrix_operations.f90
+
+changeset:   248:6d3700bdb3aa
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Mar 15 09:18:19 2011 -0400
+summary:     I have removed General_comment.h file which was not needed
+
+changeset:   247:649d2c429998
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Mar 15 09:12:53 2011 -0400
+summary:     there was a lot of redundancy between matvec and Fu_NK subroutines. I modified Fu_NK so that it calls matvec
+
+changeset:   246:62ba121cd6fd
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Mon Mar 14 15:13:42 2011 -0400
+summary:     forgot to add BLAS_stuff.f90
+
+changeset:   245:da862214f569
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Mon Mar 14 15:12:43 2011 -0400
+summary:     I have put the BLAS files in a file called BLAS_stuff.f90
+
+changeset:   244:7fbb5fff196a
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Mon Mar 14 14:59:41 2011 -0400
+summary:     there was a file domain_10km.dat that was probaly an old mask that was not used...removed
+
+changeset:   243:cdd0ced39a4e
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Mon Mar 14 14:47:29 2011 -0400
+summary:     KEcalc subroutine was not used...moved to unused_routines
+
+changeset:   242:2bf8d460d7a9
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Mon Mar 14 14:43:41 2011 -0400
+summary:     bvec_ind file does not exist anymore. Ihave moved the subroutine in bvect.f90
+
+changeset:   241:4b6596e77afd
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Mon Mar 14 14:36:39 2011 -0400
+summary:     xtp was not used anymore in bvect...I removed it
+
+changeset:   240:762f4a595811
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Mon Mar 14 14:32:19 2011 -0400
+summary:     small modif to Jacfreevec
+
+changeset:   239:7c77c3dcd0fc
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Mon Mar 14 14:17:12 2011 -0400
+summary:     small modif to viscouscoeff
+
+changeset:   238:02627a380a04
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Mon Mar 14 14:05:37 2011 -0400
+summary:     small modif to bvect
+
+changeset:   237:26d1cb4432bf
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Mon Mar 14 13:55:30 2011 -0400
+summary:     minor modif to Jacfreevec
+
+changeset:   236:a13dd22bc735
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Thu Mar 10 10:49:48 2011 -0500
+summary:     just modified the input_restart file and the script
+
+changeset:   235:2186a5c13a8f
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Wed Mar 09 09:24:04 2011 -0500
+summary:     I had put the wrong retstart value...it is now 50
+
+changeset:   234:74424824a98b
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Wed Mar 09 09:21:35 2011 -0500
+summary:     I have made some modifs: 1) nb of tracers goes from 10 to 2 (could be changed later). This is to reduce the memory. 2) img (restart value) goes from 20 to 50. After discussion with Dana, it looks like the convergence problem we have sometime with fgmres could be due to the use of restart. The max nb of ite in prep_fgmres and prep_fgmre_NK is then set to 50. 3) removed the stop in stepper if JFNK does not converge (there is a print statement) and removed the stop in prep_fgmres and prep_fgmre_NK.
+
+changeset:   233:536a79935b08
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Mar 04 15:32:21 2011 -0500
+summary:     added conditions in bvect.f90 so that it calculates bu and bv only where it is water
+
+changeset:   232:5c1505879604
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Thu Mar 03 16:14:24 2011 -0500
+summary:     p(i,j) was calculated everywhere..even on land. I have modified this
+
+changeset:   231:0c2d5329a319
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Thu Mar 03 15:59:13 2011 -0500
+summary:     solver is now in a module called solver_choice. I also made some modifs to info_file
+
+changeset:   230:7f714e8a3881
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Thu Mar 03 11:37:58 2011 -0500
+summary:     small modifs to info_file to have more info about the evp
+
+changeset:   229:fe76a5802c52
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Thu Mar 03 11:31:45 2011 -0500
+summary:     introduced a module for the evp with Nsub and Eo where T=Eo*Deltat. I also changed the value of Eo to match the doc for cice 4.1.1
+
+changeset:   228:9d3b563b8fcb
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Thu Mar 03 10:48:24 2011 -0500
+summary:     in the process of adding a module numerical for the EVP
+
+changeset:   227:d29b2a3eb5a9
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Wed Mar 02 16:02:17 2011 -0500
+summary:     I have put vectu, vectv and tridiag routines in precondLSOR.f90
+
+changeset:   226:4ec8a5c452ef
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Wed Mar 02 15:38:37 2011 -0500
+summary:     I have also put julianday, julian2date and leapyear routines in unused_routines as they are not used
+
+changeset:   225:68f3b1dd1c4e
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Wed Mar 02 15:32:25 2011 -0500
+summary:     to decrease number of files I have put fluxx and fluxy functions in advection.f90
+
+changeset:   224:6a8167d45f9e
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Wed Mar 02 15:10:51 2011 -0500
+summary:     same idea for uvchecker.f90
+
+changeset:   223:cb6c888d8ddc
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Wed Mar 02 15:07:30 2011 -0500
+summary:     I have removed chdate.f90 because it is not used anymore. A copy is saved in unused_routines folder
+
+changeset:   222:ed9e487dcf6e
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Wed Mar 02 15:02:56 2011 -0500
+summary:     small improvement to advection routine. The flux were calc everywhere even on land. Added an if statement that ooks at the maskC
+
+changeset:   221:60d849ebd02b
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Wed Mar 02 14:42:23 2011 -0500
+summary:     there was a small bug in advection.f90 because the limiting values for the conc and the thickness where not applied at the open bcs. There where slightly negative values of A (and h) and values of A slightly larger than 1
+
+changeset:   220:f36d06764b1c
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Mar 01 15:17:00 2011 -0500
+summary:     added a subroutine in sea_ice_post that outputs a file with info about the run
+
+changeset:   219:20196a0e1e19
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Feb 22 10:18:18 2011 -0500
+summary:     small modifs to evp_solver to math cice4.1 documentation
+
+changeset:   218:a0531ec16f7f
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Mon Feb 21 10:29:58 2011 -0500
+summary:     changed standard value of Pstar to 27.5d03
+
+changeset:   217:63aa87682136
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Feb 15 10:08:26 2011 -0500
+summary:     minor stuff + added kjac and wjac in numercial module
+
+changeset:   216:94bc1f4d8ec3
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Feb 15 09:36:00 2011 -0500
+summary:     removed lat and long from CB_const block as they are only used in par_get
+
+changeset:   215:76bf8d9c9e6d
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Feb 15 09:27:44 2011 -0500
+summary:     added a simple module to define numerical constants and parameters
+
+changeset:   214:e947502dae7b
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Feb 15 09:08:43 2011 -0500
+summary:     ini_get now also uses Huuuard datetime module. there are still some dol stuff dates in buoy stuff and in load ocean currents but this is not a problem for the moment
+
+changeset:   213:cbd1b25efbad
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Mon Feb 14 15:11:52 2011 -0500
+summary:     there are two time formats, one from the old days and one from Huaaaard. I am in the process of only using Huuard datetime format. Just modified sea_ice_post
+
+changeset:   212:425c3e8cc539
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Mon Feb 07 11:59:17 2011 -0500
+summary:     I am done cleaning up ini_get and ice.f90
+
+changeset:   211:27e04e3f40b5
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Mon Feb 07 11:42:51 2011 -0500
+summary:     in the process of cleaning up ini_get and ice.f90...part2
+
+changeset:   210:89986a60cf0f
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Mon Feb 07 11:36:34 2011 -0500
+summary:     in the process of cleaning up ini_get and ice.f90
+
+changeset:   209:cc79900afcde
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Mon Feb 07 11:22:01 2011 -0500
+summary:     added minutes in ini_get for the restart
+
+changeset:   208:a8b06ad30df4
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Mon Feb 07 10:36:44 2011 -0500
+summary:     added the minute in the name of the output files...in sea_ice_post
+
+changeset:   207:35320dfc27fb
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Feb 04 15:05:13 2011 -0500
+summary:     minor changes: in the process of adding the minutes to the restart files and to the output
+
+changeset:   206:a7101997fc0d
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Feb 04 11:36:57 2011 -0500
+summary:     small modifs to precond_evp to include extra dudt term to match the implicit preconditioners...it is commented out for the moment
+
+changeset:   205:553df0dee316
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Feb 04 11:03:35 2011 -0500
+summary:     small modifs to evp_solver and precond_evpC
+
+changeset:   204:4d0cf46f02a5
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Feb 04 09:31:26 2011 -0500
+summary:     added setup_script that creates the forcing link and cp the restarts into the output dir
+
+changeset:   203:13f5fc3369e9
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Feb 01 15:41:14 2011 -0500
+summary:     small bug was present in precondSOR, precondJacobi and precond_evp
+
+changeset:   202:10780f0f6b9d
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Feb 01 14:30:59 2011 -0500
+summary:     removed unecessary operation in bvect_ind...minor
+
+changeset:   201:6fec65652467
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Feb 01 11:15:37 2011 -0500
+summary:     I have included a constant in module ellipse for the evp solver...minor change
+
+changeset:   200:86a59a2d9e50
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Feb 01 10:42:31 2011 -0500
+summary:     I forgot to put Picard as the default solver
+
+changeset:   199:95bf38808cdc
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Feb 01 10:41:16 2011 -0500
+summary:     I realized that the Rheology variable in the common block slowed the code significantly in viscouscoefficient because it was read at each grid point. I now define a local variable (rheo) to speed uo things
+
+changeset:   198:a76238635b0c
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Feb 01 09:55:31 2011 -0500
+summary:     minor modif to cpu time calculation in stepper
+
+changeset:   197:bf4406d41b89
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Jan 28 13:58:21 2011 -0500
+summary:     fixed another bug in evp_solver
+
+changeset:   196:4135a01a3a8a
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Jan 28 13:33:35 2011 -0500
+summary:     minor stuff
+
+changeset:   195:2ca9d8327f56
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Jan 28 13:31:29 2011 -0500
+summary:     small bug in epv_solver: fixed
+
+changeset:   194:001933004872
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Jan 28 13:16:55 2011 -0500
+summary:     evp_solver is completed
+
+changeset:   193:250b3d049945
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Jan 28 11:36:32 2011 -0500
+summary:     fixed some stuff in evp_solver
+
+changeset:   192:c9882ba94075
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Jan 28 11:15:35 2011 -0500
+summary:     small modif to bvect.f90 so that it can also be used in the evp_solver
+
+changeset:   191:0fc99e825ab3
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Fri Jan 28 10:57:32 2011 -0500
+summary:     first version of evp solver is completed...there are a few things to fix...
+
+changeset:   190:9612167fc917
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Thu Jan 27 16:23:32 2011 -0500
+summary:     still in the process of implementing the EVP solver
+
+changeset:   189:7e476a7ae035
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Thu Jan 27 16:07:57 2011 -0500
+summary:     in the process of implementing the EVP solver
+
+changeset:   188:2295f228a97a
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Thu Jan 27 10:28:02 2011 -0500
+summary:     brougth back uvsolve_sor in case we want to compare with it
+
+changeset:   187:5fce2fd763da
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Wed Jan 26 15:08:55 2011 -0500
+summary:     small modifs in prep_fgmres_NK and stepper so that the structure in stepper is similar for JFNK and Picard
+
+changeset:   186:ce39b3fa1942
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Wed Jan 26 14:22:35 2011 -0500
+summary:     ul and vl are no longer global variables
+
+changeset:   185:4b6e7979d7c8
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Wed Jan 26 13:02:03 2011 -0500
+summary:     just changed a comment in stepper
+
+changeset:   184:5abb553a25bd
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Jan 25 17:17:58 2011 -0500
+summary:     removed tdyn and tadv and replaced it by a single Deltat
+
+changeset:   183:a09736ee869b
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Jan 25 16:12:31 2011 -0500
+summary:     added the constant Deltax2 which is the square of Deltax
+
+changeset:   182:f6621cce19b9
+user:        lemieux@dumbo.Meteo.McGill.CA
+date:        Tue Jan 25 14:52:47 2011 -0500
+summary:     modified SConstruct file to change link with netcdf lib
+
+changeset:   181:b0683bf2fbc4
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Fri Sep 03 14:58:11 2010 -0400
+summary:     added a Jacobi precond for testing
+
+changeset:   180:690efb3a386f
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Fri Aug 27 10:40:33 2010 -0400
+summary:     corrected a very small bug in precond_evp for the loop range for sig12B
+
+changeset:   179:607ce6b13d60
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Tue Aug 24 08:44:02 2010 -0400
+summary:     renamed the precond files...in fact removed the NK in their names because they now apply to both standard and JFNK solvers
+
+changeset:   178:3708a154b0d6
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Tue Aug 24 08:32:00 2010 -0400
+summary:     removed routines not needed anymore because same preconds are used for both standard and JFNK solvers
+
+changeset:   177:6fdb2ed3e89a
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Tue Aug 24 08:27:16 2010 -0400
+summary:     slight modif in prep_fgmres to use same preconds in standard and JFNK solvers
+
+changeset:   176:f3291d68b175
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Mon Aug 23 14:06:39 2010 -0400
+summary:     I have rm precond_evp.f90 because the version I use is precond_evpC.f90
+
+changeset:   175:4a9bdf56bcac
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Mon Aug 23 12:47:50 2010 -0400
+summary:     forgot to put Picard as default solver
+
+changeset:   174:c7e90e215bc8
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Mon Aug 23 12:46:21 2010 -0400
+summary:     added precond_NK_sor routine
+
+changeset:   173:27bede9659ae
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Mon Aug 23 10:27:12 2010 -0400
+summary:     forgot to put back precond_lsor as default precond for Picard
+
+changeset:   172:41f91aa6352e
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Mon Aug 23 10:22:35 2010 -0400
+summary:     I have modified precond_sor to be able to use the same routine for JFNK
+
+changeset:   171:46083e2bbcc7
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Thu Aug 19 11:33:36 2010 -0400
+summary:     removed sig11 and sig22 arrays from precond_evpC...they are not needed anymore
+
+changeset:   170:bb60872e6a59
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Thu Aug 19 11:29:24 2010 -0400
+summary:     made some modifs to precond_evpC.f90, chnaged restart value to 25 and klsor to 10
+
+changeset:   169:2d111f9e15cf
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Thu Aug 19 09:38:03 2010 -0400
+summary:     added precond_evpC.f90 file
+
+changeset:   168:5e2a50d6f0cc
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Tue Aug 17 11:19:29 2010 -0400
+summary:     I have removed resnorm.f90 routine as the residual is now calculated with Fu_nk.f90 even for the Picard solver (standard solver)
+
+changeset:   167:08199b89e22d
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Tue Aug 17 10:40:27 2010 -0400
+summary:     added precond_evp subroutine
+
+changeset:   166:51f89ac282e4
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Wed Aug 11 15:16:51 2010 -0400
+summary:     small modif to Fu_NK.f90
+
+changeset:   165:79941dfefd38
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Wed Aug 11 14:55:34 2010 -0400
+summary:     small modif to prep_fgmres_NK.f90
+
+changeset:   164:e73d0c8dd944
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Wed Aug 11 14:35:31 2010 -0400
+summary:     I have removed unused variables zetaB and zetaBt
+
+changeset:   163:5b5ef5dae86f
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Wed Aug 11 14:01:44 2010 -0400
+summary:     small modif to Jacfreevec
+
+changeset:   162:9dd066d78ef3
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Thu Oct 08 16:16:13 2009 -0400
+summary:     small estethic change in ini_get
+
+changeset:   161:3ad74683a29e
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Thu Oct 08 16:13:22 2009 -0400
+summary:     there was a small bug in ini_get.f90 that affected values of h and A at the boundaries when restart =1
+
+changeset:   160:964d96e6323f
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Tue Sep 29 11:58:08 2009 -0400
+summary:     ok ready to pull changes
+
+changeset:   159:02ea9c79df43
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Tue Sep 29 11:53:14 2009 -0400
+summary:     finished the monthly_mean_fields routines
+
+changeset:   158:640631599f79
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Tue Sep 29 09:44:42 2009 -0400
+summary:     to make version2
+
+changeset:   157:e6ab6417ec15
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Mon Sep 28 17:34:11 2009 -0400
+summary:     first version of monthly_mean_fields routine
+
+changeset:   156:3d521e968b1c
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Fri Sep 25 10:09:17 2009 -0400
+summary:     removed old cruft
+
+changeset:   155:a655fa8092ec
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Fri Sep 25 09:57:21 2009 -0400
+summary:     thre was a problem for the pull from raf...trying to fix it
+
+changeset:   154:63b38a46ae5b
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Fri Sep 25 09:19:26 2009 -0400
+summary:     I forgot to add the new routines
+
+changeset:   153:3e962a04001c
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Fri Sep 25 09:10:00 2009 -0400
+summary:     minor change: ngmres is now called nvar (number of variables)
+
+changeset:   152:cc1a17335eb9
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Fri Sep 25 08:53:11 2009 -0400
+summary:     changed the name of r1pr2p.f90 and r1ppr2pp.f90 routines and variables (R1pp, R2pp) to names matching our latest papaer
+
+changeset:   151:8b84ef087046
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Fri Sep 11 14:44:40 2009 -0400
+summary:     some modifs in stepper for a cleaner code
+
+changeset:   150:c06001f551ee
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Fri Sep 11 14:19:43 2009 -0400
+summary:     ul and vl are no longer global variables
+
+changeset:   149:f4658c681a6c
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Fri Sep 11 11:40:16 2009 -0400
+summary:     some modif to uv_linearization (new routine by the way)
+
+changeset:   148:1822a63e2433
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Fri Sep 11 11:32:49 2009 -0400
+summary:     I have changed the name of upast to ul to be consistent with our papers
+
+changeset:   147:6a510c4bec53
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Thu Sep 10 17:05:33 2009 -0400
+summary:     small changes to r1ppr2pp.f90. I made tests and we get the same answer as before when we had two separate routines
+
+changeset:   146:622d2aa34d83
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Thu Sep 10 16:58:44 2009 -0400
+summary:     there is now a single r1ppr2pp file
+
+changeset:   145:6139cbc46eae
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Thu Sep 10 16:54:40 2009 -0400
+summary:     still in the process
+
+changeset:   144:ed857e9b13cb
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Thu Sep 10 16:51:31 2009 -0400
+summary:     In the process of having a common r1ppr2pp routine for both solvers
+
+changeset:   143:47aaecb284ab
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Thu Sep 10 16:17:45 2009 -0400
+summary:     JFNK is up and running. I made tests at 80km and we get the same solution than with the standard solver (over 24 time steps, ts = 6h, freedrift).
+
+changeset:   142:8dce36af57b2
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Thu Sep 10 15:45:37 2009 -0400
+summary:     added JFNK solver
+
+changeset:   141:4d3d3dc6818d
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Thu Sep 10 15:10:48 2009 -0400
+summary:     in the process of including JFNK in the master code...made some minor changes to stepper
+
+changeset:   140:6d26fd767c1e
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Thu Sep 10 15:03:47 2009 -0400
+summary:     in the process of including JFNK in the master code...made some minor changes to viscous_coeff
+
+changeset:   139:03b0bcc7de53
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Fri Aug 21 15:59:10 2009 -0400
+summary:     changed restart value img to 10 to save RAM
+
+changeset:   138:38fc060209f3
+user:        David Huard
+date:        Fri Aug 21 15:11:54 2009 -0400
+summary:     Ocean albedo now defined and set in ice_albedo instead of par_get
+
+changeset:   137:c366fdf3a461
+user:        David Huard
+date:        Fri Aug 21 14:51:45 2009 -0400
+summary:     removed unused global variables sigma*
+
+changeset:   136:e67ac7c28d69
+user:        David Huard
+date:        Fri Aug 21 14:44:15 2009 -0400
+summary:     replaced rheology common block by ellipse and triangle module.
+
+changeset:   135:9385b6d1f7b4
+user:        David Huard
+date:        Fri Aug 21 14:25:56 2009 -0400
+summary:     removed computation of non linear residual.
+
+changeset:   134:95cc1f6a0dc4
+user:        David Huard
+date:        Fri Aug 21 14:18:34 2009 -0400
+summary:     Thermo time step is now dynamic time step. Removed tadv_ocean and friends.
+
+changeset:   133:c56c94e068e4
+user:        David Huard
+date:        Fri Aug 21 13:18:37 2009 -0400
+summary:     removed CB_diagnostic.
+
+changeset:   132:433daf024741
+user:        David Huard
+date:        Fri Aug 21 11:56:42 2009 -0400
+summary:     Removed Ta_clim. Interpolation of air temperature is now done with hourly accuracy.
+
+changeset:   131:4aa6765bf0dc
+user:        David Huard
+date:        Fri Aug 21 10:03:04 2009 -0400
+summary:     Remove CB_diagnostic in ice.
+
+changeset:   130:1e69cfcccfd0
+user:        David Huard
+date:        Fri Aug 21 10:00:26 2009 -0400
+summary:     removed unused thermovariables for plotting purposes
+
+changeset:   129:dd5bbec74bd4
+user:        David Huard
+date:        Fri Aug 21 09:54:04 2009 -0400
+summary:     Added albedo_manabe
+
+changeset:   128:91abdd20a877
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Thu Aug 20 17:10:20 2009 -0400
+summary:     removed stupid condition in r1ppr2pp and resnormNL about a min value for speed1 and speed2
+
+changeset:   127:2119bd72aecd
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Thu Aug 20 16:43:32 2009 -0400
+summary:     uuair and uvair did not need to be global var...they are now local var in widn_forcing
+
+changeset:   126:893fc8e9c7a8
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Thu Aug 20 16:26:28 2009 -0400
+summary:     have removed global var Pmax and Pmin
+
+changeset:   125:470caa51156f
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Thu Aug 20 16:22:12 2009 -0400
+summary:     have commented out stuff for triangle...need to be recoded carefully
+
+changeset:   124:2ebf87a4ec1c
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Thu Aug 20 15:58:42 2009 -0400
+summary:     removed epsilon11, e22, e12 global var...were not used
+
+changeset:   123:644fb54ea6d9
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Thu Aug 20 15:50:44 2009 -0400
+summary:     removed curlua global var...was not used
+
+changeset:   122:578847b9acf8
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Thu Aug 20 15:47:06 2009 -0400
+summary:     removed speed1 and speed2 global var...were not used
+
+changeset:   121:80f939b68887
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Thu Aug 20 15:30:11 2009 -0400
+summary:     put back Cdair and Cdwater in parget
+
+changeset:   120:55e61902bec6
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Thu Aug 20 15:22:41 2009 -0400
+summary:     removed R1pp_beg and R2pp_beg unsued var
+
+changeset:   119:0cc713147f29
+user:        root@raf.meteo.mcgill.ca
+date:        Thu Aug 20 15:13:22 2009 -0400
+summary:     removed lsor, uvsolve_sor and res_norm_conv...they have been put in unused_routines/linear_solvers
+
+changeset:   118:94cdb33b56d5
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Thu Aug 20 14:59:03 2009 -0400
+summary:     removed usued prep_res_norm.f90 routijne
+
+changeset:   117:74d0c83ce7cb
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Thu Aug 20 14:50:23 2009 -0400
+summary:     removed some unused variables
+
+changeset:   116:a6c1f5e3b718
+user:        lemieux@kermit.Meteo.McGill.CA
+date:        Thu Aug 13 14:14:29 2009 -0400
+summary:     made some clean up and updated the references in ice.f90
+
+changeset:   115:615a9c8a5536
+user:        David Huard
+date:        Wed Jul 08 13:31:11 2009 -0400
+summary:     Fixed issues that occurs with gfortran 4.3.2
+
+changeset:   114:d8dd494a3936
+user:        David Huard
+date:        Wed Jul 08 11:20:13 2009 -0400
+summary:     converted seconds from real to integer and added milli seconds to compensate for the decrease in precision.
+
+changeset:   113:9f476dbdd163
+user:        David Huard
+date:        Fri May 01 14:06:06 2009 -0400
+summary:     Removed some changes in Vero Sconstruct.
+
+changeset:   112:a096d8afe626
+user:        vero@brassens.meteo.mcgill.ca
+date:        Fri May 01 13:54:45 2009 -0400
+summary:     fixed small errors from merge.
+
+changeset:   111:0f8fb45fef88
+parent:      110:30d7bf7128b9
+parent:      101:e66c6f6d95df
+user:        vero@brassens.meteo.mcgill.ca
+date:        Fri May 01 13:48:52 2009 -0400
+summary:     merging Lagrangian Tracer changes from the trunk.
+
+changeset:   110:30d7bf7128b9
+user:        vero@brassens.meteo.mcgill.ca
+date:        Fri May 01 12:45:52 2009 -0400
+summary:     adding LagragianTracer, ini_buoy_get and post_buoys.
+
+changeset:   109:a763eb3d8fcb
+user:        vero@brassens.meteo.mcgill.ca
+date:        Fri May 01 11:46:47 2009 -0400
+summary:     Ready to merge
+
+changeset:   108:8d42f74b21e8
+user:        vero@brassens.meteo.mcgill.ca
+date:        Wed Apr 29 13:29:54 2009 -0400
+summary:     Final with buoy seeding routine
+
+changeset:   107:fe9abe9e2675
+user:        vero@brassens.meteo.mcgill.ca
+date:        Fri Mar 27 11:28:19 2009 -0400
+summary:     !Modifs to ocn_current read file:wq
+
+changeset:   106:efed5f68b7ba
+user:        vero@raf.meteo.mcgill.ca
+date:        Thu Mar 05 10:11:12 2009 -0500
+summary:     Corrected error on LagrangianTracer.f90 in previous version
+
+changeset:   105:0fe67b5fcd91
+user:        vero@raf.meteo.mcgill.ca
+date:        Wed Mar 04 12:07:30 2009 -0500
+summary:     Buoys seeding implemented + read Cdair & Cdwater from input file
+
+changeset:   104:47888de53dc8
+user:        vero@raf.meteo.mcgill.ca
+date:        Tue Mar 03 11:22:37 2009 -0500
+summary:     Buoy seeding implemented
+
+changeset:   103:3b05b3e7d425
+user:        vero@raf.meteo.mcgill.ca
+date:        Mon Mar 02 14:42:07 2009 -0500
+summary:     adapt stepper.f90
+
+changeset:   102:93ed5223713e
+parent:      95:cfc8139dff76
+user:        vero@raf.meteo.mcgill.ca
+date:        Mon Mar 02 14:17:25 2009 -0500
+summary:     4
+
+changeset:   101:e66c6f6d95df
+user:        David Huard
+date:        Wed Mar 11 14:35:59 2009 -0400
+summary:     Committed patch by Andy Pintar cleaning code to reduce compiler warnings.
+
+changeset:   100:40b5c541e5df
+user:        David Huard
+date:        Fri Mar 06 15:53:26 2009 -0500
+summary:     removed half implemented stuff
+
+changeset:   99:26b92f9bbd88
+user:        David Huard
+date:        Thu Mar 05 11:46:43 2009 -0500
+summary:     small fix to previous fix.
+
+changeset:   98:a2a4c4acf8d6
+user:        David Huard
+date:        Thu Mar 05 11:30:47 2009 -0500
+summary:     Fixed cdelta not assigned in ocn_current_old.
+
+changeset:   97:e82b07fd76c2
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Wed Feb 18 14:14:21 2009 -0500
+summary:     set ut1 and vt1 = 0d0 in ini_get.f90 when restart=0...these were not set before
+
+changeset:   96:a3ec7523761c
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Tue Feb 17 14:09:20 2009 -0500
+summary:     now the standard regularization is the tanh instead of the capping. I also changed the nb of OL iterations to 20 and alpha is constant at 25 in prep_fgmres.f90
+
+changeset:   95:cfc8139dff76
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Tue Feb 17 11:14:51 2009 -0500
+summary:     slight modif to fgmres.f90 see p.1371 JF notebook
+
+changeset:   94:bfc1632c6307
+parent:      93:ceacbea90145
+parent:      92:e116983f6c86
+user:        David Huard
+date:        Tue Feb 03 14:28:16 2009 -0500
+summary:     added comments on the time stepping and advection scheme.
+
+changeset:   93:ceacbea90145
+parent:      91:f14e818fff35
+user:        David Huard
+date:        Tue Feb 03 14:02:50 2009 -0500
+summary:     changes to ocean advection parameterization.
+
+changeset:   92:e116983f6c86
+parent:      90:4de7c69e7311
+user:        root@raf.meteo.mcgill.ca
+date:        Tue Feb 03 14:01:34 2009 -0500
+summary:     added precision module for datetime.
+
+changeset:   91:f14e818fff35
+user:        David Huard
+date:        Tue Feb 03 13:36:29 2009 -0500
+summary:     Changed default dynamic time step to 6 hours.
+
+changeset:   90:4de7c69e7311
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Mon Feb 02 17:07:52 2009 -0500
+summary:     Added automatic tadv selection and checks.
+
+changeset:   89:6771b8df4ccf
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Mon Feb 02 14:19:51 2009 -0500
+summary:     Switched datetime to use real kind instead of default real.
+
+changeset:   88:0539fc455231
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Mon Feb 02 11:12:33 2009 -0500
+summary:     Removed tdyn_hour. Dynamic time stepping is now is second. Results are identical to those with original model up to real precision.
+
+changeset:   87:45b03df85f01
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Tue Dec 09 15:05:37 2008 -0500
+summary:     f=0 and theta_w=0 in the precond (sor and lsor) ot increase stability of model when h is small (this increases the diag dominance of the matrix).
+
+changeset:   86:211e97db7a2b
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Wed Nov 05 09:21:58 2008 -0500
+summary:     I forgot to remove cpu time stuff in ice.f90
+
+changeset:   85:2f2ff4ce1aa2
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Tue Nov 04 11:32:14 2008 -0500
+summary:     changed wlsor for 40 km model...see p.1344 for details
+
+changeset:   84:66035e5bdfcb
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Tue Nov 04 10:08:27 2008 -0500
+summary:     there was a small inconsistency in the open bc...see Jf book p.1341-1344 for details
+
+changeset:   83:08aef634398f
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Thu Oct 30 10:44:29 2008 -0400
+summary:     wlsor is now defined in par_get and changes with deltax to make sure the optimal value is used
+
+changeset:   82:fb36ad12c700
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Thu Oct 30 10:33:32 2008 -0400
+summary:     added input files with and without restart
+
+changeset:   81:a534a0b7ba6f
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Thu Oct 30 10:28:35 2008 -0400
+summary:     new uairmax for warning
+
+changeset:   80:ccde0470a8a9
+parent:      78:11e579bfa378
+parent:      79:c6ed73a41704
+user:        root@raf.meteo.mcgill.ca
+date:        Thu Oct 23 10:21:58 2008 -0400
+summary:     merging the change to INSTALL.
+
+changeset:   79:c6ed73a41704
+parent:      77:d7ae6a3c5da3
+user:        David Huard
+date:        Thu Oct 23 10:20:02 2008 -0400
+summary:     updated the INSTALL file to explain the exe= option
+
+changeset:   78:11e579bfa378
+parent:      77:d7ae6a3c5da3
+parent:      17:0a6b1057e6d5
+user:        root@raf.meteo.mcgill.ca
+date:        Thu Oct 23 10:08:40 2008 -0400
+summary:     merged an old file.
+
+changeset:   77:d7ae6a3c5da3
+user:        David Huard
+date:        Thu Oct 23 10:05:41 2008 -0400
+summary:     Binaries are now specified using the exe= argument to scons.
+
+changeset:   76:29d9f8cee1a1
+user:        David Huard
+date:        Wed Oct 22 14:52:03 2008 -0400
+summary:     added comment about relaxation parameter in fgmres
+
+changeset:   75:2ba9fd2d6131
+user:        David Huard
+date:        Wed Oct 22 14:49:37 2008 -0400
+summary:     v4.0
+
+changeset:   74:3d0bd54d0469
+user:        David Huard
+date:        Wed Oct 22 14:03:14 2008 -0400
+summary:     removed deltay
+
+changeset:   73:82023cdf3c99
+user:        David Huard
+date:        Tue Oct 21 11:38:22 2008 -0400
+summary:     New grid: transition of winds completed, both 6 hours and climatological are working. Dynamical time step=4 tested.
+
+changeset:   72:c31bfdd71af2
+user:        David Huard
+date:        Tue Oct 21 11:05:04 2008 -0400
+summary:     New grid: transition of air temperature completed.
+
+changeset:   71:3405aeb73459
+user:        David Huard
+date:        Tue Oct 21 10:47:39 2008 -0400
+summary:     New grid: transition of ocn temperature completed.
+
+changeset:   70:729c25f025db
+user:        David Huard
+date:        Tue Oct 21 10:44:13 2008 -0400
+summary:     New grid: ocean current transition completed.
+
+changeset:   69:03f5db0c2cec
+user:        David Huard
+date:        Tue Oct 21 10:41:22 2008 -0400
+summary:     New grid: mask, lat, lon, deltax and relaxation parameter.
+
+changeset:   68:a0533cc8099d
+user:        David Huard
+date:        Tue Oct 14 11:06:48 2008 -0400
+summary:     Fixed bug in sea_ice_post due to datetime transition.
+
+changeset:   67:d198dd09b854
+user:        David Huard
+date:        Tue Oct 14 10:52:18 2008 -0400
+summary:     Removed unused global variables maskFocn, overturn and Qoverturn.
+
+changeset:   66:c3da50d8147f
+user:        David Huard
+date:        Fri Oct 03 14:50:39 2008 -0400
+summary:     Transition to datetime complete.
+
+changeset:   65:6650df0ac027
+user:        David Huard
+date:        Fri Oct 03 14:43:57 2008 -0400
+summary:     transiting to datetime.
+
+changeset:   64:4f6a8d80f6f0
+user:        root@raf.meteo.mcgill.ca
+date:        Fri Oct 03 13:47:15 2008 -0400
+summary:     Results are identical with those pre-datetime.
+
+changeset:   63:f8964889ab84
+user:        David Huard
+date:        Fri Oct 03 12:40:12 2008 -0400
+summary:     added utils module.
+
+changeset:   62:d37e4febb11f
+user:        David Huard
+date:        Fri Oct 03 12:38:45 2008 -0400
+summary:     added input_run
+
+changeset:   61:94778c3f8b85
+user:        David Huard
+date:        Fri Oct 03 12:37:55 2008 -0400
+summary:     year is now a 4 digit integer in Tatm.
+
+changeset:   60:dc4438684482
+user:        David Huard
+date:        Fri Oct 03 11:38:36 2008 -0400
+summary:     In the transition to datetime.
+
+changeset:   59:ebbb67f79315
+user:        David Huard
+date:        Fri Oct 03 11:38:17 2008 -0400
+summary:     added some logic to datetime_init to avoid bad days. not tested yet. changed datetime_str_old to datetime_str_6
+
+changeset:   58:2f6e56afd025
+user:        David Huard
+date:        Thu Oct 02 11:26:54 2008 -0400
+summary:     Fixed a bug in C_to_B_grid. In transition from old forcings to new forcings. ocn current and temperatures give the exact same results as in the previous version when loading the same files.
+
+changeset:   57:fa1a48011025
+user:        David Huard
+date:        Fri Sep 26 11:42:04 2008 -0400
+summary:     added forcing module. added C_to_B_grid subroutine. testing needed.
+
+changeset:   56:509d25d965c1
+user:        David Huard
+date:        Fri Sep 26 11:41:30 2008 -0400
+summary:     added docs directory to put documentation. The documentation can only be built on Huard computer for now.
+
+changeset:   55:b762defcd8d2
+user:        David Huard
+date:        Thu Sep 25 16:36:13 2008 -0400
+summary:     added routines to load the air temperature.
+
+changeset:   54:51e9ff64edbc
+user:        David Huard
+date:        Tue Sep 23 16:40:02 2008 -0400
+summary:     Wrote load_geostrophic_wind + test.
+
+changeset:   53:76b5a25239df
+user:        David Huard
+date:        Tue Sep 23 15:15:41 2008 -0400
+summary:     added load_mask subroutine. Converted read_array from function to subroutine to have an interface.
+
+changeset:   52:dd6769b280fa
+user:        David Huard
+date:        Tue Sep 23 14:26:50 2008 -0400
+summary:     Wrote and tested load_ocn_temperature
+
+changeset:   51:0dcd317e0d22
+user:        David Huard
+date:        Fri Sep 19 15:19:52 2008 -0400
+summary:     updating INSTALL
+
+changeset:   50:9b8e2908dcca
+user:        David Huard
+date:        Fri Sep 19 15:14:34 2008 -0400
+summary:     updating INSTALL
+
+changeset:   49:2d5176c14694
+user:        David Huard
+date:        Fri Sep 19 15:09:53 2008 -0400
+summary:     updating INSTALL
+
+changeset:   48:7b3b5abc51ad
+user:        David Huard
+date:        Fri Sep 19 15:05:03 2008 -0400
+summary:     updating INSTALL
+
+changeset:   47:a5aba0158cd7
+user:        David Huard
+date:        Fri Sep 19 15:00:01 2008 -0400
+summary:     updated INSTALL
+
+changeset:   46:96a408ce5d2d
+user:        David Huard
+date:        Fri Sep 19 14:42:28 2008 -0400
+summary:     Removed allocatable out argument because gcc 4.1 doesnt like it.
+
+changeset:   45:a03d25282628
+user:        David Huard
+date:        Fri Sep 19 14:09:23 2008 -0400
+summary:     test
+
+changeset:   44:5f371cdbdbf6
+user:        David Huard
+date:        Fri Sep 19 13:40:57 2008 -0400
+summary:     load_ocn_current now working and tested for 10km.
+
+changeset:   43:1b0a4949623c
+user:        David Huard
+date:        Fri Sep 19 13:34:22 2008 -0400
+summary:     Added io module and tests.
+
+changeset:   42:819137c5762e
+user:        David Huard
+date:        Fri Sep 19 09:46:02 2008 -0400
+summary:     added fortran unit test framework.
+
+changeset:   41:13d605df9825
+user:        David Huard
+date:        Fri Sep 19 08:59:52 2008 -0400
+summary:     Oups, forgot to add the datetime module.
+
+changeset:   40:944b18b43353
+user:        David Huard
+date:        Thu Sep 18 15:37:42 2008 -0400
+summary:     added datetime modules. Modified the SConstruct script and added subdirectory SConscript.
+
+changeset:   39:909883f72a2a
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Thu Sep 18 14:27:38 2008 -0400
+summary:     removed modif2model.txt file
+
+changeset:   38:7b8a35c7fe62
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Thu Sep 18 14:24:53 2008 -0400
+summary:     Removed f files.
+
+changeset:   37:0549e357aa35
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Thu Sep 18 14:04:17 2008 -0400
+summary:     added f90 files
+
+changeset:   36:866a6d0acaca
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Thu Aug 14 14:25:49 2008 -0400
+summary:     There was a small bug for the PTS as the initial guess. uk2 and upast were not set for the 1st time step
+
+changeset:   35:c44d60d47082
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Wed Aug 13 14:47:37 2008 -0400
+summary:     added an option for the initial guess: freedrift or previous time step solution
+
+changeset:   34:8211eddfad82
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Wed Aug 13 14:22:10 2008 -0400
+summary:     The code now includes the dudt term in the momentum equation. Some modifs (most) were done in the previous version that does not have understandable comments...Note that the dudt term is not included in the freedrift calculation (uvsolve_NRB.f).
+
+changeset:   33:91cfdd120402
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Wed Aug 13 09:32:42 2008 -0400
+summary:     asdfkhsafdhdf
+
+changeset:   32:a0c4d0d1540c
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Tue Aug 12 10:40:50 2008 -0400
+summary:     Allowed time steps are now: 1, 2, 3, 4 or 6 hours. The winds are temporally linearly interpolated from the 6 hour geostrophic winds derived from the 6 hour NCEP/NCAR slp data. Because of the options for time step, the thermo is now calculated at 12h (after the 12h dynamic and advection calculations) instead of after 6h like it was before with the only available 6 hour time step. The code now ask the user to provide posttimes not only postdates.
+
+changeset:   31:f462c249b3ce
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Wed May 21 12:52:57 2008 -0400
+summary:     removed CB_mask.h in transformer.f
+
+changeset:   30:da556a544325
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Thu May 15 11:25:24 2008 -0400
+summary:     modified the INSTALL file to include Make
+
+changeset:   29:674853218548
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Sat Apr 19 10:10:17 2008 -0400
+summary:     small bug in leapyear in a if statement
+
+changeset:   28:e84fff649695
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Tue Apr 15 13:58:21 2008 -0400
+summary:     changed opti option in Makefile...model is more than twice faster: see p.A1-6 (notebook 8) for details. I also slightly modified ice.f file to also input the ini time and I slightly modified ini_get.f routine
+
+changeset:   27:763d270f8e71
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Thu Apr 03 15:30:58 2008 -0400
+summary:     cleaned up some routines and added a few comments
+
+changeset:   26:29948894da59
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Thu Apr 03 14:27:22 2008 -0400
+summary:     the model was moved from /home/models here (/storage/lemieux/models) because there is an automatic backup done on storage but not on the former location
+
+changeset:   25:1489b11ce39a
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Mon Mar 24 12:09:23 2008 -0400
+summary:     for some unknown reason make tidy was changed between r17 and r18 ( rm *.o and *~ instead of rm src/*.o and src/*~)
+
+changeset:   24:7722b8c09e68
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Mon Mar 24 11:27:12 2008 -0400
+summary:     I had accidently put thermo as false
+
+changeset:   23:64789af204a0
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Mon Mar 24 11:24:53 2008 -0400
+summary:     added res_normNL.f that calculates the residual norm of the nonlinear problem
+
+changeset:   22:fb8bf7e8b6a4
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Wed Mar 19 16:35:40 2008 -0400
+summary:     added option for Zhang or Tremblay linearization
+
+changeset:   21:16e2f5043f82
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Wed Mar 19 16:11:39 2008 -0400
+summary:     test
+
+changeset:   20:889c0de9b0a5
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Mon Mar 03 11:10:58 2008 -0500
+summary:     change condition for KE calc in KEcalc.f
+
+changeset:   19:3e11637d7e69
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Sun Mar 02 13:18:20 2008 -0500
+summary:     removed if statement in sea_ice_post.f that would only output the data when time=12 (for thermo stuff)
+
+changeset:   18:f5c561b27f31
+parent:      16:66f77e6ddfea
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Thu Feb 28 15:57:00 2008 -0500
+summary:     test
+
+changeset:   17:0a6b1057e6d5
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Tue Feb 26 15:02:33 2008 -0500
+summary:     make tidy was not set properly
+
+changeset:   16:66f77e6ddfea
+user:        huardda@angus.Meteo.McGill.CA
+date:        Tue Feb 26 14:34:54 2008 -0500
+summary:     test
+
+changeset:   15:99823cb48d94
+user:        huardda@angus.Meteo.McGill.CA
+date:        Tue Feb 26 14:33:18 2008 -0500
+summary:     test
+
+changeset:   14:347b855d9e52
+user:        huardda@angus.Meteo.McGill.CA
+date:        Tue Feb 26 14:02:35 2008 -0500
+summary:     created a makefile
+
+changeset:   13:bca9d7f4c60c
+user:        huardda@angus.Meteo.McGill.CA
+date:        Tue Feb 26 13:50:33 2008 -0500
+summary:     added output dir. Added explanation about symbolic link to forcing in INSTALL
+
+changeset:   12:f92739158538
+user:        huardda@angus.Meteo.McGill.CA
+date:        Tue Feb 26 12:04:13 2008 -0500
+summary:     added readme stub
+
+changeset:   11:1ac697fb8842
+user:        huardda@angus.Meteo.McGill.CA
+date:        Tue Feb 26 11:25:56 2008 -0500
+summary:     changed diff2model.txt permission
+
+changeset:   10:476af117cf9a
+user:        huardda@angus.Meteo.McGill.CA
+date:        Mon Feb 25 15:32:51 2008 -0500
+summary:     fixed advection typo.
+
+changeset:   9:f25c31e2c365
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Mon Feb 25 10:39:44 2008 -0500
+summary:     dh/dx=0
+
+changeset:   8:5a93fd808f06
+parent:      6:7f205f99f27d
+parent:      7:021e36937381
+user:        huardda@angus.Meteo.McGill.CA
+date:        Fri Feb 22 17:05:25 2008 -0500
+summary:     fixed forcing paths
+
+changeset:   7:021e36937381
+parent:      5:ee1a2265bb84
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Fri Feb 22 16:32:53 2008 -0500
+summary:     changed strings for forcings
+
+changeset:   6:7f205f99f27d
+user:        huardda@angus.Meteo.McGill.CA
+date:        Fri Feb 22 16:28:09 2008 -0500
+summary:     added SConstruct
+
+changeset:   5:ee1a2265bb84
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Fri Feb 22 15:50:11 2008 -0500
+summary:     changed permission
+
+changeset:   4:6a17341c60f1
+parent:      2:e4a0b2aa38f2
+parent:      3:60ab6657fe17
+user:        huardda@angus.Meteo.McGill.CA
+date:        Fri Feb 22 15:31:14 2008 -0500
+summary:     merged with main
+
+changeset:   3:60ab6657fe17
+parent:      0:9112fdc1afb6
+user:        huardda@raf.meteo.mcgill.ca
+date:        Fri Feb 22 15:23:32 2008 -0500
+summary:     cloning repo to /home
+
+changeset:   2:e4a0b2aa38f2
+user:        huardda@angus.Meteo.McGill.CA
+date:        Fri Feb 22 14:43:26 2008 -0500
+summary:     renamed mask
+
+changeset:   1:1ebdec8a55da
+user:        huardda@angus.Meteo.McGill.CA
+date:        Fri Feb 22 13:55:38 2008 -0500
+summary:     name change
+
+changeset:   0:9112fdc1afb6
+user:        lemieux@raf.meteo.mcgill.ca
+date:        Fri Feb 22 11:22:45 2008 -0500
+summary:     initial setup
+
