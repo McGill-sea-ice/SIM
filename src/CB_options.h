@@ -25,7 +25,7 @@
                 Buoys,          &
                 Jac_finite_diff  
                           
-      integer   Rheology, IMEX, BDF2
+      integer   Rheology, IMEX, BDF
 
       common/options/           &
                 Dynamic,        & ! sea ice dynamic model (yes or no)
