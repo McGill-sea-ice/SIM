@@ -1,0 +1,114 @@
+==================
+INSTALLATION GUIDE
+==================
+
+Installing the dependencies
+---------------------------
+
+The sea ice model is pretty much self contained. The only external library
+needed is netCDF4, which itself depends on HDF5 (>1.8). On Fedora 8, hdf5 should
+be available through the standard repositories. On the other hand, netCDF4 needs
+to be downloaded and compiled manually. 
+
+
+.. rubric:: Compiling HDF5
+
+Download the HDF5 source code from ???. 
+Unpack the archive and enter the directory, then::
+
+  FC = gfortran configure --enable-fortran --prefix=/usr/local/hdf5
+  make
+  make check
+  sudo make install 
+
+
+.. rubric:: Compiling netCDF4
+
+Download the netCDF4 source code from ???. 
+Unpack the archive and enter the directory, then::
+
+  export F90=gfortran
+  export F77=gfortran
+  configure --enable-shared --enable-netcdf-4 --prefix=/usr/local/netcdf4 --with-hdf5=/usr/local/hdf5
+  make check
+  sudo make install
+
+
+.. rubric:: Linking the libraries
+  
+To make sure that the system finds the shared netcdf and hdf5 libraries, you 
+will need to add the lib/ directories to the list of paths searched for 
+libraries. To do so, go into the ``/etc/ld.so.conf.d`` directory, and create
+two files: :file:`netcdf4.conf` and :file:`hdf5.conf`. In each file, write on 
+the first line the path to the libraries, ie :path:`/usr/local/netcdf4/lib` 
+and :path:`/usr/local/hdf5/lib` respectively. Then run the command::
+
+  sudo /sbin/ldconfig
+
+and the linker should be able to find those libraries when you launch the model. 
+
+
+
+.. rubric:: Installing scons
+
+The build system is based on scons. If scons is not installed on your system, 
+try the following with administrative privileges::
+
+  yum install scons
+
+
+Building the executables
+------------------------
+
+To compile the model, simply type::
+
+	scons
+
+This will create an executable named `zoupa` in the current directory. 
+You may specify another executable name simply by using the `exe` option::
+
+    scons exe='sim01'
+
+To clean up object files, type::
+
+	scons --clean   (or scons -c)
+
+Note that the compilation can be distributed on `n` processors using the 
+option ``-j n``. 
+ 
+Running the code
+----------------
+
+First create a symbolic link to the forcing directory:
+ln -s path/to/forcing forcing
+
+to run the executable type::
+
+        ice < input_file 
+	
+
+
+
+Debugging
+---------
+
+The directory src/tests contains modules whose only purpose is to test that 
+procedures  are working as expected. For example, the ``io`` module is tested by the 
+``test_io`` module located in :file:`src/tests/test_io_mod.f90`. This module contains
+subroutines such as ``test_load_air_temperature``, ``test_load_geostrophic_wind``, etc.
+Each one of these subroutines is called in turn by the ``io_test_suite`` subroutine, which 
+itself is called by the program in ``test_sim.f90``. Running :file:`bin/test_sim` will
+exercise all the test subroutines and print a summary of the results. 
+
+In case of a crash, it is useful to recompile the code in debugging mode and
+run the test suite in a debugger::
+
+  $ scons debug=1
+  $ gdb bin/test_sim
+  (gdb) run
+
+The debugger will stop if a crash occurs, and should allow you to see and examine the backtrace, 
+that is, where in the code the error occurred and what where the values of the variables at 
+that time. 
+
+
