@@ -2,3 +2,4 @@ ln -s /storage/common/forcing forcing
 cp /storage/common/restarts/80/*.80 output
 cp /storage/common/restarts/40/*.40 output
 scons
+export HDF5_DISABLE_VERSION_CHECK=2
