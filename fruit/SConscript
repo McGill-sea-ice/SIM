@@ -1,0 +1,4 @@
+Import('env')
+src = Glob('*.f90')
+
+fruit = env.Library(target='#/libs/fruit', source=src)

@@ -1,0 +1,4 @@
+Import('env')
+env.Program('#/bin/test_fruit_assert', source='test_assert_mod.f90', LIBS=['fruit'])
+env.Program('#/bin/test_fruit_to_s', source='test_to_s.f90', LIBS='fruit')
+env.Program('#/bin/test_fruit_util', source='test_fruit_util.f90', LIBS='fruit')

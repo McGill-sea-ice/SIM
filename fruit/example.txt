@@ -1,0 +1,25 @@
+Example
+=======
+
+By compiling and running the file `fruit_example.f90`, we get the following output::
+
+	.F 
+	--------------------------------------------------------------------------------
+	 Ran 2 tests in 0.000000 seconds.
+
+	 Failed tests:
+
+ 	 ### test_my_sum ###
+	        Expected: 3.000000
+	        Got: 4.000000
+	        2+2/=3 !
+
+	 Successful    :              1 / 2
+	 Failed        :              1 / 2
+	 Success rate:    50.00%
+
+
+The first line contains a condensed view of the test results: dots (`.`) stand for successes and `F` for failures. In this case, the first test passed and the second one failed. 
+Just below, the number of tests is printed with the time it took to execute. Then, for each failure a message is printed indicating the unit from which the failure originates, 
+the expected answer, the value that was tested and a user defined message. A résumé of the number of successes and failures is then printed, because it is so gratifying when they 
+all pass. 
