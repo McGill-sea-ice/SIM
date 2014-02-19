@@ -1,0 +1,12 @@
+Import('env')
+Import('EXE')
+
+# Source files for the sea ice model
+src = Glob('*.f90') 
+src.remove(Glob('ice.f90')[0])
+
+env.Library(target='#/libs/ice', source = src, LIBS=['netcdf', 'netcdff', 'hdf5', 'hdf5_hl', 'blas',  'datetime'])
+
+# The executable
+env.Program(target='#/'+EXE, source='ice.f90', LIBS=['netcdf', 'netcdff', 'hdf5', 'hdf5_hl', 'ice', 'datetime'])
+
