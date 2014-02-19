@@ -66,10 +66,10 @@ if int(DEBUG):
 #           NetCDF4 Librairies
 # ---------------------------------------
 
-env.Append(LIBPATH='/aos/shared/lib/centos5/netcdf/default/gnu/lib')
-env.Append(F90PATH='/aos/shared/lib/centos5/netcdf/default/gnu/include')
-env.Append(LIBPATH='/aos/shared/lib/centos5/hdf5/default/gnu/lib')
-env.Append(F90PATH='/aos/shared/lib/centos5/hdf5/default/gnu/include')
+env.Append(LIBPATH='/aos/shared/lib/centos6/netcdf/4/gnu/lib')
+env.Append(F90PATH='/aos/shared/lib/centos6/netcdf/4/gnu/include')
+env.Append(LIBPATH='/aos/shared/lib/centos6/hdf5/default/gnu/lib')
+env.Append(F90PATH='/aos/shared/lib/centos6/hdf5/default/gnu/include')
 #env.Append(LIBPATH='/usr/lib64')
 
 # ----------------------------------------
