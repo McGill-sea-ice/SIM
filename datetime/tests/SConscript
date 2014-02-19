@@ -1,0 +1,7 @@
+Import('env')
+src = Glob('test_*.f90')
+
+env.Library('#/libs/fruit_ext', source='fruit_ext_mod.f90', LIBS=['fruit', 'datetime'])
+
+env.Program('#/bin/test_datetime', source=src, LIBS=['fruit', 'datetime', 'fruit_ext'])
+

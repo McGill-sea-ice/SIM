@@ -1,0 +1,355 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="744.09448819"
+   height="1052.3622047"
+   id="svg2"
+   sodipodi:version="0.32"
+   inkscape:version="0.46"
+   sodipodi:docname="types_of_motion.svg"
+   inkscape:output_extension="org.inkscape.output.svg.inkscape"
+   inkscape:export-filename="/aos/home/huardda/LocalHome/10kmf90/docs/source/types_of_motion.png"
+   inkscape:export-xdpi="300"
+   inkscape:export-ydpi="300">
+  <defs
+     id="defs4">
+    <marker
+       inkscape:stockid="EmptyTriangleOutM"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="EmptyTriangleOutM"
+       style="overflow:visible">
+      <path
+         id="path3326"
+         d="M 5.77,0.0 L -2.88,5.0 L -2.88,-5.0 L 5.77,0.0 z "
+         style="fill-rule:evenodd;fill:#FFFFFF;stroke:#000000;stroke-width:1.0pt;marker-start:none"
+         transform="scale(0.4) translate(-4.5,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="TriangleOutM"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="TriangleOutM"
+       style="overflow:visible">
+      <path
+         id="path3308"
+         d="M 5.77,0.0 L -2.88,5.0 L -2.88,-5.0 L 5.77,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.0pt;marker-start:none"
+         transform="scale(0.4)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow1Lend"
+       style="overflow:visible;">
+      <path
+         id="path3165"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.0pt;marker-start:none;"
+         transform="scale(0.8) rotate(180) translate(12.5,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow1Lstart"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow1Lstart"
+       style="overflow:visible">
+      <path
+         id="path3162"
+         d="M 0.0,0.0 L 5.0,-5.0 L -12.5,0.0 L 5.0,5.0 L 0.0,0.0 z "
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1.0pt;marker-start:none"
+         transform="scale(0.8) translate(12.5,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow2Send"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow2Send"
+       style="overflow:visible;">
+      <path
+         id="path3195"
+         style="font-size:12.0;fill-rule:evenodd;stroke-width:0.62500000;stroke-linejoin:round;"
+         d="M 8.7185878,4.0337352 L -2.2072895,0.016013256 L 8.7185884,-4.0017078 C 6.9730900,-1.6296469 6.9831476,1.6157441 8.7185878,4.0337352 z "
+         transform="scale(0.3) rotate(180) translate(-2.3,0)" />
+    </marker>
+    <marker
+       inkscape:stockid="Arrow2Mend"
+       orient="auto"
+       refY="0.0"
+       refX="0.0"
+       id="Arrow2Mend"
+       style="overflow:visible;">
+      <path
+         id="path3189"
+         style="font-size:12.0;fill-rule:evenodd;stroke-width:0.62500000;stroke-linejoin:round;"
+         d="M 8.7185878,4.0337352 L -2.2072895,0.016013256 L 8.7185884,-4.0017078 C 6.9730900,-1.6296469 6.9831476,1.6157441 8.7185878,4.0337352 z "
+         transform="scale(0.6) rotate(180) translate(0,0)" />
+    </marker>
+    <inkscape:perspective
+       sodipodi:type="inkscape:persp3d"
+       inkscape:vp_x="0 : 526.18109 : 1"
+       inkscape:vp_y="0 : 1000 : 0"
+       inkscape:vp_z="744.09448 : 526.18109 : 1"
+       inkscape:persp3d-origin="372.04724 : 350.78739 : 1"
+       id="perspective10" />
+  </defs>
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     gridtolerance="10000"
+     guidetolerance="10"
+     objecttolerance="10"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="0.98994949"
+     inkscape:cx="470.6563"
+     inkscape:cy="710.5613"
+     inkscape:document-units="px"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     showguides="true"
+     inkscape:guide-bbox="true"
+     inkscape:window-width="1680"
+     inkscape:window-height="977"
+     inkscape:window-x="0"
+     inkscape:window-y="25">
+    <inkscape:grid
+       type="xygrid"
+       id="grid8353" />
+  </sodipodi:namedview>
+  <metadata
+     id="metadata7">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1">
+    <rect
+       style="fill:none;fill-opacity:0.2926829;fill-rule:evenodd;stroke:#000000;stroke-width:0.28297675;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect2383"
+       width="27.48917"
+       height="27.48917"
+       x="60.428219"
+       y="134.18744"
+       inkscape:export-filename="/aos/home/huardda/LocalHome/10kmf90/docs/source/types_of_motion.png"
+       inkscape:export-xdpi="300"
+       inkscape:export-ydpi="300" />
+    <rect
+       style="fill:none;fill-opacity:0.2926829;fill-rule:evenodd;stroke:#000000;stroke-width:0.28297675;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect3155"
+       width="27.48917"
+       height="27.48917"
+       x="177.58885"
+       y="145.21294"
+       inkscape:export-filename="/aos/home/huardda/LocalHome/10kmf90/docs/source/types_of_motion.png"
+       inkscape:export-xdpi="300"
+       inkscape:export-ydpi="300" />
+    <path
+       style="fill:none;fill-opacity:0.75;fill-rule:evenodd;stroke:#000000;stroke-width:0.73573953;stroke-linecap:butt;stroke-linejoin:miter;marker-mid:url(#EmptyTriangleOutM);marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 75.850165,148.66694 C 90.285573,149.23864 97.259857,149.5874 109.64295,155.90251 C 129.78642,166.17523 140.76637,142.9033 155.81661,148.09524 C 172.69961,153.91943 192.47684,158.95753 192.47684,158.95753 L 191.33343,159.52923"
+       id="path3157"
+       sodipodi:nodetypes="cszcc"
+       inkscape:export-filename="/aos/home/huardda/LocalHome/10kmf90/docs/source/types_of_motion.png"
+       inkscape:export-xdpi="300"
+       inkscape:export-ydpi="300" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot8199"
+       style="font-size:21.20315538px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans;font-stretch:normal;font-variant:normal;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%"
+       transform="matrix(0.5659535,0,0,0.5659535,-173.98246,-0.995611)"
+       inkscape:export-filename="/aos/home/huardda/LocalHome/10kmf90/docs/source/types_of_motion.png"
+       inkscape:export-xdpi="300"
+       inkscape:export-ydpi="300"><flowRegion
+         id="flowRegion8201"><rect
+           id="rect8203"
+           width="176.7767"
+           height="29.294424"
+           x="376.7869"
+           y="209.89496"
+           style="-inkscape-font-specification:Bitstream Vera Sans;font-family:Bitstream Vera Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;font-size:21.20315538px;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%" /></flowRegion><flowPara
+         id="flowPara8205">Translation</flowPara></flowRoot>    <rect
+       style="fill:none;fill-opacity:0.2926829;fill-rule:evenodd;stroke:#000000;stroke-width:0.28297675;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect8207"
+       width="27.48917"
+       height="27.48917"
+       x="60.172863"
+       y="196.77554"
+       inkscape:export-filename="/aos/home/huardda/LocalHome/10kmf90/docs/source/types_of_motion.png"
+       inkscape:export-xdpi="300"
+       inkscape:export-ydpi="300" />
+    <rect
+       style="fill:none;fill-opacity:0.2926829;fill-rule:evenodd;stroke:#000000;stroke-width:0.28297675;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect8209"
+       width="27.48917"
+       height="27.48917"
+       x="266.39734"
+       y="70.598747"
+       transform="matrix(0.8436978,0.5368185,-0.5368185,0.8436978,0,0)"
+       inkscape:export-filename="/aos/home/huardda/LocalHome/10kmf90/docs/source/types_of_motion.png"
+       inkscape:export-xdpi="300"
+       inkscape:export-ydpi="300" />
+    <path
+       style="fill:none;fill-opacity:0.75;fill-rule:evenodd;stroke:#000000;stroke-width:0.73573953;stroke-linecap:butt;stroke-linejoin:miter;marker-mid:url(#EmptyTriangleOutM);marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 75.594804,211.25505 C 90.030212,211.82674 97.004497,212.17551 109.38759,218.49062 C 129.53106,228.76334 140.51101,205.49141 155.56125,210.68335 C 172.44425,216.50754 192.22148,221.54564 192.22148,221.54564 L 191.07807,222.11734"
+       id="path8211"
+       sodipodi:nodetypes="cszcc"
+       inkscape:export-filename="/aos/home/huardda/LocalHome/10kmf90/docs/source/types_of_motion.png"
+       inkscape:export-xdpi="300"
+       inkscape:export-ydpi="300" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot8213"
+       style="font-size:21.20315538px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans;font-stretch:normal;font-variant:normal;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%"
+       transform="matrix(0.5659535,0,0,0.5659535,-174.23782,61.592494)"
+       inkscape:export-filename="/aos/home/huardda/LocalHome/10kmf90/docs/source/types_of_motion.png"
+       inkscape:export-xdpi="300"
+       inkscape:export-ydpi="300"><flowRegion
+         id="flowRegion8215"><rect
+           id="rect8217"
+           width="176.7767"
+           height="29.294424"
+           x="376.7869"
+           y="209.89496"
+           style="-inkscape-font-specification:Bitstream Vera Sans;font-family:Bitstream Vera Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;font-size:21.20315538px;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%" /></flowRegion><flowPara
+         id="flowPara8219">Rotation</flowPara></flowRoot>    <rect
+       style="fill:none;fill-opacity:0.2926829;fill-rule:evenodd;stroke:#000000;stroke-width:0.28297675;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect8241"
+       width="27.48917"
+       height="27.48917"
+       x="252.85242"
+       y="134.18744"
+       inkscape:export-filename="/aos/home/huardda/LocalHome/10kmf90/docs/source/types_of_motion.png"
+       inkscape:export-xdpi="300"
+       inkscape:export-ydpi="300" />
+    <rect
+       style="fill:none;fill-opacity:0.2926829;fill-rule:evenodd;stroke:#000000;stroke-width:0.45190683;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect8243"
+       width="43.899525"
+       height="43.899525"
+       x="363.80881"
+       y="136.72191"
+       inkscape:export-filename="/aos/home/huardda/LocalHome/10kmf90/docs/source/types_of_motion.png"
+       inkscape:export-xdpi="300"
+       inkscape:export-ydpi="300" />
+    <path
+       style="fill:none;fill-opacity:0.75;fill-rule:evenodd;stroke:#000000;stroke-width:0.73573953;stroke-linecap:butt;stroke-linejoin:miter;marker-mid:url(#EmptyTriangleOutM);marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 268.27436,148.66694 C 282.70976,149.23864 289.68405,149.5874 302.06714,155.90251 C 322.21061,166.17523 333.19056,142.9033 348.2408,148.09524 C 365.1238,153.91943 384.90103,158.95753 384.90103,158.95753 L 383.75763,159.52923"
+       id="path8245"
+       sodipodi:nodetypes="cszcc"
+       inkscape:export-filename="/aos/home/huardda/LocalHome/10kmf90/docs/source/types_of_motion.png"
+       inkscape:export-xdpi="300"
+       inkscape:export-ydpi="300" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot8247"
+       style="font-size:21.20315538px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans;font-stretch:normal;font-variant:normal;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%"
+       transform="matrix(0.5659535,0,0,0.5659535,18.441732,-0.9956117)"
+       inkscape:export-filename="/aos/home/huardda/LocalHome/10kmf90/docs/source/types_of_motion.png"
+       inkscape:export-xdpi="300"
+       inkscape:export-ydpi="300"><flowRegion
+         id="flowRegion8249"><rect
+           id="rect8251"
+           width="176.7767"
+           height="29.294424"
+           x="376.7869"
+           y="209.89496"
+           style="-inkscape-font-specification:Bitstream Vera Sans;font-family:Bitstream Vera Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;font-size:21.20315538px;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%" /></flowRegion><flowPara
+         id="flowPara8253">Dilatation</flowPara></flowRoot>    <rect
+       style="fill:none;fill-opacity:0.2926829;fill-rule:evenodd;stroke:#000000;stroke-width:0.28297675;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect8264"
+       width="27.48917"
+       height="27.48917"
+       x="252.81592"
+       y="196.37209"
+       inkscape:export-filename="/aos/home/huardda/LocalHome/10kmf90/docs/source/types_of_motion.png"
+       inkscape:export-xdpi="300"
+       inkscape:export-ydpi="300" />
+    <rect
+       style="fill:none;fill-opacity:0.2926829;fill-rule:evenodd;stroke:#000000;stroke-width:0.30965811;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       id="rect8266"
+       width="27.48917"
+       height="32.91737"
+       x="515.64978"
+       y="248.35173"
+       transform="matrix(1,0,-0.5501039,0.8350962,0,0)"
+       inkscape:export-filename="/aos/home/huardda/LocalHome/10kmf90/docs/source/types_of_motion.png"
+       inkscape:export-xdpi="300"
+       inkscape:export-ydpi="300" />
+    <path
+       style="fill:none;fill-opacity:0.75;fill-rule:evenodd;stroke:#000000;stroke-width:0.73573953;stroke-linecap:butt;stroke-linejoin:miter;marker-mid:url(#EmptyTriangleOutM);marker-end:none;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+       d="M 268.23786,210.85158 C 282.67327,211.42328 289.64755,211.77205 302.03065,218.08715 C 322.17412,228.35987 333.15406,205.08794 348.2043,210.27988 C 365.0873,216.10407 384.86453,221.14217 384.86453,221.14217 L 383.72113,221.71387"
+       id="path8268"
+       sodipodi:nodetypes="cszcc"
+       inkscape:export-filename="/aos/home/huardda/LocalHome/10kmf90/docs/source/types_of_motion.png"
+       inkscape:export-xdpi="300"
+       inkscape:export-ydpi="300" />
+    <flowRoot
+       xml:space="preserve"
+       id="flowRoot8270"
+       style="font-size:21.20315538px;font-style:normal;font-weight:normal;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans;font-stretch:normal;font-variant:normal;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%"
+       transform="matrix(0.5659535,0,0,0.5659535,18.405236,61.189031)"
+       inkscape:export-filename="/aos/home/huardda/LocalHome/10kmf90/docs/source/types_of_motion.png"
+       inkscape:export-xdpi="300"
+       inkscape:export-ydpi="300"><flowRegion
+         id="flowRegion8272"><rect
+           id="rect8274"
+           width="176.7767"
+           height="29.294424"
+           x="376.7869"
+           y="209.89496"
+           style="-inkscape-font-specification:Bitstream Vera Sans;font-family:Bitstream Vera Sans;font-weight:normal;font-style:normal;font-stretch:normal;font-variant:normal;font-size:21.20315538px;text-anchor:start;text-align:start;writing-mode:lr;line-height:125%" /></flowRegion><flowPara
+         id="flowPara8276">Shear strain</flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot8337"
+       style="font-size:21.20315552px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans Bold"
+       transform="matrix(0.5659535,0,0,0.5659535,-9.5553,48.069337)"
+       inkscape:export-filename="/aos/home/huardda/LocalHome/10kmf90/docs/source/types_of_motion.png"
+       inkscape:export-xdpi="300"
+       inkscape:export-ydpi="300"><flowRegion
+         id="flowRegion8339"><rect
+           id="rect8341"
+           width="279.48621"
+           height="31.246315"
+           x="85.862968"
+           y="80.595436"
+           style="font-size:21.20315552px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans Bold" /></flowRegion><flowPara
+         id="flowPara8343">Rigid body motion </flowPara></flowRoot>    <flowRoot
+       xml:space="preserve"
+       id="flowRoot8345"
+       style="font-size:21.20315552px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans Bold"
+       transform="matrix(0.5659535,0,0,0.5659535,182.8689,49.482953)"
+       inkscape:export-xdpi="300"
+       inkscape:export-ydpi="300"
+       inkscape:export-filename="/aos/home/huardda/LocalHome/10kmf90/docs/source/types_of_motion.png"><flowRegion
+         id="flowRegion8347"><rect
+           id="rect8349"
+           width="304.47433"
+           height="33.031193"
+           x="85.862968"
+           y="80.595436"
+           style="font-size:21.20315552px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:125%;writing-mode:lr-tb;text-anchor:start;font-family:Bitstream Vera Sans;-inkscape-font-specification:Bitstream Vera Sans Bold" /></flowRegion><flowPara
+         id="flowPara8351">Deformation motion</flowPara></flowRoot>  </g>
+</svg>

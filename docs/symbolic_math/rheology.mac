@@ -1,0 +1,51 @@
+/*  load("vect"); */
+if get('vect,'version)=false then load(vect);
+if get('itensor,'version)=false then load(ctensor);
+
+depends(u,[x, t])
+epsilon:1/2*(diff(u([i],[],t), x([j],[])) + diff(u([j],[],t),x([i],[])))
+
+
+ct_coordsys(cartesian2d)
+
+epsilon = 
+Delta = 
+
+
+
+
+
+/* load("f90"); */
+if get('f90, 'version)=false then load(f90);
+
+/* Ice, air and water velocity */
+Ui:[u[i], v[i], 0];
+Ua:[u[a], v[a], 0];
+Uw:[u[w], v[w], 0];
+
+/* Unit vector pointing upward */
+K:[0, 0, 1];
+
+/* Coriolis Force */
+Coriolis(Ui) := -rho[i]*h*f*K~Ui;
+
+/* Wind stress */
+WindStress(Ua) := rho[a]*C[da]*sqrt(Ua.Ua)*(Ua*cos(theta[a]) + (K~Ua) * sin(theta[a]));
+
+/* Water stress */
+WaterStress(Uw, Ui) := - rho[w]*C[dw]*sqrt((Ui-Uw).(Ui-Uw))*((Ui-Uw)*cos(theta[w]) + (K~(Ui-Uw)) * sin(theta[w]));
+
+/* Sea surface tilt in terms of the geostrophic currents */
+Tilt(Uw) := \rho[i] * h * f * K~Uw ;
+
+/* Sea Ice Momentum Equation */
+F(Ui, Ua, Uw) := Coriolis(Ui) + WindStress(Ua) + WaterStress(Uw, Ui) + Tilt(Uw);
+
+S1 : ratsubst(u, u[i]-u[w], express(F(Ui, Ua, Uw)));
+S2(u,v) := ratsubst(v, v[i]-v[w], S1);
+
+J:ratsimp(submatrix(3, jacobian(S2(u,v), [u,v])));
+factor(J);
+
+det: ratsimp(determinant(J));
+f90(det);
