@@ -93,7 +93,7 @@
       IMEX       = 0                 ! 0:split in time, 1:Picard, 2:JFNK
       BDF         = 0                ! 0: back. Euler, 1: 2nd order back. diff. formula
       Dynamic    = .true.            ! ice model type
-      Thermodyn  = .false.           ! ice model type
+      Thermodyn  = .true.           ! ice model type
       BuoyTrack  = .false.
       Buoys      = 'Daily'           ! Buoy traj: 'Track' or 'Daily'
       Current    = 'YearlyMean'      ! YearlyMean, specified
@@ -159,7 +159,7 @@
 !     Time step
 !------------------------------------------------------------------------
 
-      Deltat     =  300d0
+      Deltat     =  1200d0
       DtoverDx   = Deltat / Deltax
       
       if (1d0*Deltat .gt. Deltax) then
