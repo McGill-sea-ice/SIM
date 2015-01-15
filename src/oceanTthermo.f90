@@ -17,6 +17,8 @@
 
       subroutine oceanTthermo 
 
+      use basal_param
+      
       implicit none
 
       include 'parameter.h'
@@ -26,10 +28,11 @@
       include 'CB_const.h'
       include 'CB_mask.h'
       include 'CB_options.h'
+      include 'CB_bathymetry.h'
 
       integer i, j
 
-      double precision relvelocity, Qnet
+      double precision relvelocity, Qnet, Hmix
 
 
 
@@ -52,8 +55,20 @@
 
 
             if (OcnTemp .eq. 'calculated') then
+	      
+	      if (BasalStress) then
+               if (bathy(i,j) .gt. Hocn) then
+                  Hmix=Hocn
+               elseif (bathy(i,j) .lt. 0d0) then
+                  Hmix=1d30 ! land
+               else
+                  Hmix=bathy(i,j)
+               endif
+	      else
+		Hmix = Hocn
+	      endif
 
-               To(i,j) = To(i,j) + Deltat * Qnet / Kadvo
+               To(i,j) = To(i,j) + Deltat * Qnet / (Kadvo*Hmix)
                To(i,j) = max( To(i,j), Tof ) * maskC(i,j) 
 
             endif

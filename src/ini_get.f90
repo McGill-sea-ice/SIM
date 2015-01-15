@@ -134,6 +134,9 @@ subroutine ini_get (restart, expno_r, restart_date)
 
          endif
          
+	 Cbasal1 = 0d0
+	 Cbasal2 = 0d0
+         
          if ( Thermodyn ) then
 
             write (filename,'("output/Ta",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,".",i2.2)') &

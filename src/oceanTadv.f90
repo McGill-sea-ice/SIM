@@ -53,7 +53,7 @@
 
             ii       = i - max ( 0, int(sign(1d0, uwatnd(i,j)))) 
 
-            advfluxx(i,j) = Kadvo * To(ii,j) * uwatnd(i,j) 
+            advfluxx(i,j) = Kadvo * Hocn * To(ii,j) * uwatnd(i,j) 
 
             fluxxtot(i,j) = diffluxx(i,j) + advfluxx(i,j)
 
@@ -70,7 +70,7 @@
       
             jj       = j - max ( 0, int( sign( 1d0, vwatnd(i,j) ) ) ) 
 
-            advfluxy(i,j) = Kadvo * To(i,jj)  * vwatnd(i,j) 
+            advfluxy(i,j) = Kadvo * Hocn * To(i,jj)  * vwatnd(i,j) 
 
             fluxytot(i,j) = diffluxy(i,j) + advfluxy(i,j)
             
@@ -92,7 +92,7 @@
 
             if (OcnTemp .eq. 'calculated') then
 
-               To(i,j) = To(i,j) + Deltat * Qnet / Kadvo
+               To(i,j) = To(i,j) + Deltat * Qnet / (Kadvo * Hocn)
 !               To(i,j) = max( To(i,j), Tof ) * maskC(i,j) 
 
             endif

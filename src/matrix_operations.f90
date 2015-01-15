@@ -150,6 +150,8 @@ end subroutine Funk
                       CdwC1(i,j) * costheta_w * utp(i,j) - &
                       CdwC1(i,j) * sintheta_w * vavg 
 
+            Ax(k) = Ax(k) + Cbasal1(i,j)*utp(i,j)
+
 !------------------------------------------------------------------------
 !     -d ( eta dv/dy ) / dx    B1_1  p.899... 
 !------------------------------------------------------------------------
@@ -400,6 +402,8 @@ end subroutine Funk
            Ax(k) = Ax(k) + &
                      CdwC2(i,j) * costheta_w * vtp(i,j) + &
                      CdwC2(i,j) * sintheta_w * uavg
+
+           Ax(k) = Ax(k) + Cbasal2(i,j)*vtp(i,j)
 
 !------------------------------------------------------------------------
 !     d ( eta du/dy ) / dx     B2_3 see p.1219-1226

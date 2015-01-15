@@ -23,6 +23,8 @@
         use numerical_VP
         use numerical_EVP
         use solver_choice
+        use basal_param
+        
         implicit none
 
       include 'parameter.h' 
@@ -34,9 +36,10 @@
       include 'CB_mask.h'
       include 'CB_ThermoVariables.h'
       include 'CB_buoys.h'
+      include 'CB_bathymetry.h'
 
       double precision f, Clat_ia, Clat_oa 
-      double precision Csens_ia, Csens_oa, Csens_oi, Hocn
+      double precision Csens_ia, Csens_oa, Csens_oi
       double precision pi, r_earth
       double precision StefanB, Cpair, rhoair
       double precision deg2rad, rad2deg
@@ -131,7 +134,7 @@
       ksor  = 10               ! nb of ite of precond SOR
       klsor = 10               ! nb of ite of precond line SOR
 
-      gamma_nl = 1d-06         ! nonlinear convergence criterion for JFNK 
+      gamma_nl = 1d-03         ! nonlinear convergence criterion for JFNK 
       dropini = 1.5d0          ! res_t = L2norm_ini/dropini (L2norm_ini: beg of Newton loop)
       NLmax = 200              ! max nb of Newton loop for JFNK
       OLmax = 500              ! max nb of Outer loop for Picard
@@ -192,6 +195,17 @@
       rhoice   =  9d02               ! ice density [kg/m3]
       rhowater =  1026d0             ! water density [kg/m3]
 
+!------------------------------------------------------------------------                
+!     Landfast ice parameters
+!------------------------------------------------------------------------      
+
+      CC=20d0
+      k1=8d0
+      k2=0d0
+      umin=5d-05
+      crit=5d-04      
+      BasalStress = .false. ! T if LF ice basal stress param is used
+      
 !-------------------------------------------------------------------------
 !     Verify validity of some inputs
 !-------------------------------------------------------------------------
@@ -284,7 +298,7 @@
       Klat_oa   = rhoair * Clat_oa * Levap  * AMR / Psurf  
  
 
-      Kadvo     = rhowater * Cpwater * Hocn      ! cts of ocean adv
+      Kadvo     = rhowater * Cpwater             ! cts of ocean adv
       Ksens_io  = rhowater * Csens_oi * Cpwater  ! cts of sensible heat
       Ksens_ai  = rhoair   * Csens_ia * Cpair    ! cts of sensible heat
       Ksens_ao  = rhoair   * Csens_oa * Cpair    ! cts of sensible heat
@@ -300,12 +314,11 @@
       do j = 0, ny+1               ! land mask
          read (20,10) ( maskC(i,j), i = 0, nx+1 )
       enddo
-
- 10   format (1x,1000(i1)) ! different format because of the grid
-      
-
+     
       close (unit = 20)
 
+10   format (1x,1000(i1)) ! different format because of the grid      
+      
 !-----------------------------------------
 
       do j = 0, ny+2                   ! velocity mask
@@ -324,9 +337,65 @@
          enddo
       enddo
 
+      if (BasalStress) then ! LF ice basal stress param is used
+      
+      open (unit=21,file='src/bathy'//cdelta//'km_ajust5km_s_new_isl.dat', status = 'old')
 
+      do j = 0, ny+1               ! bathy
+         read (21,*) ( bathy(i,j), i = 0, nx+1 )
+      enddo
 
+      close (unit = 21)
 
+      do j=0,ny+1
+         do i=0,3
+            if (maskC(i,j) .eq. 1) then
+               bathy(i,j)=9999d0
+            endif
+         enddo
+      enddo
+
+      do j=0,ny+1
+         do i=nx-2,nx+1
+            if (maskC(i,j) .eq. 1) then
+               bathy(i,j)=9999d0
+            endif
+         enddo
+      enddo
+
+      do i=0,nx+1
+         do j=0,3
+            if (maskC(i,j) .eq. 1) then
+               bathy(i,j)=9999d0
+            endif
+         enddo
+      enddo
+      
+      do j = 0, ny+1 ! bathy should be gt 5m (+) for ocean and -10 for land
+         do i = 0, nx+1
+            
+            if (maskC(i,j) .eq. 0) then
+               if (bathy(i,j) .ne. -10d0) then
+                  print *, 'wrong bathy on land'
+                  stop
+               endif
+            else
+               if (bathy(i,j) .lt. 4.9999d0) then
+                  print *, 'wrong bathy on ocean'
+                  stop
+               endif
+            endif
+
+         enddo
+      enddo
+
+       if ( Current .ne. 'specified' ) then
+         print *, 'Currents should be zero (specified) with basal stress param'
+         stop
+      endif
+      
+      endif
+      
 !------------------------------------------------------------------------
 !     latitude and longitude of mask's tracer points
 !     same calculation as in mask_gen.f (see p.1017-1018)

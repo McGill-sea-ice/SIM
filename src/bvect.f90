@@ -5,6 +5,8 @@
       subroutine bvect (utp,vtp,rhs)
 
       use solver_choice
+      use basal_param
+
       implicit none
       
       include 'parameter.h'
@@ -13,6 +15,7 @@
       include 'CB_const.h'
       include 'CB_mask.h'
       include 'CB_DynForcing.h'
+      include 'CB_bathymetry.h'
 
       integer i, j
 
@@ -23,7 +26,11 @@
       double precision speed1p, speed2p, rhs(nvar) 
       double precision uavg, vavg
       double precision utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
+      double precision A_at_u, Ae, bathy_at_u, CBfactor
+      double precision h_at_u, hc, minA, h1,h2, A1,A2, alpha
 
+      minA=0.01d0
+      alpha = 1000d0
 
       do j = 1, ny
          do i = 1, nx+1
@@ -50,40 +57,105 @@
       enddo
 
 
-       do j = 1, ny
+       do j = 1, ny ! u comp
          do i = 1, nx+1
 
             if ( maskB(i,j) + maskB(i,j+1) .gt. 0 ) then
 
-            vavg = ( vtp(i,j)   + vtp(i,j+1) &
-                   + vtp(i-1,j) + vtp(i-1,j+1) ) / 4d0
+               vavg = ( vtp(i,j)   + vtp(i,j+1) &
+                    + vtp(i-1,j) + vtp(i-1,j+1) ) / 4d0
 
-            speed1p = sqrt( ( utp(i,j) - uwatnd(i,j) ) ** 2 &
-                              + ( vavg - vwavg(i,j)  ) ** 2 )
+               speed1p = sqrt( ( utp(i,j) - uwatnd(i,j) ) ** 2 &
+                       + ( vavg - vwavg(i,j)  ) ** 2 )
+            
+               CdwC1(i,j) = max(Cdw * speed1p, 1d-10)
+            
+	      if (BasalStress) then
+	      
+               bathy_at_u = min(bathy(i-1,j), bathy(i,j))
 
+               h1=h(i-1,j)
+               h2=h(i,j)
+               A1=A(i-1,j)
+               A2=A(i,j)
 
-            CdwC1(i,j) = max(Cdw * speed1p, 1d-10)
+               h_at_u = (h1+h2)/2d0 + (h1/2d0)*tanh(alpha*(h1-h2)) + & 
+                                      (h2/2d0)*tanh(alpha*(h2-h1))
 
+               A_at_u = (A1+A2)/2d0 + (A1/2d0)*tanh(alpha*(A1-A2)) + &
+                                      (A2/2d0)*tanh(alpha*(A2-A1))
+
+               if ( A_at_u .gt. minA ) then 
+                  hc = ( A_at_u * bathy_at_u ) / k1
+               else
+                  hc = 10000d0
+               endif
+                                    
+               Cbasal1(i,j)=0d0
+
+               if (h_at_u .gt. hc) then
+                  Cbfactor=k2/(abs(utp(i,j))+umin)
+!                     Cbasal1(i,j) = Cbfactor * (h_at_u -hc) * dexp(-CC * (1d0 - A_at_u))
+                  Cbasal1(i,j)=Cbfactor * (h_at_u - hc) * dexp(-CC * (1d0 - A_at_u))
+               else
+                  Cbasal1(i,j)=0d0
+               endif
+               
+               endif
+               
             endif
-
+            
          enddo
       enddo
 
 
-       do j = 1, ny+1
+       do j = 1, ny+1 ! v comp
          do i = 1, nx
 
             if ( maskB(i,j) + maskB(i+1,j) .gt. 0 ) then
 
-            uavg = ( utp(i,j)   + utp(i+1,j) &
-                   + utp(i,j-1) + utp(i+1,j-1) ) / 4d0
+               uavg = ( utp(i,j)   + utp(i+1,j) &
+                    + utp(i,j-1) + utp(i+1,j-1) ) / 4d0
 
-            speed2p = sqrt( ( uavg - uwavg(i,j)  ) ** 2 &
-                              + ( vtp(i,j) - vwatnd(i,j) ) ** 2 )
+               speed2p = sqrt( ( uavg - uwavg(i,j)  ) ** 2 &
+                       + ( vtp(i,j) - vwatnd(i,j) ) ** 2 )
 
+               CdwC2(i,j) = max(Cdw * speed2p, 1d-10)
 
-            CdwC2(i,j) = max(Cdw * speed2p, 1d-10)
+              if (BasalStress) then
+               
+               bathy_at_u = min(bathy(i,j), bathy(i,j-1)) ! in fact at v
+ 
+               h1=h(i,j-1)
+               h2=h(i,j)
+               A1=A(i,j-1)
+               A2=A(i,j)
 
+               h_at_u = (h1+h2)/2d0 + (h1/2d0)*tanh(alpha*(h1-h2)) + &
+                                      (h2/2d0)*tanh(alpha*(h2-h1))
+
+               A_at_u = (A1+A2)/2d0 + (A1/2d0)*tanh(alpha*(A1-A2)) + &
+                                      (A2/2d0)*tanh(alpha*(A2-A1))
+
+               if ( A_at_u .gt. minA ) then
+                  hc = ( A_at_u * bathy_at_u ) / k1
+               else
+                  hc = 10000d0
+               endif
+
+               Cbasal2(i,j)=0d0
+
+               if (h_at_u .gt. hc) then
+
+                  Cbfactor=k2/(abs(vtp(i,j))+umin)
+                  !                  Cbasal2(i,j) = Cbfactor * (h_at_u -hc) * dexp(-CC * (1d0 - A_at_u))
+                  Cbasal2(i,j)=Cbfactor * (h_at_u - hc) * dexp(-CC * (1d0 - A_at_u))
+               else
+                  Cbasal2(i,j)=0d0
+               endif
+               
+               endif
+               
             endif
 
          enddo
