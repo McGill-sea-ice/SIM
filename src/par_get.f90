@@ -339,7 +339,7 @@
 
       if (BasalStress) then ! LF ice basal stress param is used
       
-      open (unit=21,file='src/bathy'//cdelta//'km_ajust5km_s_new_isl.dat', status = 'old')
+      open (unit=21,file='src/bathymetry'//cdelta//'km.dat', status = 'old')
 
       do j = 0, ny+1               ! bathy
          read (21,*) ( bathy(i,j), i = 0, nx+1 )
