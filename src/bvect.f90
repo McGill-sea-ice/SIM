@@ -28,9 +28,10 @@
       double precision utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
       double precision A_at_u, Ae, bathy_at_u, CBfactor
       double precision h_at_u, hc, minA, h1,h2, A1,A2, alpha
+      double precision v1,v2,va,vb,vc,vd,v_at_u, u_at_v
 
       minA=0.01d0
-      alpha = 1000d0
+      alpha = 1d06
 
       do j = 1, ny
          do i = 1, nx+1
@@ -94,7 +95,24 @@
                Cbasal1(i,j)=0d0
 
                if (h_at_u .gt. hc) then
-                  Cbfactor=k2/(abs(utp(i,j))+umin)
+
+                  va=abs(vtp(i-1,j+1))
+                  vb=abs(vtp(i,j+1))
+                  vc=abs(vtp(i-1,j))
+                  vd=abs(vtp(i,j))
+
+                  v1 = (va+vb)/2d0 - (va/2d0)*tanh(alpha*(va-vb)) - &
+                       (vb/2d0)*tanh(alpha*(vb-va))
+
+                  v2 = (vc+vd)/2d0 - (vc/2d0)*tanh(alpha*(vc-vd)) - &
+                       (vd/2d0)*tanh(alpha*(vd-vc))
+                  
+                  v_at_u = (v1+v2)/2d0 - (v1/2d0)*tanh(alpha*(v1-v2)) - &
+                       (v2/2d0)*tanh(alpha*(v2-v1))
+
+                  speed1p=sqrt( utp(i,j)**2 + v_at_u**2 )
+
+                  Cbfactor=k2/(speed1p+umin)
 !                     Cbasal1(i,j) = Cbfactor * (h_at_u -hc) * dexp(-CC * (1d0 - A_at_u))
                   Cbasal1(i,j)=Cbfactor * (h_at_u - hc) * dexp(-CC * (1d0 - A_at_u))
                else
@@ -147,7 +165,23 @@
 
                if (h_at_u .gt. hc) then
 
-                  Cbfactor=k2/(abs(vtp(i,j))+umin)
+                  va=abs(utp(i,j))
+                  vb=abs(utp(i,j-1))
+                  vc=abs(utp(i+1,j))
+                  vd=abs(utp(i+1,j-1))
+
+                  v1 = (va+vb)/2d0 - (va/2d0)*tanh(alpha*(va-vb)) - &
+                       (vb/2d0)*tanh(alpha*(vb-va))
+
+                  v2 = (vc+vd)/2d0 - (vc/2d0)*tanh(alpha*(vc-vd)) - &
+                       (vd/2d0)*tanh(alpha*(vd-vc))
+
+                  u_at_v = (v1+v2)/2d0 - (v1/2d0)*tanh(alpha*(v1-v2)) - &
+                       (v2/2d0)*tanh(alpha*(v2-v1))
+
+                  speed2p=sqrt( u_at_v**2 + vtp(i,j)**2 )
+
+                  Cbfactor=k2/(speed2p+umin)
                   !                  Cbasal2(i,j) = Cbfactor * (h_at_u -hc) * dexp(-CC * (1d0 - A_at_u))
                   Cbasal2(i,j)=Cbfactor * (h_at_u - hc) * dexp(-CC * (1d0 - A_at_u))
                else
