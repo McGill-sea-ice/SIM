@@ -233,6 +233,8 @@ subroutine info_file (expno)
   write(10,*) (Current)
   write(10,*) ('Wind =')
   write(10,*) (Wind)
+  write(10,*) ('Method to calculate the viscous coefficients')
+  write(10,*) (visc_method)
   
   write(10,*) ('')
   write(10,*) ('NUMERICAL')

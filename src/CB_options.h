@@ -25,7 +25,7 @@
                 Buoys,          &
                 Jac_finite_diff  
                           
-      integer   Rheology, IMEX, BDF
+      integer   Rheology, IMEX, BDF, visc_method
 
       common/options/           &
                 Dynamic,        & ! sea ice dynamic model (yes or no)
@@ -44,7 +44,8 @@
 		Rheology,       & ! ellipse, triangle
 		IMEX,           & ! 0: standard (splitting in time), 1 and 2: IMEX
                 BDF,            & ! 0: standard, 1: Backward diff formula (2nd order)
-                startdate,      & ! starting date
+		visc_method,    & ! choice of calc of visc coeff
+		startdate,      & ! starting date
                 enddate           ! end date
 
       common/options/           &

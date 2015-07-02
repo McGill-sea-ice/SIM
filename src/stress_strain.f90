@@ -156,9 +156,9 @@
                   sigII(i,j) = sqrt(( dudx - dvdy )**2d0 &
                        + ( dudy + dvdx )**2d0 )*etaC(i,j)
 
-                  sigInorm(i,j)  = sigI(i,j)  / (2d0*max(P(i,j),1d-10))
+                  sigInorm(i,j)  = sigI(i,j)  / (2d0*max(Pp(i,j),1d-10))
                   
-                  sigIInorm(i,j) = sigII(i,j) / (2d0*max(P(i,j),1d-10))
+                  sigIInorm(i,j) = sigII(i,j) / (2d0*max(Pp(i,j),1d-10))
 
                   endif
 

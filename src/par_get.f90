@@ -91,6 +91,7 @@
       Rheology   = 1                 ! ellipse = 1, triangle = 2
       linearization = 'Zhang'        ! Tremblay, Zhang
       regularization = 'tanh'        ! tanh, Kreyscher
+      visc_method = 2                ! see viscousCoeff routine for details
       ini_guess  = 'previous time step' ! freedrift, previous time step
       adv_scheme = 'upwindRK2'       ! upwind, upwindRK2 
       IMEX       = 0                 ! 0:split in time, 1:Picard, 2:JFNK
@@ -235,6 +236,13 @@
          print *, 'IMEX 2 does not work with Picard solver'
          stop
       endif
+
+      if ( solver .eq. 3 ) then
+         print *, 'EVP solver has not been verified with recent code updates'
+         print *, 'Please check before using it'
+         stop
+      endif
+
 
       if ( ini_guess .ne. 'freedrift' .and.                            &
            ini_guess .ne. 'previous time step' ) then
