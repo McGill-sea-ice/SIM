@@ -65,7 +65,10 @@
       sigIInorm = land
       zetaCout  = land
 
-      call ViscousCoefficient (utp,vtp)
+! note: to study the numerical convergence of the stress, zeta and eta should be calculated 
+!       with u^{k-1} and the deformations with u^k. This is why we use here zetaCf and etaCf
+!       Calculating both with u^k leads to stress that are all VP whatever the level of 
+!       convergence of the solution.
 
          do i = 1, nx
             do j = 1, ny
@@ -77,7 +80,7 @@
                
                if ( maskC(i,j) .eq. 1 ) then
 
-                  zetaCout(i,j) = zetaC(i,j) ! no special value for A<0.5
+                  zetaCout(i,j) = zetaCf(i,j) ! no special value for A<0.5
 
                   if (A(i,j) .lt. 0.5d0) then
                      div(i,j)       = lowA
@@ -151,10 +154,10 @@
 
 ! watchout p in our code is in fact p/2 in Hibler's equations
 
-                  sigI(i,j)   = -1d0*( dudx + dvdy )*zetaC(i,j)+P(i,j)
+                  sigI(i,j)   = -1d0*( dudx + dvdy )*zetaCf(i,j)+P(i,j)
 
                   sigII(i,j) = sqrt(( dudx - dvdy )**2d0 &
-                       + ( dudy + dvdx )**2d0 )*etaC(i,j)
+                       + ( dudy + dvdx )**2d0 )*etaCf(i,j)
 
                   sigInorm(i,j)  = sigI(i,j)  / (2d0*max(Pp(i,j),1d-10))
                   
