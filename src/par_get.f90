@@ -93,7 +93,7 @@
       regularization = 'tanh'        ! tanh, Kreyscher
       visc_method = 2                ! see viscousCoeff routine for details
       ini_guess  = 'previous time step' ! freedrift, previous time step
-      adv_scheme = 'upwindRK2'       ! upwind, upwindRK2 
+      adv_scheme = 'upwind'       ! upwind, upwindRK2 
       IMEX       = 0                 ! 0:split in time, 1:Picard, 2:JFNK
       BDF         = 0                ! 0: back. Euler, 1: 2nd order back. diff. formula
       Dynamic    = .true.            ! ice model type
@@ -237,12 +237,10 @@
          stop
       endif
 
-      if ( solver .eq. 3 ) then
-         print *, 'EVP solver has not been verified with recent code updates'
-         print *, 'Please check before using it'
+      if ( solver .eq. 3 .and. IMEX .gt. 0) then
+         print *, 'IMEX does not work with EVP solver'
          stop
       endif
-
 
       if ( ini_guess .ne. 'freedrift' .and.                            &
            ini_guess .ne. 'previous time step' ) then

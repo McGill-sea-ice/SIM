@@ -94,7 +94,9 @@
 
          if ( IMEX .eq. 0 ) then
             call Ice_strength()
-            call bvect_ind ! function of h ( not directly f(u) )
+            if (solver .le. 2) then ! Picard or JFNK
+               call bvect_ind ! function of h ( not directly f(u) )
+            endif
          endif
 
 !------- Solves NL mom eqn at specific time step with solver1 or solver2
@@ -141,7 +143,7 @@
                
                if (k.eq. 1) NLtol = gamma_nl * res
 
-               if (res .lt. NLtol .or. res .lt. 1d-10) then
+               if (res .lt. NLtol .or. res .lt. 1d-08) then
                   print *, 'L2norm is', k,res,'(final)'
                   print *, 'nb outer ite, FGMRES ite =',k-1, sumtot_its
                   exit
@@ -229,7 +231,7 @@
          print *, 'Total nb of failures during the simulation =', nbfail
 
       endif
-        
+
 !------------------------------------------------------------------------
 !     Integrate the continuity equations to get  h,A^t (and other tracers) 
 !     from h,A^t-1. We use uice and vice (u^t and v&t) to advect the tracers.

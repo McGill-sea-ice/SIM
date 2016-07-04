@@ -3,11 +3,13 @@
         use datetime, only: datetime_type, datetime_delta_type, operator(+), operator(-)
         use datetime, only: delta_init, datetime_str, seconds, time_set_from_datetime
         use io, only: load_geostrophic_wind, RP!, load_climatological_wind
+        use solver_choice
 
       implicit none
 
       include 'parameter.h'
       include 'CB_DynForcing.h'
+      include 'CB_DynVariables.h'
       include 'CB_Dyndim.h'
       include 'CB_options.h'
       include 'CB_const.h'
@@ -171,15 +173,22 @@
                                     + uuair(i+1,j) * sintheta_a ) &
                     ) / 2d0
 
+            if (solver .le. 2) then ! Picard or JFNK  
+
+               R1(i,j) = tauax ! 2nd term calc in bvect_ind because of IMEX
+               R2(i,j) = tauay ! 2nd term calc in bvect_ind because of IMEX
+
+            elseif (solver .eq. 3) then ! EVP solver
             
-            R1(i,j) = tauax  ! 2nd term calc in bvect_ind because of IMEX &
-!                    - rhof * ( h(i,j) + h(i-1,j) ) / 2d0   &
-!                           * ( vwater(i,j)   + vwater(i,j+1) ) / 2d0
+               R1(i,j) = tauax &
+                       - rhof * ( h(i,j) + h(i-1,j) ) / 2d0   &
+                       * ( vwater(i,j)   + vwater(i,j+1) ) / 2d0
 
-            R2(i,j) = tauay  ! 2nd term calc in bvect_ind because of IMEX & 
-!                    + rhof * ( h(i,j) + h(i,j-1) ) / 2d0   &
-!                           * ( uwater(i,j)   + uwater(i+1,j) ) / 2d0
+               R2(i,j) = tauay &
+                       + rhof * ( h(i,j) + h(i,j-1) ) / 2d0   &
+                       * ( uwater(i,j)   + uwater(i+1,j) ) / 2d0
 
+            endif
 
 !------------------------------------------------------------------------
 !     The sea surface tilt term (rho f h (k x u_w^g) is not included in 
