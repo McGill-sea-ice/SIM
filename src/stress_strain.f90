@@ -42,7 +42,8 @@
 
       double precision shear(0:nx+1,0:ny+1), div(0:nx+1,0:ny+1)
       double precision sigI(0:nx+1,0:ny+1), sigII(0:nx+1,0:ny+1)
-      double precision sigInorm(0:nx+1,0:ny+1), sigIInorm(0:nx+1,0:ny+1)
+      double precision sigInorm(0:nx+1,0:ny+1), sigIInorm(0:nx+1,0:ny+1)! stress invariants
+      double precision sig1norm(0:nx+1,0:ny+1), sig2norm(0:nx+1,0:ny+1) ! princ stresses
       double precision zetaCout(0:nx+1,0:ny+1)
 
       year = date%year
@@ -63,6 +64,8 @@
       sigII     = land
       sigInorm  = land
       sigIInorm = land
+      sig1norm  = land
+      sig2norm  = land
       zetaCout  = land
 
 ! note: to study the numerical convergence of the stress, zeta and eta should be calculated 
@@ -163,6 +166,9 @@
                   
                   sigIInorm(i,j) = sigII(i,j) / (2d0*max(Pp(i,j),1d-10))
 
+                  sig1norm(i,j) = -1d0*sigInorm(i,j) + sigIInorm(i,j)
+                  sig2norm(i,j) = -1d0*sigInorm(i,j) - sigIInorm(i,j)
+
                   endif
 
                endif
@@ -182,6 +188,8 @@
                sigII(i,j)     = lowA
                sigInorm(i,j)  = lowA
                sigIInorm(i,j) = lowA
+               sig1norm(i,j)  = lowA
+               sig2norm(i,j)  = lowA
                zetaCout(i,j)  = 0d0
             endif
          enddo
@@ -195,6 +203,8 @@
                sigII(i,j)     = lowA
                sigInorm(i,j)  = lowA
                sigIInorm(i,j) = lowA
+               sig1norm(i,j)  = lowA
+               sig2norm(i,j)  = lowA
                zetaCout(i,j)  = 0d0
             endif
          enddo
@@ -208,6 +218,8 @@
                sigII(i,j)     = lowA
                sigInorm(i,j)  = lowA
                sigIInorm(i,j) = lowA
+               sig1norm(i,j)  = lowA
+               sig2norm(i,j)  = lowA
                zetaCout(i,j)  = 0d0
             endif
          enddo
@@ -221,6 +233,8 @@
                sigII(i,j)     = lowA
                sigInorm(i,j)  = lowA
                sigIInorm(i,j) = lowA
+               sig1norm(i,j)  = lowA
+               sig2norm(i,j)  = lowA
                zetaCout(i,j)  = 0d0
             endif
          enddo
@@ -241,29 +255,39 @@
            year, month, day, hour, minute, k, expno
       open (15, file = filename, status = 'unknown')
 
-      write (filename,'("output/div",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+      write (filename,'("output/sig1norm",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
            year, month, day, hour, minute, k, expno
       open (16, file = filename, status = 'unknown')
 
-      write (filename,'("output/shear",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+      write (filename,'("output/sig2norm",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
            year, month, day, hour, minute, k, expno
       open (17, file = filename, status = 'unknown')
 
-      write (filename,'("output/zetaC",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+      write (filename,'("output/div",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
            year, month, day, hour, minute, k, expno
       open (18, file = filename, status = 'unknown')
+
+      write (filename,'("output/shear",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+           year, month, day, hour, minute, k, expno
+      open (19, file = filename, status = 'unknown')
+
+      write (filename,'("output/zetaC",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+           year, month, day, hour, minute, k, expno
+      open (20, file = filename, status = 'unknown')
 
       do j = 0, ny+1
          write(12,100) ( sigI(i,j), i = 0, nx+1 )
          write(13,100) ( sigII(i,j), i = 0, nx+1 )
          write(14,200) ( sigInorm(i,j), i = 0, nx+1 )
          write(15,200) ( sigIInorm(i,j), i = 0, nx+1 )
-         write(16,200) ( div(i,j), i = 0, nx+1 )
-         write(17,200) ( shear(i,j), i = 0, nx+1 )
-         write(18,300) ( zetaCout(i,j), i = 0, nx+1 )
+         write(16,200) ( sig1norm(i,j), i = 0, nx+1 )
+         write(17,200) ( sig2norm(i,j), i = 0, nx+1 )
+         write(18,200) ( div(i,j), i = 0, nx+1 )
+         write(19,200) ( shear(i,j), i = 0, nx+1 )
+         write(20,300) ( zetaCout(i,j), i = 0, nx+1 )
       enddo
 
-      do m=12,18
+      do m=12,20
          close(m)
       enddo
 
