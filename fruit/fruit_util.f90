@@ -160,7 +160,7 @@ contains
     CHARACTER(len=10) :: cid
     CHARACTER(len=100) :: form
     INTEGER :: l, u, d, n, nmax !,i
-    CHARACTER(len=500) :: out
+    !CHARACTER(len=500) :: out
     PARAMETER (d=14, nmax=30)
 
     cid = 'L1'

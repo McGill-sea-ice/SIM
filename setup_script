@@ -1,5 +1,5 @@
-ln -s /storage/common/forcing forcing
-cp /storage/common/restarts/80/*.80 output
-cp /storage/common/restarts/40/*.40 output
+ln -s /storage/pascalb/dumbo/forcing forcing
+cp /storage/pascalb/dumbo/restarts/80/*.80 output
+cp /storage/pascalb/dumbo/restarts/40/*.40 output
 scons
 export HDF5_DISABLE_VERSION_CHECK=2
