@@ -59,9 +59,9 @@
       Cdwater    =  5.5d-03          ! water-ice drag coeffient[]5.5e-03
       theta_a    =  25d0             ! wind turning angle [degree] 
       theta_w    =  25d0             ! water turning angle [degree]
-      Pstar      =  27.5d03            ! ice yield stress [N/m2] 
+      Pstar      =  27.5d03          ! ice yield stress [N/m2] 
       C          =  20d0             ! ice concentration parameter  
-      !phi        =  30d0             ! internal angle of friction
+      phi        =  30d0             ! internal angle of friction
       !delta      =  10d0             ! angle of dilatancy
       !Cohe       =  0d0 !4d03        ! cohesion (tensile strght) [N/m2]
       !etamax     =  1.0d12           ! max shear viscosity
@@ -88,7 +88,7 @@
 
       BndyCond   = 'noslip'          ! noslip
       DragLaw    = 'square'          ! square
-      Rheology   = 1                 ! ellipse = 1, triangle = 2
+      Rheology   = 2                 ! ellipse = 1, triangle = 2
       linearization = 'Zhang'        ! Tremblay, Zhang
       regularization = 'tanh'        ! tanh, Kreyscher
       visc_method = 2                ! see viscousCoeff routine for details
@@ -287,10 +287,10 @@
       costheta_w = cos( theta_w ) 
 
 ! Triangle rheology ... coming soon. 
-!      phi       =  phi * deg2rad          ! angle of friction [rad]
+      phi        =  phi * deg2rad          ! angle of friction [rad]
 !      delta     =  delta * deg2rad        ! angle of dilatancy [rad]
       !tandelta   = tan ( delta )
-      !sinphi     = sin (phi)
+      sinphi     = sin( phi )
 
       ell2       = ellipticity**2
       ell_2      = 1/(ellipticity**2)

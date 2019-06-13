@@ -9,6 +9,7 @@
                 coslat(0:nx+1,0:ny+1)
 
       double precision relhum, Deltax, Deltax2, theta_a, theta_w
+      double precision phi, sinphi
       double precision sintheta_a, costheta_a, sintheta_w, costheta_w
       double precision Deltat, DtoverDx, rhof, Tif, Tof
       double precision emisice, emisatml,emisocn
@@ -20,8 +21,8 @@
                 coslat,         & ! cos (lat) of every grid point
                 relhum,         & ! atmosphere relative humidity
                 Deltax,         & ! grid size [m]
-		Deltax2,        & ! Deltax**2
-		Deltat,         & ! time step
+                Deltax2,        & ! Deltax**2
+                Deltat,         & ! time step
                 DtoverDx,       & ! Deltat / Deltax
                 theta_a,        & ! air turning angle
                 theta_w,        & ! water turning angle
@@ -29,6 +30,8 @@
                 costheta_a,     & ! cos (theta_a)
                 sintheta_w,     & ! sin (theta_w)
                 costheta_w,     & ! cos (theta_w)
+                phi,            & ! phi internal friction angle
+                sinphi,         & ! sin (phi)
                 rhof,           & ! rhoice * Coriolis parameter
                 Tif,            & ! ice freezing point temperature
                 Tof               ! ocn freezing point temperature

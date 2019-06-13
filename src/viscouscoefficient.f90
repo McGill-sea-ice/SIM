@@ -319,7 +319,7 @@ subroutine ViscousCoeff_method2(utp,vtp)
   
   integer i, j, rheo, summaskC
 
-  double precision dudx, dvdy, dudy, dvdx, deno, denomin, denoT, pnode
+  double precision dudx, dvdy, dudy, dvdx, deno, denomin, denoT, pnode, epsI
   double precision utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
   
   denomin = 2d-09 ! Hibler, 1979
@@ -451,8 +451,19 @@ subroutine ViscousCoeff_method2(utp,vtp)
                         
               elseif ( rheo .eq. 2 ) then ! triangle, jfl p.1124
 
-                 stop
-                   
+                 epsI = dudx + dvdy
+                 deno = sqrt( (dudx - dvdy)**2 + (dudy + dvdx)**2 ) ! epsII
+                 deno = max( deno, 1d-20 )
+                 if (epsI .gt. -1d-20 ) then
+
+                    zetaC(i, j) = Pp(i, j) / (2 * denomin )
+                    etaC(i, j) = 0
+                 else
+                    zetaC(i, j) = Pp(i, j) / (2 * sqrt( epsI**2 ) )
+                    etaC(i, j) = (Pp(i, j) * sinphi / (2 * deno)) * 0.5 * ( ( -epsI / sqrt( epsI**2 ) ) + 1 )
+
+                 endif
+
               endif
 
                   
@@ -697,8 +708,15 @@ subroutine ViscousCoeff_method2(utp,vtp)
 
               elseif ( rheo .eq. 2 ) then ! triangle, jfl p.1124
 
-                 stop
-                   
+                 epsI = dudx + dvdy
+                 deno = sqrt( (dudx - dvdy)**2 + (dudy + dvdx)**2 ) ! epsII
+                 deno = max( deno, 1d-20 )
+
+                 if ( epsI .gt. -1d-20) then
+                    etaB(i, j) = 0
+                 else
+                    etaB(i, j) = (pnode * sinphi / (2 * deno))
+                 endif  
               endif
 
               

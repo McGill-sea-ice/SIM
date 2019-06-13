@@ -207,7 +207,7 @@
                sumtot_its = sumtot_its + tot_its
 
                if (k .eq. NLmax) then
-                  print *, 'WARNING JFNK DID NOT CONVERGED'
+                  print *, 'WARNING JFNK DID NOT CONVERGE'
                   nbfail = nbfail + 1
                endif
 
