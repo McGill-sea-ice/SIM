@@ -43,6 +43,7 @@
       etaCf  = etaC   ! needs F(u^k +eps*v), this changes the visc coeff and
       zetaCf = zetaC  ! the CdwC. This is why we fixe them here for the precond.
       etaBf  = etaB   ! precond therefore uses CdwC1f...etaBf where f = fixed
+      Pf     = P
 
       Funeg = Fu
       Fu = -1d0 * Fu ! mult by -1 because we solve Jdu = -F(u)

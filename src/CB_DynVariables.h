@@ -17,6 +17,7 @@
 		vn2      (0:nx+2,0:ny+2), &
                 Pp       (0:nx+1,0:ny+1), &
 		P        (0:nx+1,0:ny+1), &
+                Pf       (0:nx+1,0:ny+1), &
 		etaC     (0:nx+1,0:ny+1), &
                 etaB     (0:nx+2,0:ny+2), &
                 zetaC    (0:nx+1,0:ny+1), &
@@ -38,6 +39,7 @@
 		vn2,            & ! previous time level solution
 	        Pp,             & ! ice strength
 		P,              & ! replacement pressure
+                Pf,             & ! replacement pressure
                 etaC,           & ! coefficient of shear viscosity (C-grid)
                 etaB,           & ! coefficient of shear viscosity (B-grid)
                 zetaC,          & ! coefficient of bulk viscosity (C-grid)

@@ -25,6 +25,7 @@
       etaCf  = etaC  ! f (fixed) version of these variables. For the standard
       zetaCf = zetaC ! solver they dont change during a OL ite but they change 
       etaBf  = etaB  ! during a Newton ite (because of the calc of F(u+eps*v)
+      Pf     = P
 
 !------------------------------------------------------------------------
 !      Begining of FGMRES method    

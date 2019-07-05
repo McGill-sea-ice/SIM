@@ -157,7 +157,7 @@
 
 ! watchout p in our code is in fact p/2 in Hibler's equations
 
-                  sigI(i,j)   = -1d0*( dudx + dvdy )*zetaCf(i,j)+P(i,j)
+                  sigI(i,j)   = -1d0*( dudx + dvdy )*zetaCf(i,j)+Pf(i,j)
 
                   sigII(i,j) = sqrt(( dudx - dvdy )**2d0 &
                        + ( dudy + dvdx )**2d0 )*etaCf(i,j)
