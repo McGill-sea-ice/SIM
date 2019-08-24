@@ -1,4 +1,4 @@
- PROGRAM test_datetime
+ PROGRAM datetime_test
 
   USE fruit_ext
   USE test_datetimedelta
@@ -19,5 +19,5 @@
 
   CALL fruit_summary
 
-END PROGRAM test_datetime
+END PROGRAM datetime_test
 

@@ -32,7 +32,7 @@
 
       subroutine stepper (date, tstep, expno)
         USE datetime, ONLY: datetime_type, datetime_str, datetime_str_6, time_init, time_set_from_datetime
-        use datetime, only: operator(==), operator(/=)
+        !use datetime, only: operator(==), operator(/=) <= Why is this even here. Op /= doesn't exists and both are unused, PB-110619
         use io, only: daily_air_temp_from_monthly_mean
         use numerical_VP
         use solver_choice
@@ -207,7 +207,7 @@
                sumtot_its = sumtot_its + tot_its
 
                if (k .eq. NLmax) then
-                  print *, 'WARNING JFNK DID NOT CONVERGED'
+                  print *, 'WARNING JFNK DID NOT CONVERGE'
                   nbfail = nbfail + 1
                endif
 
