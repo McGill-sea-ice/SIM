@@ -28,6 +28,8 @@
                if (maskC(i,j) .eq. 1) then
                   Pp(i,j) = Pstar * h(i,j) * dexp(-C * ( 1d0 - A(i,j) ) )
                   Pp(i,j) = Pp(i,j) / 2d0
+                  Pt(i,j) = Tens * h(i,j) * dexp(-C * ( 1d0 - A(i,j) ) )  
+                  Pt(i,j) = Pt(i,j) / 2.0d0 
                endif
             enddo
          enddo
@@ -41,10 +43,12 @@
 
             if (maskC(i,0) .eq. 1) then             
                Pp(i,1)  = 0d0
+               Pt(i,1)  = 0d0 
             endif
 
             if (maskC(i,ny+1) .eq. 1) then             
                Pp(i,ny)  = 0d0
+               Pt(i,ny)  = 0d0
             endif
  
          enddo
@@ -53,10 +57,12 @@
 
             if (maskC(0,j) .eq. 1) then             
                Pp(1,j)  = 0d0
+               Pt(1,j)  = 0d0 
             endif
 
             if (maskC(nx+1,j) .eq. 1) then             
-               Pp(nx,j)   = 0d0 
+               Pp(nx,j)   = 0d0  
+               Pt(nx,j)   = 0d0 
             endif           
 
          enddo

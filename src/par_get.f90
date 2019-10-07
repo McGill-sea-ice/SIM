@@ -49,6 +49,22 @@
       double precision lat(0:nx+1,0:ny+1), long(0:nx+1,0:ny+1)
       integer i, j
 
+      
+!------------------------------------------------------------------------
+!     yield curve parameters 
+!------------------------------------------------------------------------      
+
+! Ellipse (rheology = 1)
+      Pstar      =  27.5d03           ! ice yield stress [N/m2] 
+      Tens       =  0d0               ! sea ice tensile strength [N/m2] #mp#
+      e_ratio    = 2.0d0              ! ellipse aspect ratio 
+      
+! Triangle (rheology = 2)       
+      !phi        =  30d0             ! internal angle of friction
+      !delta      =  10d0             ! angle of dilatancy
+      !Cohe       =  0d0 !4d03        ! cohesion (tensile strght) [N/m2]
+      !etamax     =  1.0d12           ! max shear viscosity
+      
 !------------------------------------------------------------------------
 !     set run parameters (dynamic - thermodynamic - options - domain)
 !------------------------------------------------------------------------
@@ -58,13 +74,7 @@
       Cdwater    =  5.5d-03          ! water-ice drag coeffient[]5.5e-03
       theta_a    =  25d0             ! wind turning angle [degree] 
       theta_w    =  25d0             ! water turning angle [degree]
-      Pstar      =  27.5d03            ! ice yield stress [N/m2] 
       C          =  20d0             ! ice concentration parameter  
-      !phi        =  30d0             ! internal angle of friction
-      !delta      =  10d0             ! angle of dilatancy
-      !Cohe       =  0d0 !4d03        ! cohesion (tensile strght) [N/m2]
-      !etamax     =  1.0d12           ! max shear viscosity
-      e_ratio    = 2.0d0             ! ellipse aspect ratio 
  
       Clat_ia    =  1d-03            ! LH transfer coeff (ice/atm) []
       Clat_oa    =  1d-03            ! LH transfer coeff (ocn/atm) []
