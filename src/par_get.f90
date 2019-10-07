@@ -110,15 +110,23 @@
       OcnTemp    = 'calculated'      ! MonthlyClim, specified,calculated
       calc_month_mean = .false.      ! to calc monthly mean fields
       runoff     = .false.
-
+        
+!------------------------------------------------------------------------
+!     Grid parameters: resolution
+!------------------------------------------------------------------------      
+   
       if ((nx == 518) .and. (ny == 438)) then
-         Deltax     =  10d03           ! grid size [m] 
+         Deltax     =  10d03           ! Pan-Arctic 10km 
       elseif  ((nx == 258) .and. (ny == 218)) then
-         Deltax     =  20d03           ! grid size [m] 
+         Deltax     =  20d03           ! Pan-Arctic 20km
       elseif  ((nx == 128) .and. (ny == 108)) then
-         Deltax     =  40d03           ! grid size [m] 
+         Deltax     =  40d03           ! Pan-Arctic 40km
       elseif  ((nx == 63) .and. (ny == 53)) then
-         Deltax     =  80d03           ! grid size [m] 
+         Deltax     =  80d03           ! Pan-Arctic 80km
+      elseif ((nx == 100) .and. (ny == 250)) then
+         Deltax     =  1d03            ! Uniaxial loading (Ringeisen et al., 2019). 
+      elseif ((nx == 102) .and. (ny == 402)) then
+         Deltax     =  2d03            ! Ideal ice bridge (Plante et al., 2020) 
       else
          write(*,*) "Wrong grid size dimenions.", nx, ny
          STOP
