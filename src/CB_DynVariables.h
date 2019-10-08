@@ -4,22 +4,22 @@
 
 
       double precision                       &
-                h        (0:nx+1,0:ny+1),    &
-                A        (0:nx+1,0:ny+1),    &
-                hn1      (0:nx+1,0:ny+1),    &
-                An1      (0:nx+1,0:ny+1),    &
-                hn2      (0:nx+1,0:ny+1),    &
-                An2      (0:nx+1,0:ny+1),    &
+                h        (0:nx+2,0:ny+2),    &
+                A        (0:nx+2,0:ny+2),    &
+		hn1      (0:nx+2,0:ny+2),    &
+		An1      (0:nx+2,0:ny+2),    &
+                hn2      (0:nx+2,0:ny+2),    &
+                An2      (0:nx+2,0:ny+2),    & 
                 uice     (0:nx+2,0:ny+2), &
                 vice     (0:nx+2,0:ny+2), &
                 un1      (0:nx+2,0:ny+2), &
                 vn1      (0:nx+2,0:ny+2), &
                 un2      (0:nx+2,0:ny+2), &
-                vn2      (0:nx+2,0:ny+2), &
-                Pp       (0:nx+1,0:ny+1), &
-                Pt       (0:nx+1,0:ny+1), & 
-		P        (0:nx+1,0:ny+1), &
-                Pf       (0:nx+1,0:ny+1), &
+		vn2      (0:nx+2,0:ny+2), &
+                Pp       (0:nx+2,0:ny+2), &
+                Pt       (0:nx+2,0:ny+2), & 
+		P        (0:nx+2,0:ny+2), &
+                Pf       (0:nx+2,0:ny+2), &
 		etaC     (0:nx+2,0:ny+2), &
                 etaB     (0:nx+2,0:ny+2), &
                 zetaC    (0:nx+2,0:ny+2), &

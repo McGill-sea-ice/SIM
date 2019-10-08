@@ -35,7 +35,7 @@
       
       character(LEN=6) datestr
 
-      double precision, intent(in) :: htp(0:nx+1,0:ny+1), Atp(0:nx+1,0:ny+1)
+      double precision, intent(in) :: htp(0:nx+2,0:ny+2), Atp(0:nx+2,0:ny+2)
       double precision tiny, Qtot, Source_h, Source_A
 
       tiny = 1d-07   !jfl to be consistent with the nodim model
@@ -146,7 +146,7 @@
       integer i, j, caseSL, iloc, jloc
       integer isw, jsw, inw, jnw, ine, jne, ise, jse !SL SouthWest=sw, nw, ne, se corners
 
-      double precision, intent(inout) :: htp(0:nx+1,0:ny+1), Atp(0:nx+1,0:ny+1)
+      double precision, intent(inout) :: htp(0:nx+2,0:ny+2), Atp(0:nx+2,0:ny+2)
       double precision                :: xdn1, ydn1, rhsthermoh, rhsthermoA
       double precision                :: fsw, fnw, fne, fse
       double precision                :: fxsw, fxnw, fxne, fxse, fysw, fynw, fyne, fyse

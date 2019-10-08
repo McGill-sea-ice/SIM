@@ -13,15 +13,19 @@
       
       include 'parameter.h'
       include 'CB_const.h'
-
+      include 'CB_options.h'
+      
       double precision rhs(nvar), wk2(nvar)
       double precision utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
       double precision rhsu(0:nx+2,0:ny+2), rhsv(0:nx+2,0:ny+2)
 
-      integer i, j, k
+      integer i, j, k, peri
+      
+      peri = Periodic_x + Periodic_y
       
       call transformer(rhsu,rhsv,rhs,0)
-
+      
+      if (peri .ne. 0)   call periodicBC(rhsu,rhsv)
 !------------------------------------------------------------------------
 !  Set initial guess for preconditioner
 !------------------------------------------------------------------------
@@ -37,8 +41,10 @@
 
       do k = 1, klsor               ! nb of times the grid is swept
       
+	 if (peri .ne. 0)   call periodicBC(utp,vtp)      
+	 
          do j = 1, ny
-
+         
             call vectu_3diag (utp, vtp, rhsu, j) 
 
          enddo
@@ -268,7 +274,7 @@
 !     o o   -- open boundary just below
 !     . .
 
-         elseif ( maskB(i,j) .eq. 1 .and. j .eq. 1) then
+         elseif ( maskB(i,j) .eq. 1 .and. j .eq. 1 .and. Periodic_y .eq. 0) then
 
             bVEC(i) = bVEC(i) + etaBf(i,j+1) / Deltax2
 
@@ -279,7 +285,7 @@
 !     o o   -- open boundary just above
 !     o o
 
-         elseif ( maskB(i,j+1) .eq. 1 .and. j .eq. ny) then
+         elseif ( maskB(i,j+1) .eq. 1 .and. j .eq. ny .and. Periodic_y .eq. 0) then
 
             bVEC(i) = bVEC(i) +  etaBf(i,j) / Deltax2
 
@@ -309,8 +315,11 @@
 !------------------------------------------------------------------------
 
             if ( i .eq. 1 ) then
+            
+               if (Periodic_x .eq. 1) then
+               ! do nothing, periodic
 
-               if (maskC(3,j) .eq. 1) then ! oooo                               
+               elseif (maskC(3,j) .eq. 1) then ! oooo                               
 
                aVEC(i) = 0.0d0
                bVEC(i) = 1.0d0
@@ -318,7 +327,7 @@
 
                rhs(i) = rhsu(i,j) - utp(3,j) / 3d0
 
-            else ! ooox                                                         
+               else ! ooox                                                         
 
                aVEC(i) = 0.0d0
                bVEC(i) = 1.0d0
@@ -329,7 +338,10 @@
 
             elseif ( i .eq. nx+1 ) then
 
-               if (maskC(nx-2,j) .eq. 1) then ! oooo                            
+               if (Periodic_x .eq. 1) then
+               ! do nothing, periodic           
+               
+               elseif (maskC(nx-2,j) .eq. 1) then ! oooo                            
 
                aVEC(i) = -4d0/3d0
                bVEC(i) = 1.0d0
@@ -352,9 +364,22 @@
  100     continue
 
       enddo
+      
+      if (Periodic_x .eq. 1 ) then ! periodic boundary conditions in x
 
-      call tridag (aVEC, bVEC, cVEC, rhs, X, nx+1)
+                     aVEC(nx+1) = aVEC(1)
+                     bVEC(nx+1) = bVEC(1)
+                     cVEC(nx+1) = cVEC(1)
+                     rhs(nx+1) = rhs(1)
 
+         call cyclicTriDiag (aVEC, bVEC, cVEC, rhs, X, nx+1)
+
+      else
+      
+         call tridag (aVEC, bVEC, cVEC, rhs, X, nx+1)
+
+      endif    
+      
       do i = 1, nx+1
 
          utp(i,j) = Xold(i) + wlsor*(X(i)-Xold(i))
@@ -563,7 +588,7 @@
 
 !     . o o -- open boundary to the left
 
-         elseif ( maskB(i,j) .eq. 1 .and. i .eq. 1) then
+         elseif ( maskB(i,j) .eq. 1 .and. i .eq. 1 .and. Periodic_x .eq. 0) then
 
             bVEC(j) = bVEC(j) + etaBf(i+1,j) / Deltax2
 
@@ -572,7 +597,7 @@
 
 !     o o . -- open boundary to the right
 
-         elseif ( maskB(i+1,j) .eq. 1 .and. i .eq. nx) then
+         elseif ( maskB(i+1,j) .eq. 1 .and. i .eq. nx .and. Periodic_x .eq. 0) then
 
             bVEC(j) = bVEC(j) + etaBf(i,j) / Deltax2
 
@@ -600,8 +625,12 @@
 !------------------------------------------------------------------------
 
          if ( j .eq. 1 ) then
+         
+            if (Periodic_y .eq. 1) then
 
-            if (maskC(i,3) .eq. 1) then
+              ! do nothing, periodic
+
+            elseif (maskC(i,3) .eq. 1) then
             aVEC(j) = 0.0d0
             bVEC(j) = 1.0d0
             cVEC(j) = -4d0/3d0
@@ -617,7 +646,11 @@
 
          elseif ( j .eq. ny+1 ) then
 
-            if (maskC(i,ny-2) .eq. 1) then
+            if (Periodic_y .eq. 1) then
+
+              ! do nothing, periodic
+        
+            elseif (maskC(i,ny-2) .eq. 1) then
             aVEC(j) = -4d0/3d0
             bVEC(j) = 1.0d0
             cVEC(j) = 0.0d0
@@ -637,9 +670,23 @@
  200     continue
 
       enddo
+      
+      
+      if ( Periodic_y .eq. 1) then ! periodic boundary conditions in y
 
-      call tridag (aVEC, bVEC, cVEC, rhs, Y, ny+1)
+         aVEC(ny+1) = aVEC(1)
+         bVEC(ny+1) = bVEC(1)
+         cVEC(ny+1) = cVEC(1)
+         rhs(ny+1) = rhs(1)
 
+         call cyclicTriDiag(aVEC, bVEC, cVEC, rhs, Y, ny+1)
+
+      else
+      
+         call tridag (aVEC, bVEC, cVEC, rhs, Y, ny+1)
+
+      endif
+      
       do j = 1, ny+1
 
          vtp(i,j) = Yold(j) + wlsor*(Y(j)-Yold(j))
@@ -703,3 +750,58 @@
       end
 
 
+!************************************************************************
+!     Subroutine cyclicTriDiag: ! Solves for a vector u of length n the 
+!	modified tridiagonal linear set m u = r, where a, b and c are the
+!	three main diagonals of matrix m(n,n), the other terms are 0. 
+!	r is the right side vector.        
+!       m(1,n) = a(1) (or beta from NR); and m(n,1) = c(n) (or alpha from NR)
+!       a : lower diagonal element of A
+!       b : diagonal element of A
+!       c : upper diagonal element of A
+!       r : right hand side of the equation
+!       x : solution to the system of equation
+!
+! https://gist.github.com/shane5ul/9060784
+!
+!************************************************************************
+     !subroutine cyclicTriDiag(a, b, c, r, x)
+     subroutine cyclicTriDiag(a, b, c, r, x, n)
+
+     implicit double precision (a-h, o-z)
+
+     dimension a(n), b(n), c(n), r(n), x(n), u(n), bb(n), z(n)
+     double precision gam, fact
+
+        !n   = size(x)
+
+        if ( b(1) .eq. 0d0 ) then  ! if we are on a boundary, set u or v = 0
+           bb(1) = 0d0
+           bb(n) = 0d0
+        else
+           gam       = -b(1)                     ! gamma can be arbit; -b1 is recommended
+           bb(1)     =  b(1) - gam
+           bb(n)     =  b(n) - a(1) * c(n)/gam
+        endif
+        bb(2:n-1) =  b(2:n-1)
+
+        call tridag(a, bb, c, r, x, n)          ! Solve Ax = r
+
+        u(1)     = gam                        ! Set up vector u
+        u(n)     = c(n)   !a(1)
+        u(2:n-1) = 0.d0
+
+        call tridag(a, bb, c, u, z, n)           ! Solve Az = u
+
+        !
+        ! Form v.x/(1 + v.z)
+        !
+        if ( b(1) .eq. 0d0 ) then ! if we are on a boundary, set u or v = 0
+           fact = 0d0
+        else
+           fact = (x(1) + a(1)*x(n)/gam)/(1.0 + z(1) + a(1) * z(n)/gam)
+        endif
+
+        x    = x - fact * z   ! get solution vector z
+
+     end subroutine cyclicTriDiag

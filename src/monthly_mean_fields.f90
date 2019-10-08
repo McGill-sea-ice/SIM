@@ -69,7 +69,7 @@ subroutine monthly_mean_fields (htp, Atp, utp, vtp, expno, m_current, &
 
   integer expno, m_current, ts_m_counter, ts_m_counter_1
 
-  double precision htp(0:nx+1,0:ny+1), Atp(0:nx+1,0:ny+1)
+  double precision htp(0:nx+2,0:ny+2), Atp(0:nx+2,0:ny+2)
   double precision utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
 
   TYPE(datetime_type) :: end_date, now_date
@@ -122,7 +122,7 @@ subroutine output_monthly_mean_fields ( htp,Atp, utp, vtp, expno)
 
   integer i,j,expno
   character filename*30
-  double precision htp(0:nx+1,0:ny+1), Atp(0:nx+1,0:ny+1)
+  double precision htp(0:nx+2,0:ny+2), Atp(0:nx+2,0:ny+2)
   double precision utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
 
   print *, 'outputing monthly mean fields'
