@@ -58,8 +58,9 @@ subroutine ini_get (restart, expno_r, restart_date)
 	     endif
 
 
-             Pp(i,j) = 0d0 
-             P(i,j)  = 0d0
+             Pp(i,j) = 0d0
+             Pt(i,j) = 0d0 
+             P(i,j)  = 0d0   
 
              etaC(i,j)= 0d0
              zetaC(i,j) = 0d0

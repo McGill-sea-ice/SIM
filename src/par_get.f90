@@ -91,6 +91,8 @@
       relhum     =  0.8d0            ! atmosphere relative humidity
 
       BndyCond   = 'noslip'          ! noslip
+      Periodic_x = 0		     ! 0:open, 1:periodic at lateral boundaries
+      Periodic_y = 0		     ! 0:open, 1:periodic at lateral boundaries
       Rheology   = 1                 ! ellipse = 1, triangle = 2
       linearization = 'Zhang'        ! Tremblay, Zhang
       regularization = 'tanh'        ! tanh, Kreyscher, capping

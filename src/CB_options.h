@@ -25,7 +25,7 @@
                 Buoys,          &
                 Jac_finite_diff  
                           
-      integer   Rheology, IMEX, BDF, visc_method
+      integer   Rheology, IMEX, BDF, visc_method, Periodic_x, Periodic_y
 
       common/options/           &
                 Dynamic,        & ! sea ice dynamic model (yes or no)
@@ -41,8 +41,10 @@
                 Current,        & ! specified, YearlyMean
                 adv_scheme,     & ! advection scheme: upwind or upwindRK2
                 BndyCond,       & ! noslip or freeslip
-                Rheology,       & ! ellipse, triangle
-                IMEX,           & ! 0: standard (splitting in time), 1 and 2: IMEX
+                Periodic_x,     & ! open or periodic condition in x 
+                Periodic_y,     & ! open or periodic condition in y 
+		Rheology,       & ! ellipse, triangle
+		IMEX,           & ! 0: standard (splitting in time), 1 and 2: IMEX
                 BDF,            & ! 0: standard, 1: Backward diff formula (2nd order)
                 visc_method,    & ! choice of calc of visc coeff
                 startdate,      & ! starting date

@@ -17,14 +17,15 @@
                 un2      (0:nx+2,0:ny+2), &
                 vn2      (0:nx+2,0:ny+2), &
                 Pp       (0:nx+1,0:ny+1), &
-                P        (0:nx+1,0:ny+1), &                
+                Pt       (0:nx+1,0:ny+1), & 
+		P        (0:nx+1,0:ny+1), &
                 Pf       (0:nx+1,0:ny+1), &
-                etaC     (0:nx+1,0:ny+1), &
+		etaC     (0:nx+2,0:ny+2), &
                 etaB     (0:nx+2,0:ny+2), &
-                zetaC    (0:nx+1,0:ny+1), &
-                etaCf    (0:nx+1,0:ny+1), &
+                zetaC    (0:nx+2,0:ny+2), &
+                etaCf    (0:nx+2,0:ny+2), &
                 etaBf    (0:nx+2,0:ny+2), &
-                zetaCf   (0:nx+1,0:ny+1)
+                zetaCf   (0:nx+2,0:ny+2)
 
       common/DynVariables/      &
                 h,              & ! ice thickness
@@ -38,9 +39,10 @@
                 un1,            & ! previous time level solution 
                 vn1,            & ! previous time level solution
                 un2,            & ! previous time level solution
-                vn2,            & ! previous time level solution
-                Pp,             & ! ice strength
-                P,              & ! replacement pressure
+		vn2,            & ! previous time level solution
+	        Pp,             & ! ice compressive strength
+                Pt,             & ! ice tensile strength
+		P,              & ! replacement pressure
                 Pf,             & ! replacement pressure
                 etaC,           & ! coefficient of shear viscosity (C-grid)
                 etaB,           & ! coefficient of shear viscosity (B-grid)
