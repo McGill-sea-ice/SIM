@@ -21,3 +21,21 @@ MODULE triangle
   DOUBLE PRECISION :: Cohe, phi, delta, etamax
 
 END MODULE triangle
+
+
+
+MODULE elastic
+
+! phi : internal angle of friction
+! sigC : tensile strength cut-off
+! Poisson : Poisson ratio of sea ice
+! Young : Young's ration of sea ice 
+! lambda0: viscous relaxation time scale
+
+  IMPLICIT NONE
+
+  DOUBLE PRECISION :: Young, Poisson, lambda0
+  DOUBLE PRECISION :: alpha, Theal 
+  !DOUBLE PRECISION :: Cohe, sigT, frict, sigC, phi
+
+END MODULE elastic

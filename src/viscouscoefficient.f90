@@ -61,8 +61,9 @@ subroutine ViscousCoefficient(utp,vtp)
   include 'CB_options.h'
   
   double precision utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
-
-  if (visc_method .eq. 1) then
+  if (Rheology .eq. 3) then
+     call MEBcoeff
+  elseif (visc_method .eq. 1) then
      call ViscousCoeff_method1(utp,vtp)
   elseif (visc_method .eq. 2) then
      call ViscousCoeff_method2(utp,vtp)
@@ -1331,7 +1332,193 @@ end subroutine etaB_at_open_boundaries
 
 
 
-    
 
 
+
+
+subroutine MEBcoeff
+
+!************************************************************************                                  
+!     Subroutine MEBcoeff: computes the MEB coefficients in the same format as                                         
+!     those of the VP model, at the centers (zetaC, etaC) and at the nodes (etaB)                               
+!     of the grid. These are defined as (See Plante et al. 2019, The Cryosphere):
+!     
+!     zetaC = Gamma * E * (C1+C2) * Deltat
+!     etaC =  Gamma * E * Deltat * C3
+!                        
+!     where : 
+!     
+!        Gamma = [ 1 + Deltat / lambda   ] ^(-1)    is a viscous dissipation factor
+!        lambda = [ lambda0 * (1-d)^(1-alpha) ] / h * e^(-c(1-A))   
+!             : is the viscous relaxation time as function of d, h and A
+!
+!        with 
+
+!        E = Y * (1-d) * h * e^(-c(1-A))      is the Elastic Stiffness, 
+!                                      as a function of Y (young modulus), d, h, A
+!        C1 = 1 / (1 - poisson^2)
+!        C2 = poisson / (1 - poisson^2)
+!        C3 = (1-poisson) / (1 - poisson^2)
+!          : are three elastic constants (a version of the Lame coefficients)
+!
+!    In this code, we include the Elastic stiffness in the other coefficients,
+!    to decrease the number of variables. So we set:
+!
+!        Lame1 = Y * C3
+!        Lame2 = Y * ( C1 + C2 )
+!        hAfunc =  h * e^(-c(1-A)) 
+!
+!
+!
+!     Mathieu Plante, October 9 2019                                                                            
+!                                                                                                            
+!************************************************************************     
+
+     use elastic
+     use ellipse ! we need this for the coefficient C
+     implicit none
+
+     include 'parameter.h'
+     include 'CB_DynVariables.h'
+     include 'CB_mask.h'
+     include 'CB_options.h'
+     include 'CB_const.h'
+
+     integer i, j, peri
+
+     double precision Lame1, Lame2, Tdam,m1, m2, m3, m4
+     double precision hAfunc(0:nx+2,0:ny+2), hAfuncB(0:nx+2,0:ny+2)
+     peri = Periodic_x + Periodic_y ! =1 if we have periodic conditions      
+      
+!---------------------------------------------------------  
+!     set constants for for linear elastic Rheology (Matt, 2015)
+!---------------------------------------------------------
+
+      Lame1     =  Young/(2d0*(1d0 + Poisson)) ! Shear Modulus of sea ice
+      Lame2     =  2d0*Poisson*Lame1/(1d0-Poisson) ! elastic const of sea ice
+      Tdam      = max(Deltax /sqrt(Lame2/rhoice), Deltat) !Damage relaxation time scale
+
+!------------------------------------------------------------------------
+!     free slip boundary condition:
+!       d(v_tangential)/d(normal) = 0 & v_normal = 0, at close boundary
+!------------------------------------------------------------------------
+ 
+
+      if ( BndyCond .eq. 'freeslip' ) then
+
+               print *, 'WARNING: freeslip option not fully tested yet'
+
+      elseif ( BndyCond .eq. 'noslip' ) then
+      
+         do i = 0, nx+1
+            do j = 0, ny+1
+
+               etaC(i,j)  = Lame1*Deltat
+               zetaC(i,j) = 0d0 
+               etaB(i,j)  = 0d0
+               hAfunc(i,j) = 1d0
+               hAfuncB(i,j) = 1d0
+            enddo
+         enddo
+
+         ! Apply periodic boundary conditions 
+         if (peri .ne. 0) call periodicBC(dam,dfactor)  
+         if (peri .ne. 0) call periodicBC(damB,dfactorB)  
+         ! ---
+               
+!------------------------------------------------------------------------
+!     Calculate the coefficient in the grid center
+!------------------------------------------------------------------------
+
+         do i = 1, nx
+           do j = 1, ny
+
+             if (IMEX .eq. 0) dfactor(i,j) = 1d0 !If IMEX=1, the following coefficients are computed 
+                                                 !using the implicit damage : d = d*dfactor
+
+             if (maskC(i,j) .ge. 1d0) then
+
+                hAfunc(i,j)  = h(i,j) * dexp(-C * ( 1d0 - A(i,j) ) )
+                
+                GammaMEB(i,j) = 1d0 / (1d0 + (Deltat * hAfunc(i,j)) / &
+                           (lambda0 * ((1-dam(i,j))*dfactor(i,j))**(alpha-1d0))) 
+
+             else
+             
+                hAfunc(i,j) = Lame1*Deltat                
+                GammaMEB(i,j) = 1d0
+                
+             endif
+
+             etaC(i,j)  = Lame1*hAfunc(i,j)*(1-dam(i,j))*dfactor(i,j)* &   !Elastic stiffness
+                                                 Deltat * GammaMEB(i,j)
+             zetaC(i,j) = hAfunc(i,j)*(Lame1 + Lame2)*Deltat * &
+                                 dam(i,j)* dfactor(i,j) * GammaMEB(i,j)
+             P(i,j) = 0d0
+
+
+            enddo
+         enddo
+         
+         if (peri .ne. 0) call periodicBC(etaC,zetaC)
+         if (peri .ne. 0) call periodicBC(GammaMEB,P)
+         
+!------------------------------------------------------------------------
+!     Calculate the coefficient in the grid nodes
+!------------------------------------------------------------------------         
+         
+         do i = 1, nx+1
+            do j = 1, ny+1 
+
+               if (IMEX .eq. 0) dfactorB(i,j) = 1d0
+
+               m1 = maskC(i,j) 
+               m2 = maskC(i-1,j)
+               m3 = maskC(i,j-1)
+               m4 = maskC(i-1,j-1)
+
+               !open bc
+               if (Periodic_x .eq. 0) then
+                   if (i .eq. 1) then
+                      m2 = 0d0
+                      m4 = 0d0
+                   elseif (i .eq. nx+1) then
+                      m1 = 0d0
+                      m3 = 0d0  
+                   endif
+               endif                   
+                   
+               if (Periodic_y .eq. 0) then
+                   if (j .eq. 1) then
+                      m3 = 0d0
+                      m4 = 0d0
+                   elseif (j .eq. ny+1) then
+                      m1 = 0d0
+                      m2 = 0d0  
+                   endif                  
+               endif    
+
+               if (m1+m2+m3+m4 .ne. 0d0) then
+
+                  hAfuncB(i,j) = ((h(i,j)*m1 + h(i-1,j)*m2 + h(i,j-1)*m3 &
+                                  + h(i-1,j-1)*m4 )/ (m1+m2+m3+m4))  &
+                             * dexp(-C * ( 1d0 - ((A(i,j)*m1 + A(i-1,j)*m2 &
+                              + A(i,j-1)*m3 + A(i-1,j-1)*m4 )/ (m1+m2+m3+m4) ) ) )
+               endif
+
+               GammaMEB_B(i,j) = 1d0 / ( 1d0 + (Deltat * hAfuncB(i,j)) / &
+                              (lambda0 * (damB(i,j)*dfactorB(i,j))**(alpha-1d0) )  )
+               etaB(i,j)  = hAfuncB(i,j)*Lame1*Deltat*&
+                             (damB(i,j)*dfactorB(i,j)) *GammaMEB_B(i,j)
+            enddo
+         enddo
+         
+!------------------------------------------------------------------------ 
+
+         if (peri .ne. 0) call periodicBC(etaB,GammaMEB_B)    
+         
+      endif
+
+  return
+end subroutine MEBcoeff
 

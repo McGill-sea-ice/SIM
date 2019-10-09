@@ -19,6 +19,7 @@
       subroutine get_default
 
         use ellipse
+        use elastic
         use ice_albedo
         use numerical_VP
         use numerical_EVP
@@ -65,6 +66,15 @@
       !Cohe       =  0d0 !4d03        ! cohesion (tensile strght) [N/m2]
       !etamax     =  1.0d12           ! max shear viscosity
       
+! Mohr Coulomb and MEB(rheology = 3)       
+      phi        =  45d0              ! internal angle of friction
+      Cohe       =  1d04              ! cohesion (tensile strght) [N/m2]
+      Young      =  1d9               ! Young's Modulus of sea ice
+      Poisson    =  3.3d-01           ! Poisson Ratio of sea ice
+      lambda0    =  1d5               ! viscous relaxation timescale for sea ice
+      alpha      =  3d0               ! non-linear damage parameter
+      Theal      =  0d0               ! Healing time scale. 0d0 = no healing.
+      
 !------------------------------------------------------------------------
 !     set run parameters (dynamic - thermodynamic - options - domain)
 !------------------------------------------------------------------------
@@ -93,7 +103,6 @@
       BndyCond   = 'noslip'          ! noslip
       Periodic_x = 0		     ! 0:open, 1:periodic at lateral boundaries
       Periodic_y = 0		     ! 0:open, 1:periodic at lateral boundaries
-      DragLaw    = 'square'          ! square
       Rheology   = 1                 ! ellipse = 1, triangle = 2, MEB = 3
       linearization = 'Zhang'        ! Tremblay, Zhang
       regularization = 'tanh'        ! tanh, Kreyscher, capping
@@ -230,12 +239,6 @@
       costheta_a = cos( theta_a ) 
       sintheta_w = sin( theta_w )             
       costheta_w = cos( theta_w ) 
-
-! Triangle rheology ... coming soon. 
-!      phi       =  phi * deg2rad          ! angle of friction [rad]
-!      delta     =  delta * deg2rad        ! angle of dilatancy [rad]
-      !tandelta   = tan ( delta )
-      !sinphi     = sin (phi)
 
       ell2       = e_ratio**2
       ell_2      = 1/(e_ratio**2)
