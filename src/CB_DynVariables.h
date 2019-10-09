@@ -33,7 +33,14 @@
                 dam        (0:nx+2,0:ny+2), &
                 damB       (0:nx+2,0:ny+2), &
                 dfactor  (0:nx+2,0:ny+2), &
-                dfactorB (0:nx+2,0:ny+2)
+                dfactorB (0:nx+2,0:ny+2), &
+                CoheC    (0:nx+2,0:ny+2), &
+                sigcC    (0:nx+2,0:ny+2), &
+                sigtC    (0:nx+2,0:ny+2), &
+                sigxy    (0:nx+2,0:ny+2), &
+                sigxyB   (0:nx+2,0:ny+2), &
+                sigxx    (0:nx+2,0:ny+2), &
+                sigyy    (0:nx+2,0:ny+2)
 
 
       common/DynVariables/      &
@@ -61,10 +68,17 @@
                 zetaCf,         & ! coefficient of bulk viscosity (C-grid)
                 GammaMEB,       & ! visco-elastic dissipation coefficient (C-grid)
                 GammaMEB_B,     & ! visco-elastic dissipation coefficient (B-grid)
-                dam,              & ! damage parameter (C-grid)
-                damB,             & ! damage parameter (B-grid)
+                dam,            & ! damage parameter (C-grid)
+                damB,           & ! damage parameter (B-grid)
                 dfactor,        & ! damage factor (C-grid)
-                dfactorB          ! damage factor (B-grid)
+                dfactorB,       & ! damage factor (B-grid)
+                CoheC,          & ! Cohesion at grid center
+                sigCC,          & ! Compressive strength at grid center
+                sigTC,          & ! Tensile strength at grid center
+                sigxy,          & ! shear stress at center
+                sigxyB,         & ! shear stress at node
+                sigxx,          & ! normal stress at center
+                sigyy             ! normal stress at center
 
 
 

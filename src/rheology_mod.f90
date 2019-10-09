@@ -36,6 +36,6 @@ MODULE elastic
 
   DOUBLE PRECISION :: Young, Poisson, lambda0
   DOUBLE PRECISION :: alpha, Theal 
-  !DOUBLE PRECISION :: Cohe, sigT, frict, sigC, phi
+  DOUBLE PRECISION :: Cohe, sigt, sigc, phi, Tdam
 
 END MODULE elastic

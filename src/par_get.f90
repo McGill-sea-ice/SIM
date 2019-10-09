@@ -67,14 +67,16 @@
       !etamax     =  1.0d12           ! max shear viscosity
       
 ! Mohr Coulomb and MEB(rheology = 3)       
-      phi        =  45d0              ! internal angle of friction
-      Cohe       =  1d04              ! cohesion (tensile strght) [N/m2]
-      Young      =  1d9               ! Young's Modulus of sea ice
-      Poisson    =  3.3d-01           ! Poisson Ratio of sea ice
-      lambda0    =  1d5               ! viscous relaxation timescale for sea ice
-      alpha      =  3d0               ! non-linear damage parameter
-      Theal      =  0d0               ! Healing time scale. 0d0 = no healing.
-      
+
+      phi       =  45d0             ! internal angle of friction
+      Cohe      =  10d3             ! cohesion (tensile strght) [N/m2]
+      sigc      =  -Cohe*5d8 ! compressive strength cut-off [N/m2]
+      Young     =  1d9               ! Young's Modulus of sea ice
+      Poisson   =  3.3d-01           ! Poisson Ratio of sea ice
+      lambda0   =  1d5 ! viscous relaxation timescale for sea ice
+      alpha     =  3d0 ! non-linear damage parameter
+      Theal     =  0d0 !Healing time scale. 0d0 = no healing.
+
 !------------------------------------------------------------------------
 !     set run parameters (dynamic - thermodynamic - options - domain)
 !------------------------------------------------------------------------

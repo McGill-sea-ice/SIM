@@ -1375,7 +1375,7 @@ subroutine MEBcoeff
 !************************************************************************     
 
      use elastic
-     use ellipse ! we need this for the coefficient C
+     use ellipse !we need this for the coefficient C
      implicit none
 
      include 'parameter.h'
@@ -1386,7 +1386,7 @@ subroutine MEBcoeff
 
      integer i, j, peri
 
-     double precision Lame1, Lame2, Tdam,m1, m2, m3, m4
+     double precision Lame1, Lame2,m1, m2, m3, m4
      double precision hAfunc(0:nx+2,0:ny+2), hAfuncB(0:nx+2,0:ny+2)
      peri = Periodic_x + Periodic_y ! =1 if we have periodic conditions      
       
@@ -1455,7 +1455,10 @@ subroutine MEBcoeff
              zetaC(i,j) = hAfunc(i,j)*(Lame1 + Lame2)*Deltat * &
                                  dam(i,j)* dfactor(i,j) * GammaMEB(i,j)
              P(i,j) = 0d0
-
+             
+             CoheC(i,j) = Cohe!*hAfunc(i,j)
+             sigtC(i,j) = sigt!*hAfunc(i,j)
+             sigcC(i,j) = sigc!*hAfunc(i,j)
 
             enddo
          enddo
