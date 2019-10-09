@@ -93,7 +93,8 @@
       BndyCond   = 'noslip'          ! noslip
       Periodic_x = 0		     ! 0:open, 1:periodic at lateral boundaries
       Periodic_y = 0		     ! 0:open, 1:periodic at lateral boundaries
-      Rheology   = 1                 ! ellipse = 1, triangle = 2
+      DragLaw    = 'square'          ! square
+      Rheology   = 1                 ! ellipse = 1, triangle = 2, MEB = 3
       linearization = 'Zhang'        ! Tremblay, Zhang
       regularization = 'tanh'        ! tanh, Kreyscher, capping
       visc_method = 2                ! see viscousCoeff routine for details
@@ -421,7 +422,8 @@ subroutine read_namelist
          stop
       endif
 
-      if ( Rheology .ne. 1 .and. Rheology .ne. 2) then
+      if ( Rheology .ne. 1 .and. Rheology .ne. 2 .and.                 &
+           Rheology .ne. 3) then
          print *, 'Wrong Rheology chosen by user'
          stop
       endif

@@ -174,8 +174,13 @@ PROGRAM ice
 
       ! This is a datetime delta. It can be added to a
       ! datetime object. 
-      date_step = delta_init(seconds=int(Deltat))
+      if (Deltat .ge. 1) then
+         date_step = delta_init(seconds=int(Deltat))
+      else
+	 date_step = delta_init(millis=int(Deltat*1000))
+      endif
 
+         
       call ocn_current               ! load current data
       call ocn_Tclim                 ! load monthly clim ocean T
       call ini_get (restart, expno_r,restart_date)! ini conds
