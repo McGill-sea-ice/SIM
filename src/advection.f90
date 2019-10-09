@@ -38,11 +38,11 @@
       integer isw, jsw, inw, jnw, ine, jne, ise, jse !SL SouthWest=sw, nw, ne, se corners
       double precision, intent(in)    :: un1(0:nx+2,0:ny+2), vn1(0:nx+2,0:ny+2)
       double precision, intent(in)    :: un(0:nx+2,0:ny+2), vn(0:nx+2,0:ny+2)
-      double precision                :: hn1(0:nx+1,0:ny+1), An1(0:nx+1,0:ny+1)
-      double precision, intent(in)    :: hn2(0:nx+1,0:ny+1), An2(0:nx+1,0:ny+1)
-      double precision, intent(out)   :: hout(0:nx+1,0:ny+1), Aout(0:nx+1,0:ny+1)
+      double precision                :: hn1(0:nx+2,0:ny+2), An1(0:nx+2,0:ny+2)
+      double precision, intent(in)    :: hn2(0:nx+2,0:ny+2), An2(0:nx+2,0:ny+2)
+      double precision, intent(out)   :: hout(0:nx+2,0:ny+2), Aout(0:nx+2,0:ny+2)
       double precision                :: ustar(0:nx+2,0:ny+2), vstar(0:nx+2,0:ny+2)
-      double precision                :: hstar(0:nx+1,0:ny+1), Astar(0:nx+1,0:ny+1)
+      double precision                :: hstar(0:nx+2,0:ny+2), Astar(0:nx+2,0:ny+2)
       double precision                :: dFx(nx,ny), dFy(nx,ny), div(nx,ny)
       double precision                :: alphamx, alphamy, uinterp, vinterp, ftp
       double precision                :: hbef, Abef, xd, yd, xdn1, ydn1, xdn2, ydn2 
@@ -56,58 +56,79 @@
       logical                         :: SLlimiter
 
 !------------------------------------------------------------------------ 
+!     make periodic conditions 
+!------------------------------------------------------------------------
+
+      peri = Periodic_x + Periodic_y
+      if (peri .ne. 0) then
+          call periodicBC(hn1,An1)     
+          call periodicBC(hn2,An2) 
+      endif
+
+!------------------------------------------------------------------------ 
 !     set dhn1/dx, dAn1/dx = 0 at the outside cell when there is an open bc 
 !------------------------------------------------------------------------ 
 
-      do i = 0, nx+1
+
+
+      if (Periodic_y .eq. 0) then
+
+         do i = 0, nx+1
                
-         if (maskC(i,0) .eq. 1) then
+             if (maskC(i,0) .eq. 1) then
             
-            hn1(i,0) = ( 4d0 * hn1(i,1) - hn1(i,2) )/3d0
-            hn1(i,0) = max(hn1(i,0), 0d0)
-            An1(i,0) = ( 4d0 * An1(i,1) - An1(i,2) )/3d0
-            An1(i,0) = max(An1(i,0), 0d0)
-            An1(i,0) = min(An1(i,0), 1d0)
+                hn1(i,0) = ( 4d0 * hn1(i,1) - hn1(i,2) )/3d0
+                hn1(i,0) = max(hn1(i,0), 0d0)
+                An1(i,0) = ( 4d0 * An1(i,1) - An1(i,2) )/3d0
+                An1(i,0) = max(An1(i,0), 0d0)
+                An1(i,0) = min(An1(i,0), 1d0)
                   
-         endif
+             endif
 
-         if (maskC(i,ny+1) .eq. 1) then
+             if (maskC(i,ny+1) .eq. 1) then
             
-            hn1(i,ny+1)= ( 4d0 * hn1(i,ny) - hn1(i,ny-1) ) / 3d0
-            hn1(i,ny+1)= max(hn1(i,ny+1), 0d0)
-            An1(i,ny+1)= ( 4d0 * An1(i,ny) - An1(i,ny-1) ) / 3d0
-            An1(i,ny+1)= max(An1(i,ny+1), 0d0)
-            An1(i,ny+1)= min(An1(i,ny+1), 1d0)
+                hn1(i,ny+1)= ( 4d0 * hn1(i,ny) - hn1(i,ny-1) ) / 3d0
+                hn1(i,ny+1)= max(hn1(i,ny+1), 0d0)
+                An1(i,ny+1)= ( 4d0 * An1(i,ny) - An1(i,ny-1) ) / 3d0
+                An1(i,ny+1)= max(An1(i,ny+1), 0d0)
+                An1(i,ny+1)= min(An1(i,ny+1), 1d0)
 
-         endif
+             endif
  
-      enddo
-
-      do j = 0, ny+1
-
-         if (maskC(0,j) .eq. 1) then
+          enddo
                   
-            hn1(0,j)  = ( 4d0 * hn1(1,j) - hn1(2,j) ) / 3d0
-            hn1(0,j)  = max(hn1(0,j), 0d0)
-            An1(0,j)  = ( 4d0 * An1(1,j) - An1(2,j) ) / 3d0
-            An1(0,j)  = max(An1(0,j), 0d0)
-            An1(0,j)  = min(An1(0,j), 1d0)
+      endif            
+	  
+      if (Periodic_x .eq. 0) then
+	  
+         do j = 0, ny+1
 
-         endif
+             if (maskC(0,j) .eq. 1) then
+                  
+                 hn1(0,j)  = ( 4d0 * hn1(1,j) - hn1(2,j) ) / 3d0
+                 hn1(0,j)  = max(hn1(0,j), 0d0)
+                 An1(0,j)  = ( 4d0 * An1(1,j) - An1(2,j) ) / 3d0
+                 An1(0,j)  = max(An1(0,j), 0d0)
+                 An1(0,j)  = min(An1(0,j), 1d0)
 
-         if (maskC(nx+1,j) .eq. 1) then
+             endif
+
+             if (maskC(nx+1,j) .eq. 1) then
                  
-            hn1(nx+1,j) = ( 4d0 * hn1(nx,j) - hn1(nx-1,j) ) / 3d0
-            hn1(nx+1,j) = max(hn1(nx+1,j), 0d0)
-            An1(nx+1,j) = ( 4d0 * An1(nx,j) - An1(nx-1,j) ) / 3d0
-            An1(nx+1,j) = max(An1(nx+1,j), 0d0)
-            An1(nx+1,j) = min(An1(nx+1,j), 1d0)
+                 hn1(nx+1,j) = ( 4d0 * hn1(nx,j) - hn1(nx-1,j) ) / 3d0
+                 hn1(nx+1,j) = max(hn1(nx+1,j), 0d0)
+                 An1(nx+1,j) = ( 4d0 * An1(nx,j) - An1(nx-1,j) ) / 3d0
+                 An1(nx+1,j) = max(An1(nx+1,j), 0d0)
+                 An1(nx+1,j) = min(An1(nx+1,j), 1d0)
 
-         endif
+             endif
 
-      enddo
+         enddo
 
-      if ( adv_scheme .eq. 'upwind' ) then
+            
+     endif
+	  
+     if ( adv_scheme .eq. 'upwind' ) then
 
 !------------------------------------------------------------------------
 !     compute the difference of the flux for thickness 
@@ -217,53 +238,63 @@
 !     set dhstar/dx, dAstar/dx = 0 at the outside cell when there is an open bc 
 !------------------------------------------------------------------------ 
 
-         do i = 0, nx+1
-            
-            if (maskC(i,0) .eq. 1) then
+	 if (peri .ne. 0)   call periodicBC(hstar,Astar) 
+  
+         if (Periodic_y .eq. 0) then
+	    
+            do i = 0, nx+1
+               
+               if (maskC(i,0) .eq. 1) then
 
-               hstar(i,0) = ( 4d0 * hstar(i,1) - hstar(i,2) )/3d0
-               hstar(i,0) = max(hstar(i,0), 0d0)
-               Astar(i,0) = ( 4d0 * Astar(i,1) - Astar(i,2) )/3d0
-               Astar(i,0) = max(Astar(i,0), 0d0)
-               Astar(i,0) = min(Astar(i,0), 1d0)
+                  hstar(i,0) = ( 4d0 * hstar(i,1) - hstar(i,2) )/3d0
+                  hstar(i,0) = max(hstar(i,0), 0d0)
+                  Astar(i,0) = ( 4d0 * Astar(i,1) - Astar(i,2) )/3d0
+                  Astar(i,0) = max(Astar(i,0), 0d0)
+                  Astar(i,0) = min(Astar(i,0), 1d0)
                   
-            endif
+               endif
 
-            if (maskC(i,ny+1) .eq. 1) then
+               if (maskC(i,ny+1) .eq. 1) then
                   
-               hstar(i,ny+1)= ( 4d0 * hstar(i,ny) - hstar(i,ny-1) ) / 3d0
-               hstar(i,ny+1)= max(hstar(i,ny+1), 0d0)
-               Astar(i,ny+1)= ( 4d0 * Astar(i,ny) - Astar(i,ny-1) ) / 3d0
-               Astar(i,ny+1)= max(Astar(i,ny+1), 0d0)
-               Astar(i,ny+1)= min(Astar(i,ny+1), 1d0)
+                  hstar(i,ny+1)= ( 4d0 * hstar(i,ny) - hstar(i,ny-1) ) / 3d0
+                  hstar(i,ny+1)= max(hstar(i,ny+1), 0d0)
+                  Astar(i,ny+1)= ( 4d0 * Astar(i,ny) - Astar(i,ny-1) ) / 3d0
+                  Astar(i,ny+1)= max(Astar(i,ny+1), 0d0)
+                  Astar(i,ny+1)= min(Astar(i,ny+1), 1d0)
 
-            endif
+               endif
  
-         enddo
+            enddo
 
-         do j = 0, ny+1
+         endif
+	     
+         if (Periodic_x .eq. 0) then 
+	      
+            do j = 0, ny+1
 
-            if (maskC(0,j) .eq. 1) then
+               if (maskC(0,j) .eq. 1) then
                   
-               hstar(0,j)  = ( 4d0 * hstar(1,j) - hstar(2,j) ) / 3d0
-               hstar(0,j)  = max(hstar(0,j), 0d0)
-               Astar(0,j)  = ( 4d0 * Astar(1,j) - Astar(2,j) ) / 3d0
-               Astar(0,j)  = max(Astar(0,j), 0d0)
-               Astar(0,j)  = min(Astar(0,j), 1d0)
+                  hstar(0,j)  = ( 4d0 * hstar(1,j) - hstar(2,j) ) / 3d0
+                  hstar(0,j)  = max(hstar(0,j), 0d0)
+                  Astar(0,j)  = ( 4d0 * Astar(1,j) - Astar(2,j) ) / 3d0
+                  Astar(0,j)  = max(Astar(0,j), 0d0)
+                  Astar(0,j)  = min(Astar(0,j), 1d0)
 
-            endif
+               endif
 
-            if (maskC(nx+1,j) .eq. 1) then
+               if (maskC(nx+1,j) .eq. 1) then
                  
-               hstar(nx+1,j) = ( 4d0 * hstar(nx,j) - hstar(nx-1,j) ) / 3d0
-               hstar(nx+1,j) = max(hstar(nx+1,j), 0d0)
-               Astar(nx+1,j) = ( 4d0 * Astar(nx,j) - Astar(nx-1,j) ) / 3d0
-               Astar(nx+1,j) = max(Astar(nx+1,j), 0d0)
-               Astar(nx+1,j) = min(Astar(nx+1,j), 1d0)
+                  hstar(nx+1,j) = ( 4d0 * hstar(nx,j) - hstar(nx-1,j) ) / 3d0
+                  hstar(nx+1,j) = max(hstar(nx+1,j), 0d0)
+                  Astar(nx+1,j) = ( 4d0 * Astar(nx,j) - Astar(nx-1,j) ) / 3d0
+                  Astar(nx+1,j) = max(Astar(nx+1,j), 0d0)
+                  Astar(nx+1,j) = min(Astar(nx+1,j), 1d0)
 
-            endif
+               endif
 
-         enddo
+            enddo
+		     
+         endif
 
 !------------------------------------------------------------------------
 !     corrector: compute the difference of the flux for thickness 
@@ -458,6 +489,7 @@
                      alpmy(i,j)=alphamy
 
                   endif
+
 
 !------------------------------------------------------------------------
 ! find hbef and Abef (initial position of particle at time level n-2=n2)
@@ -694,7 +726,11 @@
 
       endif ! choice of method
       
+
+      if (peri .ne. 0)   call periodicBC(hout,Aout)	
+        
       return
+      
     end subroutine advection
 
     subroutine calc_dFx (utp, tracertp, dFx)
@@ -705,7 +741,7 @@
       include 'CB_mask.h'
 
       integer i, j
-      double precision, intent(in) :: utp(0:nx+2,0:ny+2),tracertp(0:nx+1,0:ny+1)
+      double precision, intent(in) :: utp(0:nx+2,0:ny+2),tracertp(0:nx+2,0:ny+2)
       double precision, intent(out):: dFx(nx,ny)
       double precision :: F1, F2
       
@@ -743,7 +779,7 @@
       include 'CB_mask.h'
 
       integer i, j
-      double precision, intent(in) :: vtp(0:nx+2,0:ny+2),tracertp(0:nx+1,0:ny+1)
+      double precision, intent(in) :: vtp(0:nx+2,0:ny+2),tracertp(0:nx+2,0:ny+2)
       double precision, intent(out):: dFy(nx,ny)
       double precision :: F1, F2
 
@@ -950,3 +986,4 @@
         endif
         
       end function apply_lim
+

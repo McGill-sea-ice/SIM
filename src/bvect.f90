@@ -16,8 +16,9 @@
       include 'CB_mask.h'
       include 'CB_DynForcing.h'
       include 'CB_bathymetry.h'
+      include 'CB_options.h'
 
-      integer i, j
+      integer i, j, peri
 
       double precision &
                        uwavg(0:nx+2,0:ny+2), & ! uw evaluated at the v-loc
@@ -32,7 +33,10 @@
 
       minA=0.01d0
       alpha = 1d06
-
+      
+      peri = Periodic_x + Periodic_y
+      if (peri .ne. 0)   call periodicBC(utp,vtp) ! Periodic boundaries
+      
       do j = 1, ny
          do i = 1, nx+1
 
@@ -257,24 +261,34 @@
 !   Set bu and bv to 0.0 at the 'appropriate' open bc
 !-----------------------------------------------------------------------------
 
-      do j = 1, ny+1
+      if (Periodic_x .eq. 0) then
+    
+         do j = 1, ny+1
 
-         bu(1,j)    = 0.0d0   ! Bering Strait
-         bu(nx+1,j) = 0.0d0   !
-         
-         bv(nx+1,j)    = 0.0d0 
-         
-      enddo
+            bu(1,j)    = 0.0d0   ! Bering Strait
+            bu(nx+1,j) = 0.0d0   !
+
+            bv(nx+1,j)    = 0.0d0 
+
+         enddo
       
-      do i = 1, nx+1
+      endif
+    
+      if (Periodic_y .eq. 0) then     
+      
+         do i = 1, nx+1
 
-         bv(i,1)    = 0.0d0   ! North Atlantic
-         bv(i,ny+1) = 0.0d0   ! no open bc in current configuration
-            
-         bu(i,ny+1)    = 0.0d0 
+            bv(i,1)    = 0.0d0   ! North Atlantic
+            bv(i,ny+1) = 0.0d0   ! no open bc in current configuration
+	      
+            bu(i,ny+1)    = 0.0d0 
 
-      enddo
-
+         enddo
+      
+      endif
+    
+      if (peri .ne. 0)   call periodicBC(bu,bv) ! Periodic boundaries
+      
       call transformer (bu,bv,rhs,1)
 
       return

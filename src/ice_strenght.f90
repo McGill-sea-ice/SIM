@@ -38,7 +38,7 @@
 !                    see p.1241-1242 for details              
 !--- set dh/dx, dA/dx = 0 at the outside cell when there is an open bc --------
 
-
+	if (Periodic_y .eq. 0) then
          do i = 0, nx+1
 
             if (maskC(i,0) .eq. 1) then             
@@ -52,7 +52,9 @@
             endif
  
          enddo
-
+	endif            
+	  
+	if (Periodic_x .eq. 0) then
          do j = 0, ny+1
 
             if (maskC(0,j) .eq. 1) then             
@@ -66,7 +68,8 @@
             endif           
 
          enddo
-
+	endif
+	
       elseif ( Rheology .eq. 2 ) then
 
 !         do i = 1, nx

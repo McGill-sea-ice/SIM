@@ -52,7 +52,7 @@
       integer, intent(in) :: tstep, expno
       integer ::  year    ! current year
 
-      integer :: k, tot_its
+      integer :: k, tot_its, peri
       integer, save :: sumtot_its, nbfail
 
       double precision :: h2sec = 3.6d03            ! [sec] / [hour]
@@ -65,6 +65,8 @@
 
       year = date%year
       datestr = datetime_str_6(date)
+      
+      peri = Periodic_x + Periodic_y
 
       if (tstep .eq. 1) nbfail = 0 ! number of failures of the nonlinear solver during the run
 
@@ -82,6 +84,8 @@
             An2 = An1
          endif
 
+	 if (peri .ne. 0) call periodicBC(uice,vice)
+	 
          un1 = uice ! previous time step solution
          vn1 = vice ! previous time step solution
          hn1 = h
@@ -220,7 +224,7 @@
                call stress_strain (uice, vice, date, 9, expno)
 !               stop
             endif
-         
+                 
          elseif (solver .eq. 3) then ! EVP solver 
 
             call evp_solver(tstep)

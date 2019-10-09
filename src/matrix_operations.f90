@@ -1,4 +1,25 @@
-!*********************************************************************                 
+!************************************************************************
+!     matrix operations: 
+!             contains: subroutine JacfreeVec 
+!                       subroutine Funk 
+!                       subroutine MATVEC
+!
+!     Revision History
+!     ----------------
+!
+!     Ver             Date (dd-mm-yy)        Author
+!
+!     v1.0               		     JF Lemieux, Bruno Tremblay				
+!
+!     Address : Dept. of Atmospheric and Oceanic Sciences, McGill University
+!     -------   Montreal, Quebec, Canada
+!     Email   :  bruno.tremblay@mcgill.ca
+!
+!************************************************************************
+
+!*********************************************************************  
+!  Subroutine JacfreeVec
+!
 !     approximates Jv by F(x+ev)-F(x)/e                                    
 !*********************************************************************    
 
@@ -102,7 +123,7 @@ end subroutine Funk
       include 'CB_mask.h'
       include 'CB_options.h'
 
-      integer i, j, k
+      integer i, j, k, peri
 
       double precision, intent(in) :: x(nvar)
       double precision, intent(out) :: Ax(nvar)
@@ -110,7 +131,12 @@ end subroutine Funk
       double precision utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
 
       call transformer(utp,vtp,x,0)
-
+      
+ 
+      
+      peri = Periodic_x + Periodic_y  ! periodic boundary conditions 
+      if (peri .ne. 0)   call periodicBC(utp,vtp)   
+      
       do j = 1, ny
          do i = 1, nx+1
 
@@ -289,7 +315,8 @@ end subroutine Funk
 !     o o   -- open boundary just below
 !     . .
 
-           elseif ( maskB(i,j) .eq. 1 .and. j .eq. 1) then
+           elseif ( maskB(i,j) .eq. 1 .and. j .eq. 1 &
+					  .and. Periodic_y .eq. 0) then
 
               Ax(k) = Ax(k) + &
                   utp(i,j) * etaB(i,j+1) / Deltax2 - &
@@ -299,7 +326,8 @@ end subroutine Funk
 !     o o   -- open boundary just above
 !     o o
 
-           elseif ( maskB(i,j+1) .eq. 1 .and. j .eq. ny) then
+           elseif ( maskB(i,j+1) .eq. 1 .and. j .eq. ny &
+					    .and. Periodic_y .eq. 0) then
 
               Ax(k) = Ax(k) + &
                   utp(i,j) * etaB(i,j) / Deltax2 - &
@@ -330,7 +358,10 @@ end subroutine Funk
 
               if ( i .eq. 1 ) then
 
-                 if (maskC(3,j) .eq. 1) then ! oooo (2nd order accurate)        
+                 if (Periodic_x .eq. 1) then
+                 ! do nothing, periodic
+
+                 elseif (maskC(3,j) .eq. 1) then ! oooo (2nd order accurate)        
 
                     Ax(k) = utp(1,j) - ( 4d0 * utp(2,j)  - utp(3,j) ) &
                          / 3d0
@@ -344,7 +375,11 @@ end subroutine Funk
 
               elseif ( i .eq. nx+1 ) then
    
-                 if (maskC(nx-2,j) .eq. 1) then
+                 if (Periodic_x .eq. 1) then
+ 
+                    Ax(k) = Ax(1+(j-1)*(nx+1)) ! for periodicity
+               
+                 elseif (maskC(nx-2,j) .eq. 1) then
 
                     Ax(k) = utp(nx+1,j) - ( 4d0 * utp(nx,j) &
                          - utp(nx-1,j) ) / 3d0
@@ -525,7 +560,8 @@ end subroutine Funk
 
 !     . o o -- open boundary to the left
 
-           elseif ( maskB(i,j) .eq. 1 .and. i .eq. 1) then
+           elseif ( maskB(i,j) .eq. 1 .and. i .eq. 1 &
+					    .and. Periodic_x .eq. 0) then
 
               Ax(k) = Ax(k) + &
                   vtp(i,j) * etaB(i+1,j) / Deltax2 - &
@@ -533,7 +569,8 @@ end subroutine Funk
 
 !     o o . -- open boundary to the right
 
-           elseif ( maskB(i+1,j) .eq. 1 .and. i .eq. nx) then
+           elseif ( maskB(i+1,j) .eq. 1 .and. i .eq. nx &
+					    .and. Periodic_x .eq. 0) then
 
               Ax(k) = Ax(k) + &
                   vtp(i,j) * etaB(i,j) / Deltax2 - &
@@ -561,7 +598,10 @@ end subroutine Funk
 
               if ( j .eq. 1 ) then
 
-                 if (maskC(i,3) .eq. 1) then ! (2nd order accurate)             
+		 if (Periodic_y .eq. 1) then
+                     ! do nothing, periodic
+
+                 elseif (maskC(i,3) .eq. 1) then ! (2nd order accurate)             
 
                     Ax(k) = vtp(i,1) - ( 4d0 * vtp(i,2)  - vtp(i,3) ) &
                          / 3d0
@@ -570,8 +610,12 @@ end subroutine Funk
                  endif
 
               elseif ( j .eq. ny+1 ) then
-        
-                 if (maskC(i,ny-2) .eq. 1) then ! (2nd order accurate)          
+    
+		 if (Periodic_y .eq. 1) then
+		 
+                    Ax(k) = Ax(i+(1-1)*nx+(nx+1)*ny) !periodicity : ny+1=1
+    
+                 elseif (maskC(i,ny-2) .eq. 1) then ! (2nd order accurate)          
                     Ax(k) = vtp(i,ny+1) - ( 4d0 * vtp(i,ny) &
                          - vtp(i,ny-1) ) / 3d0
                  else
