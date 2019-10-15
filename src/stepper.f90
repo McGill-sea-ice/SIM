@@ -72,6 +72,7 @@
 
       if ( Dynamic ) then
 
+
          call wind_forcing (date, tstep) ! get wind forcing field
 
          if ( BDF .eq. 1 ) then
