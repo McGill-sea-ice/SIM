@@ -54,6 +54,7 @@ subroutine ini_get (restart, expno_r, restart_date)
              endif
 
 !     Compression experiment: we set bands of open water at the top and sides
+
              if ((nx == 100) .and. (ny == 250)) then
                 if (i .lt. 21 .or. i .gt. 80) h(i,j) = 0d0
                 if (i .lt. 21 .or. i .gt. 80) A(i,j) = 0d0
@@ -72,8 +73,8 @@ subroutine ini_get (restart, expno_r, restart_date)
 
              GammaMEB(i,j) = 1d0
              GammaMEB_B(i,j) = 1d0
-             dam(i,j) = 0d0
-             damB(i,j) = 0d0
+             dam(i,j) = 1d0
+             damB(i,j) = 1d0
              dfactor(i,j) = 1d0
              dfactorB(i,j) = 1d0
 

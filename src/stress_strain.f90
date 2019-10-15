@@ -339,9 +339,9 @@
       include 'CB_mask.h'
       include 'CB_options.h'
 
-      type(datetime_type), intent(in) :: date
-
       character filename*100
+
+      type(datetime_type), intent(in) :: date
 
       integer, intent(in) :: k, expno
       integer i, j, m, year, month, day, hour, minute, second, milli, peri
@@ -366,7 +366,7 @@
       minute = date%minute
       second = date%second
       milli = date%milli
-      
+
       peri = Periodic_x + Periodic_y ! =1 if we have periodic conditions
       
       land=-999d0
@@ -604,9 +604,9 @@
 
           if ( maskC(i,j) .ge. 1 ) then
 
-            sigxx_it(i,j)  = sigxx(i,j)/GammaMEB(i,j) + Dsigxx(i,j) 
-            sigyy_it(i,j)  = sigyy(i,j)/GammaMEB(i,j) + Dsigyy(i,j)
-            sigxy_it(i,j)  = sigxy(i,j)/GammaMEB(i,j) + Dsigxy(i,j) 
+            sigxx_it(i,j)  = sigxx(i,j)*GammaMEB(i,j) + Dsigxx(i,j) 
+            sigyy_it(i,j)  = sigyy(i,j)*GammaMEB(i,j) + Dsigyy(i,j)
+            sigxy_it(i,j)  = sigxy(i,j)*GammaMEB(i,j) + Dsigxy(i,j) 
 
             sigI(i,j)   = (1/2d0)*( sigxx_it(i,j) + sigyy_it(i,j))
             sigII(i,j) = sqrt( ( (sigyy_it(i,j) - sigxx_it(i,j))/2d0 )**2d0 &
@@ -640,18 +640,19 @@
 
                 dfactor(i,j) = ( ( Deltat / Tdam)* &
                      ((sigcC(i,j)*(1+frict) / (sigI(i,j) - sigII(i,j)) ) - 1d0)+1d0)
+                print *, 'Compression, dfactor = ', dfactor(i,j), sigI(i,j), dfactor(i,j)
  
              ! 2. tensile capping
              elseif ( (sigI(i,j)+sigII(i,j)) .gt. sigtC(i,j)) then
                    dfactor(i,j) = ( ( Deltat / Tdam)* &
                         ((sigtC(i,j) / (sigI(i,j)+sigII(i,j))) - 1d0)+1d0)
-
+                print *, 'tensile, dfactor = ', dfactor(i,j)
              ! 3.  Mohr-Coulomb
              elseif ( Fn(i,j) .gt. 0d0) then
 
                    dfactor(i,j) = (( Deltat / Tdam)* &
                           ((CoheC(i,j) / (frict*sigI(i,j) + sigII(i,j))) - 1d0)+1d0)
-
+!                print *, 'Mohr-Coulomb, dfactor = ', sigyy(i,j), Dsigyy(i,j),Deyy(i,j)
              endif
 
              dfactor(i,j) = min(dfactor(i,j), 1d0)
@@ -695,11 +696,11 @@
 
           if (m1+m2+m3+m4 .ne. 0d0) then
 
-            dfactorB(i,j) = ((1-dam(i,j))*dfactor(i,j)*m1 + &
-                             (1-dam(i-1,j))*dfactor(i-1,j)*m2 + &
-                             (1-dam(i,j-1))*dfactor(i,j-1)*m3 + &
-                             (1-dam(i-1,j-1))*dfactor(i-1,j-1)*m4) &
-                               / ((1-damB(i,j))*(m1+m2+m3+m4))
+            dfactorB(i,j) = (dam(i,j)*dfactor(i,j)*m1 + &
+                             dam(i-1,j)*dfactor(i-1,j)*m2 + &
+                             dam(i,j-1)*dfactor(i,j-1)*m3 + &
+                             dam(i-1,j-1)*dfactor(i-1,j-1)*m4) &
+                               / (damB(i,j)*(m1+m2+m3+m4))
 
 !                    dfactorB(i,j) = (dfactor(i,j)*m1 + dfactor(i-1,j)*m2 + &
 !                                         dfactor(i,j-1)*m3 + dfactor(i-1,j-1)*m4) &
@@ -719,6 +720,7 @@
     if (peri .ne. 0) call periodicBC(damB,dfactorB)
 
     if ((k .eq. 1d0)) then
+	print *, 'increment in stress!!!'
     ! this insures that we only update stress history outside IMEX
 !------------------------------------------
 !--------UPDATING THE DAMAGE AND HISTORY FIELDS
@@ -734,12 +736,12 @@
             sigI(i,j)  = dfactor(i,j)*sigI(i,j)
             sigII(i,j) = dfactor(i,j)*sigII(i,j) 
 
-            dam(i,j) = 1 - (1-dam(i,j))*dfactor(i,j)
+            dam(i,j) = dam(i,j)*dfactor(i,j)
             endif
             sigxyB(i,j) = dfactorB(i,j)*( DsigxyB(i,j) &
-                          + sigxyB(i,j)/ GammaMEB_B(i,j) )
+                          + sigxyB(i,j)* GammaMEB_B(i,j) )
 
-            damB(i,j) = 1 - (1-damB(i,j))*dfactorB(i,j)
+            damB(i,j) = damB(i,j)*dfactorB(i,j)
 
 
           enddo
@@ -752,10 +754,10 @@
 
         do i = 1, nx+1
           do j = 1, ny+1
-             dam(i,j) = 1 - ((1-dam(i,j)) + (Theal)*Deltat)
-             damB(i,j) = 1 - ((1-damB(i,j)) + (Theal)*Deltat)
-             dam(i,j) = max(dam(i,j), 0d0)
-             damB(i,j) = max(damB(i,j), 0d0)
+             dam(i,j) = dam(i,j) + (Theal)*Deltat
+             damB(i,j) = damB(i,j) + (Theal)*Deltat
+             dam(i,j) = min(dam(i,j), 1d0)
+             damB(i,j) = min(damB(i,j), 1d0)
           enddo
         enddo
 
@@ -763,11 +765,159 @@
         if (peri .ne. 0) call periodicBC(sigxyB,sigxy)
         if (peri .ne. 0) call periodicBC(sigxx,sigyy)
         if (peri .ne. 0) call periodicBC(dam,damB)
-        
-    endif
+
+
+        !------------------------------------------
+        ! post the sea ice stress state (every 5 min)
+        !------------------------------------------
+
+
+        if (((milli .eq. 0) .and. (second .eq. 0))&
+            .and. ((minute .eq. 0) .or. (minute .eq. 10) &
+            .or. (minute .eq. 5) .or. (minute .eq. 15) &
+            .or. (minute .eq. 20) .or. (minute .eq. 30) &
+            .or. (minute .eq. 25) .or. (minute .eq. 35) &
+            .or. (minute .eq. 45) .or. (minute .eq. 55) &
+            .or. (minute .eq. 40) .or. (minute .eq. 50))) then
+
+          call post_MEB_stress(utp, vtp, sigI, sigII, Dexx, Deyy, Dexy, date, expno)
+
+        endif
+
+
+
+
+
+    endif ! if k == 1
 
       return
     end subroutine stress_strain_MEB
+
+
+
+    subroutine post_MEB_stress(utp, vtp, sigI, sigII, exx, eyy, exy, date, expno)
+
+    use datetime, only: datetime_type
+    use ellipse
+    use elastic
+
+    implicit none
+
+    include 'parameter.h'
+    include 'CB_Dyndim.h'
+    include 'CB_DynVariables.h'
+    include 'CB_DynForcing.h'
+    include 'CB_const.h'
+    include 'CB_mask.h'
+    include 'CB_options.h'
+
+    type(datetime_type), intent(in) :: date
+
+    character filename*100
+    character outputpath*100
+    integer, intent(in) :: expno
+    integer i, j, m, year, month, day, hour, minute, second, milli
+
+    double precision land, lowA
+
+    double precision, intent(in):: utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
+
+    double precision sigI(0:nx+2,0:ny+2), sigII(0:nx+2,0:ny+2)
+    double precision exx(0:nx+2,0:ny+2), eyy(0:nx+2,0:ny+2), exy(0:nx+2,0:ny+2)
+
+    year = date%year
+    month = date%month
+    day = date%day
+    hour = date%hour
+    minute = date%minute
+    second = date%second
+    milli = date%milli
+
+    land=-999d0
+    lowA=0d0
+
+
+    write (filename,'("output/sigI",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+                year, month, day, hour, minute, milli, expno
+    open (12, file = filename, status = 'unknown')
+
+    write (filename,'("output/sigII",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+                year, month, day, hour, minute, milli, expno
+    open (13, file = filename, status = 'unknown')
+
+    write (filename,'("output/u",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+                year, month, day, hour, minute, milli, expno
+    open (14, file = filename, status = 'unknown')
+
+    write (filename,'("output/v",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+                year, month, day, hour, minute, milli, expno
+    open (15, file = filename, status = 'unknown')
+
+    write (filename,'("output/dam",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+                year, month, day, hour, minute, milli, expno
+    open (16, file = filename, status = 'unknown')
+
+    write (filename,'("output/exx",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+                year, month, day, hour, minute, milli, expno
+    open (17, file = filename, status = 'unknown')
+
+    write (filename,'("output/eyy",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+                year, month, day, hour, minute, milli, expno
+    open (18, file = filename, status = 'unknown')
+
+    write (filename,'("output/exy",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+                year, month, day, hour, minute, milli, expno
+    open (19, file = filename, status = 'unknown')
+
+    write (filename,'("output/sigxx",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+                year, month, day, hour, minute, milli, expno
+    open (20, file = filename, status = 'unknown')
+
+    write (filename,'("output/sigyy",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+                year, month, day, hour, minute, milli, expno
+    open (21, file = filename, status = 'unknown')
+
+    write (filename,'("output/sigxy",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+                year, month, day, hour, minute, milli, expno
+    open (22, file = filename, status = 'unknown')
+
+    write (filename,'("output/h",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+                year, month, day, hour, minute, milli, expno
+    open (23, file = filename, status = 'unknown')
+
+    write (filename,'("output/A",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+                year, month, day, hour, minute, milli, expno
+    open (24, file = filename, status = 'unknown')
+
+
+    do j = 0, ny+1
+        write(12,100) ( sigI(i,j), i = 0, nx+1 )
+        write(13,100) ( sigII(i,j), i = 0, nx+1 )
+        write(14,200) ( utp(i,j), i = 0, nx+1 )
+        write(15,200) ( vtp(i,j), i = 0, nx+1 )
+        write(16,100) ( dam(i,j), i = 0, nx+1 )
+        write(17,100) ( exx(i,j),   i = 0, nx+1 )
+        write(18,100) ( eyy(i,j),   i = 0, nx+1 )
+        write(19,100) ( exy(i,j),   i = 0, nx+1 )
+        write(20,100) ( sigxx(i,j), i = 0, nx+1 )
+        write(21,100) ( sigyy(i,j), i = 0, nx+1 )
+        write(22,100) ( sigxy(i,j), i = 0, nx+1 )
+        write(23,200) ( h(i,j), i = 0, nx+1 )
+        write(24,200) ( A(i,j), i = 0, nx+1 )
+    enddo
+
+    do m=12,24
+        close(m)
+    enddo
+
+
+
+100            format (1x, 1000(f20.10, 1x))
+200            format (1x, 1000(f15.10, 1x))
+300            format (1x, 1000(f20.4,  1x))
+
+return
+end subroutine post_MEB_stress
 
 
 

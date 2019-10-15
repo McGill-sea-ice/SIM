@@ -202,13 +202,15 @@
     subroutine linesearch(sol,x, res, Fu)
 
 ! Apply the linesearch method     
-
+      use datetime, only: datetime_type
       implicit none
       include 'parameter.h'
       include 'CB_options.h'
       include 'CB_DynVariables.h'
 
       integer :: l
+
+      type(datetime_type) :: dummy
 
       double precision, intent(in) :: sol(nvar)
       double precision, intent(inout) :: x(nvar), Fu(nvar)
@@ -220,12 +222,19 @@
 
       do l = 1, 4
 
+<<<<<<< HEAD
          aLS = 1d0/(2d0**(1d0*(l-1)))
          x = xini + aLS*sol
          call transformer (utp,vtp,x,0)
          if ( IMEX .gt. 0 ) then ! IMEX method 1 or 2   
             call advection ( un1, vn1, utp, vtp, hn2, An2, hn1, An1, h, A )
-            call Ice_strength()
+            if (Rheology .eq. 3) then ! calculate the damage factor
+               dam  = dam1
+               damB = damB1
+               call stress_strain_MEB(uice,vice,dummy,0,0)
+            else
+               call Ice_strength()
+            endif
             call bvect_ind
          endif
          call ViscousCoefficient(utp,vtp)

@@ -30,8 +30,10 @@
                 zetaCf   (0:nx+2,0:ny+2), &
                 GammaMEB (0:nx+2,0:ny+2), &
                 GammaMEB_B (0:nx+2,0:ny+2), &
-                dam        (0:nx+2,0:ny+2), &
-                damB       (0:nx+2,0:ny+2), &
+                dam      (0:nx+2,0:ny+2), &
+                damB     (0:nx+2,0:ny+2), &
+                dam1     (0:nx+2,0:ny+2), &
+                damB1    (0:nx+2,0:ny+2), &
                 dfactor  (0:nx+2,0:ny+2), &
                 dfactorB (0:nx+2,0:ny+2), &
                 CoheC    (0:nx+2,0:ny+2), &
@@ -70,6 +72,8 @@
                 GammaMEB_B,     & ! visco-elastic dissipation coefficient (B-grid)
                 dam,            & ! damage parameter (C-grid)
                 damB,           & ! damage parameter (B-grid)
+                dam1,           & ! previous time level damage parameter (C-grid)
+                damB1,          & ! previous time level damage parameter (B-grid)
                 dfactor,        & ! damage factor (C-grid)
                 dfactorB,       & ! damage factor (B-grid)
                 CoheC,          & ! Cohesion at grid center

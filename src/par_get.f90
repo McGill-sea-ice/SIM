@@ -68,14 +68,15 @@
       
 ! Mohr Coulomb and MEB(rheology = 3)       
 
-      phi       =  45d0             ! internal angle of friction
-      Cohe      =  10d3             ! cohesion (tensile strght) [N/m2]
-      sigc      =  -Cohe*5d8 ! compressive strength cut-off [N/m2]
+      phi       =  45d0              ! internal angle of friction
+      Cohe      =  10d3              ! cohesion (tensile strght) [N/m2]
+      sigc      =  -Cohe*5d8         ! compressive strength cut-off [N/m2]
+      sigt      =  Cohe*5d8          ! compressive strength cut-off [N/m2]
       Young     =  1d9               ! Young's Modulus of sea ice
       Poisson   =  3.3d-01           ! Poisson Ratio of sea ice
-      lambda0   =  1d5 ! viscous relaxation timescale for sea ice
-      alpha     =  3d0 ! non-linear damage parameter
-      Theal     =  0d0 !Healing time scale. 0d0 = no healing.
+      lambda0   =  1d5               ! viscous relaxation timescale for sea ice
+      alpha     =  3d0               ! non-linear damage parameter
+      Theal     =  0d0               ! Healing time scale. 0d0 = no healing.
 
 !------------------------------------------------------------------------
 !     set run parameters (dynamic - thermodynamic - options - domain)
@@ -114,12 +115,12 @@
       IMEX       = 0                 ! 0:split in time, 1:Picard, 2:JFNK
       BDF         = 0                ! 0: back. Euler, 1: 2nd order back. diff. formula
       Dynamic    = .true.            ! ice model type
-      Thermodyn  = .true.           ! ice model type
+      Thermodyn  = .true.            ! ice model type
       BuoyTrack  = .false.
       Buoys      = 'Daily'           ! Buoy traj: 'Track' or 'Daily'
       Current    = 'YearlyMean'      ! YearlyMean, specified
       Wind       = '6hours'          ! 6hours, 60yrs_clim, specified
-      RampupWind  = .false.           ! smooth increase of specified wind
+      RampupWind  = .false.          ! smooth increase of specified wind
       AirTemp    = 'MonthlyMean'     ! MonthlyMean, specified (-10C)
       OcnTemp    = 'calculated'      ! MonthlyClim, specified,calculated
       calc_month_mean = .false.      ! to calc monthly mean fields

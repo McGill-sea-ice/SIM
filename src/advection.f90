@@ -63,6 +63,8 @@
       if (peri .ne. 0) then
           call periodicBC(hn1,An1)     
           call periodicBC(hn2,An2) 
+          call periodicBC(utp,vtp)
+          call periodicBC(utps,vtps)
       endif
 
 !------------------------------------------------------------------------ 

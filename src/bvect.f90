@@ -203,7 +203,7 @@
       do j = 1, ny
          do i = 1, nx+1
 
-            if ( maskB(i,j) + maskB(i,j+1) .gt. 0 ) then
+           if ( maskB(i,j) + maskB(i,j+1) .gt. 0 ) then
 
                if (solver .le. 2) then ! Picard or JFNK
                
@@ -217,8 +217,26 @@
                        CdwC1(i,j) * ( uwatnd(i,j) * costheta_w - &
                        vwavg(i,j)  * sintheta_w   )
 
+
                endif
                
+               !--------------------------------------------
+               ! If MEB, put the decohesive terms to rhs :
+               !--------------------------------------------
+               if ( Rheology .eq. 3) then
+
+                  !     d ( sig_xx ) / dx
+                  bu(i,j) = bu(i,j) + &
+                       ( sigxx(i,j)*GammaMEB(i,j) &
+                       - sigxx(i-1,j)*GammaMEB(i-1,j) ) &
+                       /  Deltax
+
+                  !     d ( sig_xy) / dy    B1_2
+                  bu(i,j) = bu(i,j) + (sigxyB(i,j+1)*GammaMEB_B(i,j+1) - &
+                       sigxyB(i,j)*GammaMEB_B(i,j) ) /  Deltax
+
+               endif
+
             else
 
                bu(i,j) = 0d0
@@ -228,11 +246,10 @@
          enddo
       enddo
 
-
       do j = 1, ny+1
          do i = 1, nx
             
-            if ( maskB(i,j) + maskB(i+1,j) .gt. 0 ) then
+           if ( maskB(i,j) + maskB(i+1,j) .gt. 0 ) then
 
                if (solver .le. 2) then ! Picard or JFNK
 
@@ -246,8 +263,26 @@
                        CdwC2(i,j) * ( vwatnd(i,j) * costheta_w + &
                        uwavg(i,j)  * sintheta_w   )
             
+
                endif
                
+               !--------------------------------------------
+               ! If MEB, put the decohesive terms to rhs :
+               !--------------------------------------------
+               if ( Rheology .eq. 3) then
+
+                  !     d ( sig_yy ) / dy
+                  bv(i,j) = bv(i,j) + &
+                       ( sigyy(i,j) * GammaMEB(i,j) &
+                       - sigyy(i,j-1) * GammaMEB(i,j-1) ) &
+                       /  Deltax 
+
+                  !     d ( sig_xy) / dx    B1_2
+                  bv(i,j) = bv(i,j) + ( sigxyB(i+1,j)*GammaMEB_B(i+1,j) &
+                       - sigxyB(i,j)*GammaMEB_B(i,j) ) /  Deltax
+                  
+               endif
+
             else
 
                bv(i,j) = 0d0
