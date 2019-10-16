@@ -59,6 +59,8 @@
       double precision :: xtp(nvar), rhs(nvar), Fu(nvar)
       double precision :: uk2(0:nx+2,0:ny+2), vk2(0:nx+2,0:ny+2)
       double precision :: ul(0:nx+2,0:ny+2), vl(0:nx+2,0:ny+2)
+      double precision :: dummy(0:nx+2,0:ny+2)
+
       double precision :: res, resk_1, time1, time2, timecrap
 
       double precision, save :: NLtol
@@ -146,6 +148,7 @@
                      kd = 0d0
                      dam = dam1
                      damB = damB1
+                     !call advection ( un1, vn1, uice, vice, dummy, dummy,dummy, Dam1, dummy, Dam)
                      call stress_strain_MEB(uice, vice, date, kd, expno)
                      
                   else
@@ -208,6 +211,7 @@
                      kd = 0d0
                      dam = dam1
                      damB = damB1
+                     !call advection ( un1, vn1, uice, vice, dummy, dummy, dummy,Dam1, dummy, Dam)
                      call stress_strain_MEB(uice, vice, date, kd, expno)
                      
                   else
@@ -290,6 +294,10 @@
 
          if (IMEX .eq. 0) then ! already done with IMEX 1 and 2
             call advection ( un1, vn1, uice, vice, hn2, An2, hn1, An1, h, A )
+
+            !if (Rheology .eq. 3) &
+            !     call advection ( un1, vn1, uice, vice, dummy, dummy,dummy, Dam1, dummy, Dam)
+
          endif
             
       endif

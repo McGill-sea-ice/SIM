@@ -1456,15 +1456,17 @@ subroutine MEBcoeff
                                  dam(i,j)* dfactor(i,j) * GammaMEB(i,j)
              P(i,j) = 0d0
              
-             CoheC(i,j) = Cohe
-             sigtC(i,j) = sigt
-             sigcC(i,j) = sigc
+             CoheC(i,j) = Cohe*hAfunc(i,j)
+             sigtC(i,j) = sigt*hAfunc(i,j)
+             sigcC(i,j) = sigc*hAfunc(i,j)
 
             enddo
          enddo
          
          if (peri .ne. 0) call periodicBC(etaC,zetaC)
          if (peri .ne. 0) call periodicBC(GammaMEB,P)
+         if (peri .ne. 0) call periodicBC(sigtC,CoheC)
+         if (peri .ne. 0) call periodicBC(sigcC,P) !P=0 everywhere: dummy
          
 !------------------------------------------------------------------------
 !     Calculate the coefficient in the grid nodes

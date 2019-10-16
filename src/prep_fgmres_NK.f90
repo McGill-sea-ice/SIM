@@ -217,12 +217,13 @@
       double precision, intent(in) :: res
       double precision :: aLS, resnew, xini(nvar), rhs(nvar)
       double precision utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
+      double precision ddummy(0:nx+2,0:ny+2)
+
 
       xini = x
 
       do l = 1, 4
 
-<<<<<<< HEAD
          aLS = 1d0/(2d0**(1d0*(l-1)))
          x = xini + aLS*sol
          call transformer (utp,vtp,x,0)
@@ -230,7 +231,7 @@
             call advection ( un1, vn1, utp, vtp, hn2, An2, hn1, An1, h, A )
             if (Rheology .eq. 3) then ! calculate the damage factor
                dam  = dam1
-               damB = damB1
+               !call advection ( un1, vn1, uice, vice, dummy, dummy,dummy, Dam1, dummy, Dam) 
                call stress_strain_MEB(uice,vice,dummy,0,0)
             else
                call Ice_strength()
