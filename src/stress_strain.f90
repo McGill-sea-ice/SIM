@@ -44,7 +44,7 @@
       double precision sigI(0:nx+1,0:ny+1), sigII(0:nx+1,0:ny+1)
       double precision sigInorm(0:nx+1,0:ny+1), sigIInorm(0:nx+1,0:ny+1)! stress invariants
       double precision sig1norm(0:nx+1,0:ny+1), sig2norm(0:nx+1,0:ny+1) ! princ stresses
-      double precision zetaCout(0:nx+1,0:ny+1)
+      double precision zetaCout(0:nx+1,0:ny+1), etaCout(0:nx+1,0:ny+1)
 
       year = date%year
       month = date%month
@@ -67,6 +67,7 @@
       sig1norm  = land
       sig2norm  = land
       zetaCout  = land
+      etaCout   = land
 
 ! note: to study the numerical convergence of the stress, zeta and eta should be calculated 
 !       with u^{k-1} and the deformations with u^k. This is why we use here zetaCf and etaCf
@@ -84,6 +85,7 @@
                if ( maskC(i,j) .eq. 1 ) then
 
                   zetaCout(i,j) = zetaCf(i,j) ! no special value for A<0.5
+                  etaCout(i,j)  = etaCf(i,j)  ! no special value for A<0.5
 
                   if (A(i,j) .lt. 0.5d0) then
                      div(i,j)       = lowA
@@ -191,6 +193,7 @@
                sig1norm(i,j)  = lowA
                sig2norm(i,j)  = lowA
                zetaCout(i,j)  = 0d0
+               etaCout(i,j)   = 0d0
             endif
          enddo
 
@@ -206,6 +209,7 @@
                sig1norm(i,j)  = lowA
                sig2norm(i,j)  = lowA
                zetaCout(i,j)  = 0d0
+               etaCout(i,j)   = 0d0
             endif
          enddo
 
@@ -221,6 +225,7 @@
                sig1norm(i,j)  = lowA
                sig2norm(i,j)  = lowA
                zetaCout(i,j)  = 0d0
+               etaCout(i,j)   = 0d0
             endif
          enddo
 
@@ -236,6 +241,7 @@
                sig1norm(i,j)  = lowA
                sig2norm(i,j)  = lowA
                zetaCout(i,j)  = 0d0
+               etaCout(i,j)   = 0d0
             endif
          enddo
 
@@ -275,6 +281,10 @@
            year, month, day, hour, minute, k, expno
       open (20, file = filename, status = 'unknown')
 
+      write (filename,'("output/etaC",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+           year, month, day, hour, minute, k, expno
+      open (21, file = filename, status = 'unknown')
+
       do j = 0, ny+1
          write(12,100) ( sigI(i,j), i = 0, nx+1 )
          write(13,100) ( sigII(i,j), i = 0, nx+1 )
@@ -285,6 +295,7 @@
          write(18,200) ( div(i,j), i = 0, nx+1 )
          write(19,200) ( shear(i,j), i = 0, nx+1 )
          write(20,300) ( zetaCout(i,j), i = 0, nx+1 )
+         write(21,300) ( etaCout(i,j), i = 0, nx+1 )
       enddo
 
       do m=12,20

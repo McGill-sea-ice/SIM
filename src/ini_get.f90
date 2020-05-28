@@ -43,12 +43,11 @@ subroutine ini_get (restart, expno_r, restart_date)
                h(i,j)   =  1d0 * maskC(i,j) ! initial ice thick
                A(i,j)   =  1d0 * maskC(i,j) ! initial ice conc
 
-!     h and A set to zero on open boundaries
-
-               if (i.eq.0 .or. i.eq.nx+1 .or. j.eq.0 .or. j.eq.ny+1) &
-                         h(i,j) = 0d0
-               if (i.eq.0 .or. i.eq.nx+1 .or. j.eq.0 .or. j.eq.ny+1) &
-                         A(i,j) = 0d0
+!     h and A set to zero on open boundaries !FB: 
+               if (i.lt.11 .or. i.gt.nx-10 .or. j.eq.ny+1) then !FB: lt. 3 gt.2
+                  h(i,j) = 0d0
+                  A(i,j) = 0d0
+               endif
 
                tracer(i,j,1) = h(i,j)
                tracer(i,j,2) = A(i,j)

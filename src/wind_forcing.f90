@@ -104,13 +104,13 @@
          
       elseif ( Wind .eq. 'specified' ) then
          
-         wm = 10.0d0
+         wm = 2.5d0 !FB Vitesse du vent 2.5 (instead of 10.0d0 => to break in shear?)
          
          do i = 1, nx+1
             do j = 1, ny+1
                
-               uair(i,j) = 10d0 
-               vair(i,j) =  0d0
+               uair(i,j) = 0 !FB 10d0
+               vair(i,j) =-wm  !FB (-wm in order to apply changes authomatically at v) 10d0, 
                
 !     call random_number(rdnumb)
 !               uair(i,j) = wm * (rdnumb - 0.5d0)
@@ -120,7 +120,7 @@
             enddo
          enddo
          
-      endif
+      endif !Wind
       
 !------------------------------------------------------------------------
 !     Calculate wind speed and wind stress at the grid nodes

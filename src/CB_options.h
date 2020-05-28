@@ -1,5 +1,6 @@
 !========================================================================
 !     Common block options: program options
+! FB: flag for domain Idealized in per_get.f90
 !========================================================================
 
       logical                   &
@@ -7,8 +8,8 @@
                 Thermodyn,      &
                 BuoyTrack,      &
                 calc_month_mean,&
-                runoff
-
+                runoff,         &
+                Idealized_domain
       character(LEN=20)         &
                 BndyCond,       &
                 DragLaw,        &
@@ -38,10 +39,11 @@
                 OcnTemp,        & ! specified, MonthlyMean
                 Wind,           & ! specified, MonthlyMean
                 Current,        & ! specified, YearlyMean
+                Idealized_domain, & ! FB: true when domain is Idealized, false when domain is the Arctic 
 		adv_scheme,     & ! advection scheme: upwind or upwindRK2
                 BndyCond,       & ! noslip or freeslip
                 DragLaw,        & ! linear, square, linearH or squareH
-		Rheology,       & ! ellipse, triangle
+		Rheology,       & ! FB: ellipse=1, triangle=2
 		IMEX,           & ! 0: standard (splitting in time), 1 and 2: IMEX
                 BDF,            & ! 0: standard, 1: Backward diff formula (2nd order)
 		visc_method,    & ! choice of calc of visc coeff

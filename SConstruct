@@ -42,7 +42,7 @@ env = Environment(LIBPATH=[libs],
                   FORTRANMODDIR=[include,], 
                   FORTRANMODDIRPREFIX='-J', 
                   F90PATH=[include,], 
-                  F90FLAGS=['-Wall', '-fPIC','-fbackslash', '-O3', '-ffast-math'], 
+                  F90FLAGS=['-fPIC','-fbackslash', '-O3', '-ffast-math'], 
                   FORTRAN=FC,
                   LINKFLAGS=[],
                   F90=FC)
@@ -96,5 +96,5 @@ fruit_tests = SConscript('fruit/tests/SConscript', variant_dir='build/fruit_test
 sim = SConscript('src/SConscript', variant_dir='build/sim')
 
 # Tests for the Sea Ice Model
-test_sim = SConscript('src/tests/SConscript', variant_dir='build/sim_tests')
+# test_sim = SConscript('src/tests/SConscript', variant_dir='build/sim_tests')
 

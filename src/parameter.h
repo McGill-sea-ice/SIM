@@ -10,6 +10,7 @@
 !         40          128       108
 !         80           63        53
 ! ---------------------------------
+! Modifications : FB Wed 26 June 2019
 !------------------------------------------------------------------------
 
       integer nx, ny, ntot, nbuoy, nvar, img, img1
@@ -17,8 +18,12 @@
       double precision beta, dx_pole, dy_pole, S0
 
       parameter (                             &
-                nx    = 128,                   & ! x-dim of the domain
-                ny    = 108,                   & ! y-dim of the domain
+                nx = 100, & !new domain 20x50
+                ny = 250, &
+                !nx    = 128,                   & ! x-dim of the domain
+                !ny    = 108,                   & ! y-dim of the domain
+
+    !FB: following two lines are not neccesary (pole orientation unnecesary)
                 dx_pole= 2500d3,              & ! tracer point (0,0) x distance from North pole [m] 
                 dy_pole= 2250d3,              & ! tracer point (0,0) y distance from North pole [m] 
                 beta  = 32.0d0,               & ! angle of the dom wr to Greenwich

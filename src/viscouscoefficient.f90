@@ -323,7 +323,7 @@ subroutine ViscousCoeff_method2(utp,vtp)
   double precision utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
   
   denomin = 2d-09 ! Hibler, 1979
-
+  !denomin = 1d-06  !FB: (Lemieux Tremblay 2008)  
   rheo = Rheology ! define local variable to speed up the code
 
 !------------------------------------------------------------------------
@@ -418,8 +418,7 @@ subroutine ViscousCoeff_method2(utp,vtp)
                   
 
               if ( rheo .eq. 1 ) then ! ellipse, jfl p.892
-
-
+               
                  deno = sqrt(( dudx **2 + dvdy **2 )*(1.0d0 + ell_2) &
                       + 2.0d0 * dudx * dvdy * (1.0d0 - ell_2) &
                       + ell_2 * ( dvdx + dudy ) ** 2 )
@@ -428,15 +427,16 @@ subroutine ViscousCoeff_method2(utp,vtp)
                  if ( regularization .eq. 'tanh' ) then
 
                     deno = max( deno, 1d-20 )
-                     
+                    !print *, 'wohoooooooooo2 deno=  ', deno
                     zetaC(i,j) =  ( Pp(i,j)/denomin ) &
                          *( tanh(denomin*(1/deno)))
-
+                         !print *, 'tannnnnnnnnnnnnnzetaC(i,j)=  ', zetaC(i,j)
                  elseif ( regularization .eq. 'Kreyscher' ) then
                         
                     denoT = deno + denomin
 
                     zetaC(i,j) = Pp(i,j)/denoT 
+                    !print *, 'yohoooooooooo2 zetaC(i,j)=  ', zetaC(i,j)
 
                  else
                         
@@ -451,23 +451,49 @@ subroutine ViscousCoeff_method2(utp,vtp)
                         
               elseif ( rheo .eq. 2 ) then ! triangle, jfl p.1124
 
-                 epsI = dudx + dvdy
+                 epsI = dudx + dvdy !div 
                  deno = sqrt( (dudx - dvdy)**2 + (dudy + dvdx)**2 ) ! epsII
                  deno = max( deno, 1d-20 )
-                 if (epsI .gt. -1d-20 ) then
+                 !-------------------STEP FUNCTION-------------------------------------------------------------
+                 !deno=denomin+sqrt( (dudx - dvdy)**2 + (dudy + dvdx)**2 ) ! epsII
+                 ! if (epsI .lt. -1d-20 ) then
+                    
+                 !    !print *, 'heeeeeeeeeeeeey'
+                 !    !print *, 'wohoooooooooo1 espI=  ', epsI
+                 !    !print *, 'wohoooooooooo2 deno=  ', deno
+                 !    
+                 !    !print *, 'yohoooooooooo1 zetaC(i,j)=  ', zetaC(i,j)
+                 !    !etaC(i, j) = (Pp(i, j) * sinphi / (2 * deno))
+                 !    !print *, 'yohoooooooooo2 etaC(i,j)=  ', etaC(i,j)
+                 !    
+                 !    
+                 !    !print *, 'HEEEEEEEEEEEEEzeta(i,j)=  ', zeta(i,j), 'etaC(i,j)', etaC(i,j)
+                 ! else
+                
+                 !    zetaC(i, j) = Pp(i, j) / (2 * denomin ) !bulk viscosity
+                 !    etaC(i, j) = 0                          !shear viscosity  
+                 !    !print *, 'HEEEEEEEEEEEEEEEEEEEEzeta(i,j)=  ', zeta(i,j)
+                 ! endif
 
-                    zetaC(i, j) = Pp(i, j) / (2 * denomin )
-                    etaC(i, j) = 0
-                 else
-                    zetaC(i, j) = Pp(i, j) / (2 * sqrt( epsI**2 ) )
-                    etaC(i, j) = (Pp(i, j) * sinphi / (2 * deno)) * 0.5 * ( ( -epsI / sqrt( epsI**2 ) ) + 1 )
+                 !--------------------------------------------------------------------------------------------------------
 
-                 endif
+                 !----------------------tanh (-1/(denomin*epsI))---------------------------------------------------------
+                 !zetaC(i, j) = Pp(i, j) / 2 * (abs(epsI)*denomin )*tanh(-1/(denomin*epsI)) 
+                 !etaC(i, j) = (Pp(i, j) * sinphi / (2 * deno)) * 0.5 * ( 1 + epsI*denomin*tanh(-1/(denomin*abs(epsI))))
+                 !-------------------------------------------------------------------------------------------------------
 
-              endif
+                 !----------------------tanh (denomin/epsI)------Lemieux Tremblay 2008 ----------------------------------
+                 ! zetaC(i, j) = Pp(i, j) / (2*denomin) *tanh(denomin/epsI) 
+                 ! etaC(i, j) = zetaC(i,j)*ell_2
+                 !-------------------------------------------------------------------------------------------------------
+                 !----------------------tanh (-1/(denomin*epsI))---------------------------------------------------------
+                 zetaC(i, j) = Pp(i, j) / 2 * (abs(epsI)*denomin )*tanh(-1/(denomin*epsI)) 
+                 etaC(i, j) = (Pp(i, j) * sinphi / (2 * deno)) * 0.5 * ( 1 + abs(epsI)*denomin*tanh(-1/(denomin*epsI)))
+                 !-------------------------------------------------------------------------------------------------------
+              endif !rheo
 
                   
-           endif
+           endif !( maskC(i,j) .eq. 1 )
                
                
         enddo
@@ -708,9 +734,10 @@ subroutine ViscousCoeff_method2(utp,vtp)
 
               elseif ( rheo .eq. 2 ) then ! triangle, jfl p.1124
 
-                 epsI = dudx + dvdy
+                 epsI = dudx + dvdy !divergence
                  deno = sqrt( (dudx - dvdy)**2 + (dudy + dvdx)**2 ) ! epsII
                  deno = max( deno, 1d-20 )
+                 !deno = denomin+sqrt( (dudx - dvdy)**2 + (dudy + dvdx)**2 ) ! epsII
 
                  if ( epsI .gt. -1d-20) then
                     etaB(i, j) = 0

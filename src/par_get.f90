@@ -13,7 +13,7 @@
 !     Address : Dept. of Atmospheric and Oceanic Sciences, McGill University
 !     -------   Montreal, Quebec, Canada
 !     Email   :  bruno.tremblay@mcgill.ca
-!
+!     Modified : FB 26 June 2019
 !************************************************************************
 
       subroutine par_get
@@ -48,24 +48,24 @@
       double precision x1, y1, r1, rs, tanteta
       double precision lat(0:nx+1,0:ny+1), long(0:nx+1,0:ny+1)
       character(len=2) :: cdelta
+      character(len=7) :: csize
       integer i, j
 
 !------------------------------------------------------------------------
 !     set run parameters (dynamic - thermodynamic - options - domain)
 !------------------------------------------------------------------------
-
-      f          =  1.46d-04         ! Coriolis parameter [1/s] 
+      f          =  0d0              !FB 1.46d-04  Coriolis parameter [1/s] 
       Cdair      =  1.2d-03          ! air-ice drag coeffient []1.2e-03
       Cdwater    =  5.5d-03          ! water-ice drag coeffient[]5.5e-03
-      theta_a    =  25d0             ! wind turning angle [degree] 
-      theta_w    =  25d0             ! water turning angle [degree]
+      theta_a    =  0 !FB 25d0             wind turning angle [degree] 
+      theta_w    =  0 !FB 25d0             water turning angle [degree]
       Pstar      =  27.5d03          ! ice yield stress [N/m2] 
       C          =  20d0             ! ice concentration parameter  
       phi        =  30d0             ! internal angle of friction
       !delta      =  10d0             ! angle of dilatancy
       !Cohe       =  0d0 !4d03        ! cohesion (tensile strght) [N/m2]
       !etamax     =  1.0d12           ! max shear viscosity
-      ellipticity = 2.0d0            ! ellipticity for ellipse rheology 
+      ellipticity = 2.0d0            ! ellipticity for ellipse rheology !FB: change this 2, 2.5, etc max 3.5ish
 
       Ktracer(1) =  0d0!5d03         ! diff coeff for h [m2/s] 
       Ktracer(2) =  0d0!5d03         ! diff coeff for A [m2/s]
@@ -85,39 +85,48 @@
       relhum     =  0.8d0            ! atmosphere relative humidity
 
       ntracer    =  2                ! total number of ice tracer
-
+      
+      Idealized_domain  = .true.     ! FB: when false domain is the Arctic  
       BndyCond   = 'noslip'          ! noslip
       DragLaw    = 'square'          ! square
-      Rheology   = 2                 ! ellipse = 1, triangle = 2
+      Rheology   = 1 !FB 2           ! ellipse = 1, triangle = 2
       linearization = 'Zhang'        ! Tremblay, Zhang
       regularization = 'tanh'        ! tanh, Kreyscher
+      !xi          =.9               !FB: Lemieux Tremblay =will become p/2 delta^-1 etamax^-1 
       visc_method = 2                ! see viscousCoeff routine for details
       ini_guess  = 'previous time step' ! freedrift, previous time step
-      adv_scheme = 'upwind'       ! upwind, upwindRK2 
-      IMEX       = 0                 ! 0:split in time, 1:Picard, 2:JFNK
+      adv_scheme = 'upwind'          ! upwind, upwindRK2 
+      IMEX       = 0                 ! 0:split in time, 1:Picard, 2:JFNK !FB IMEX=0
       BDF         = 0                ! 0: back. Euler, 1: 2nd order back. diff. formula
       Dynamic    = .true.            ! ice model type
-      Thermodyn  = .true.           ! ice model type
+      Thermodyn  = .false.           !FB  .true.           ! ice model type
       BuoyTrack  = .false.
       Buoys      = 'Daily'           ! Buoy traj: 'Track' or 'Daily'
-      Current    = 'YearlyMean'      ! YearlyMean, specified
-      Wind       = '6hours'          ! 6hours, 60yrs_clim, specified
+      Current    = 'specified'       ! 'YearlyMean'      ! YearlyMean, specified
+      Wind       = 'specified'       !FB '6hours'          ! 6hours, 60yrs_clim, specified
       AirTemp    = 'MonthlyMean'     ! MonthlyMean, specified (-10C)
       OcnTemp    = 'calculated'      ! MonthlyClim, specified,calculated
       calc_month_mean = .false.      ! to calc monthly mean fields
       runoff     = .false.
-
-      if ((nx == 518) .and. (ny == 438)) then
-         Deltax     =  10d03           ! grid size [m] 
-      elseif  ((nx == 258) .and. (ny == 218)) then
-         Deltax     =  20d03           ! grid size [m] 
-      elseif  ((nx == 128) .and. (ny == 108)) then
-         Deltax     =  40d03           ! grid size [m] 
-      elseif  ((nx == 63) .and. (ny == 53)) then
-         Deltax     =  80d03           ! grid size [m] 
-      else
-         write(*,*) "Wrong grid size dimenions.", nx, ny
-         STOP
+      !FB: a flag here if idealized use new domain 20x50
+      if (Idealized_domain .eqv. .true.) then     
+          Deltax     =  10d03 !FB: originally 50d03 
+          !if ((nx==20) .and. (ny==50)) then
+            !Deltax     =  50d03           ! FB grid size [m]  
+          !endif   
+      else  
+         if ((nx == 518) .and. (ny == 438)) then
+            Deltax     =  10d03           ! grid size [m] 
+         elseif  ((nx == 258) .and. (ny == 218)) then
+            Deltax     =  20d03           ! grid size [m] 
+         elseif  ((nx == 128) .and. (ny == 108)) then
+            Deltax     =  40d03           ! grid size [m] 
+         elseif  ((nx == 63) .and. (ny == 53)) then
+            Deltax     =  80d03           ! grid size [m] 
+         else 
+            write(*,*) "Wrong grid size dimenions.", nx, ny
+            STOP
+         endif
       endif
 
       Deltax2 = Deltax**2d0
@@ -126,11 +135,11 @@
 !     Numerical parameters
 !------------------------------------------------------------------------      
       
-      solver = 2               ! 1 = Picard, 2 = JFNK, 3 = EVP   
+      solver = 2             ! 1 = Picard, 2 = JFNK, 3 = EVP   
 
       wjac  = 0.575d0
       wsor  = 0.95d0           ! relaxation parameter for SOR precond
-      wlsor = 1.40d0           ! relaxation parameter for SOR precond
+      wlsor = 1.40d0           ! relaxation parameter for SOR precond !FB: wlsor=1.40d0 (originally) 0.7
       kjac  = 10               !
       ksor  = 10               ! nb of ite of precond SOR
       klsor = 10               ! nb of ite of precond line SOR
@@ -138,7 +147,7 @@
       gamma_nl = 1d-03         ! nonlinear convergence criterion for JFNK 
       dropini = 1.5d0          ! res_t = L2norm_ini/dropini (L2norm_ini: beg of Newton loop)
       NLmax = 200              ! max nb of Newton loop for JFNK
-      OLmax = 500              ! max nb of Outer loop for Picard
+      OLmax = 500              !FB:OLmax=500 max nb of Outer loop for Picard
       klinesearch = 1          ! linesearch is applied for JFNK for k .ge. klinesearch
       Jac_finite_diff = 'forward' ! forward, centred (for JFNK solver)
 
@@ -163,7 +172,7 @@
 !     Time step
 !------------------------------------------------------------------------
 
-      Deltat     =  1200d0
+      Deltat     =  240d0 !FB: originally 1200d0 now testing with smaller Deltat and posting date in input_norestart
       DtoverDx   = Deltat / Deltax
       
       if (1d0*Deltat .gt. Deltax) then
@@ -313,9 +322,16 @@
 !     Grid parameter: land mask (grid center), velocity mask (node)
 !------------------------------------------------------------------------
 
-      write(cdelta, '(I2)') int(Deltax)/1000
+      if ( Idealized_domain ) then
+         write(*, 888) nx,ny
+         write(csize, 888) nx,ny
+888      format(I3.3, ('x'), I3.3)
+         open (unit = 20, file = 'src/mask'//csize//'.dat', status = 'old')
+      else
+         write(cdelta, '(I2)') int(Deltax)/1000
+         open (unit = 20, file = 'src/mask'//cdelta//'.dat', status = 'old')
+      endif
 
-      open (unit = 20, file = 'src/mask'//cdelta//'.dat', status = 'old')
 
       do j = 0, ny+1               ! land mask
          read (20,10) ( maskC(i,j), i = 0, nx+1 )
@@ -343,65 +359,68 @@
          enddo
       enddo
 
-      if (BasalStress) then ! LF ice basal stress param is used
-      
-      open (unit=21,file='src/bathymetry'//cdelta//'km.dat', status = 'old')
+      if (.not. Idealized_domain) then !FB :use this when domain is Arctic
+         if (BasalStress) then ! FB ice basal stress param is used???
+         
+            open (unit=21,file='src/bathymetry'//cdelta//'km.dat', status = 'old')
 
-      do j = 0, ny+1               ! bathy
-         read (21,*) ( bathy(i,j), i = 0, nx+1 )
-      enddo
+            do j = 0, ny+1               ! bathy
+               read (21,*) ( bathy(i,j), i = 0, nx+1 )
+            enddo
 
-      close (unit = 21)
+            close (unit = 21)
 
-      do j=0,ny+1
-         do i=0,3
-            if (maskC(i,j) .eq. 1) then
-               bathy(i,j)=9999d0
+            do j=0,ny+1
+               do i=0,3
+                  if (maskC(i,j) .eq. 1) then
+                     bathy(i,j)=9999d0
+                  endif
+               enddo
+            enddo
+
+            do j=0,ny+1
+               do i=nx-2,nx+1
+                  if (maskC(i,j) .eq. 1) then
+                     bathy(i,j)=9999d0
+                  endif
+               enddo
+            enddo
+
+            do i=0,nx+1
+               do j=0,3
+                  if (maskC(i,j) .eq. 1) then
+                     bathy(i,j)=9999d0
+                  endif
+               enddo
+            enddo
+
+         
+            do j = 0, ny+1 ! bathy should be gt 5m (+) for ocean and -10 for land
+               do i = 0, nx+1
+                  
+                  if (maskC(i,j) .eq. 0) then
+                     if (bathy(i,j) .ne. -10d0) then
+                        print *, 'wrong bathy on land'
+                        stop
+                     endif
+                  else
+                     if (bathy(i,j) .lt. 4.9999d0) then
+                        print *, 'wrong bathy on ocean'
+                        stop
+                     endif
+                  endif
+
+               enddo
+            enddo
+
+             if ( Current .ne. 'specified' ) then
+               print *, 'Currents should be zero (specified) with basal stress param'
+               stop
             endif
-         enddo
-      enddo
-
-      do j=0,ny+1
-         do i=nx-2,nx+1
-            if (maskC(i,j) .eq. 1) then
-               bathy(i,j)=9999d0
-            endif
-         enddo
-      enddo
-
-      do i=0,nx+1
-         do j=0,3
-            if (maskC(i,j) .eq. 1) then
-               bathy(i,j)=9999d0
-            endif
-         enddo
-      enddo
-      
-      do j = 0, ny+1 ! bathy should be gt 5m (+) for ocean and -10 for land
-         do i = 0, nx+1
-            
-            if (maskC(i,j) .eq. 0) then
-               if (bathy(i,j) .ne. -10d0) then
-                  print *, 'wrong bathy on land'
-                  stop
-               endif
-            else
-               if (bathy(i,j) .lt. 4.9999d0) then
-                  print *, 'wrong bathy on ocean'
-                  stop
-               endif
-            endif
-
-         enddo
-      enddo
-
-       if ( Current .ne. 'specified' ) then
-         print *, 'Currents should be zero (specified) with basal stress param'
-         stop
-      endif
-      
-      endif
-      
+         
+         endif ! end if BasalStress
+      endif !domain   
+         
 !------------------------------------------------------------------------
 !     latitude and longitude of mask's tracer points
 !     same calculation as in mask_gen.f (see p.1017-1018)

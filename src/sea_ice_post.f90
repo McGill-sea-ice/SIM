@@ -179,6 +179,8 @@
          close(k)
       enddo
 
+      call stress_strain (uice, vice, date, 9, expno)
+
  10   format (1x, 1000(f20.16, 1x))
  20   format (1x, 1000(f20.16, 1x))
  30   format (1x, 1000(f12.6, 1x))

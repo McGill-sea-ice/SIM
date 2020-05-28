@@ -34,7 +34,7 @@
                 sinphi,         & ! sin (phi)
                 rhof,           & ! rhoice * Coriolis parameter
                 Tif,            & ! ice freezing point temperature
-                Tof               ! ocn freezing point temperature
+                Tof              ! ocn freezing point temperature
 
 
 

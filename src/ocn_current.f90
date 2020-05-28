@@ -54,11 +54,11 @@
          fname2= 'forcing/ocncurrent/'// cdelta // '/vwater' // cdelta // '.clim'
       endif
       
-      print *, 'Reading ocean currents for the ' // cdelta // ' km resolution grid.' 
-      print *, 'reading ', fname1
-      print *, 'reading ', fname2
-
       if ( fname1 .ne. '') then
+          print *, 'Reading ocean currents for the ' // cdelta // ' km resolution grid.' 
+          print *, 'reading ', fname1
+          print *, 'reading ', fname2
+
 
          open(unit = 30, file = fname1, status = 'unknown')
          open(unit = 31, file = fname2, status = 'unknown')
@@ -99,22 +99,22 @@
 
       endif
 
-      do i = 1, nx+1
-         do j = 1, ny+1
+      if (Current .eq. 'specified' ) then
+         print *, 'Reading ocean currents from specified values'
+         do i = 1, nx+1
+            do j = 1, ny+1
                        
 !     user specified ocean current
 
-            if (Current .eq. 'specified' ) then
                uwater(i,j)  = 0.0d0  * maskB(i,j)
                vwater(i,j)  = 0.0d0  * maskB(i,j)
                uwatnd(i,j)  = 0.0d0  * min( maskB(i,j)   &
                                      + maskB(i,j+1), 1 )
                vwatnd(i,j)  = 0.0d0  * min( maskB(i,j) + &
                                        maskB(i+1,j), 1 )
-            endif
-
+            enddo
          enddo
-      enddo
+      endif
 
       return
     end subroutine ocn_current
