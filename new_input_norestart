@@ -1,0 +1,9 @@
+0                   restart
+5                  exp version
+1990-01-01:00:00:00 starting date
+1990-01-05:20:40:00 end date
+1990-01-01:08:00:00 posting date
+1990-01-05:20:00:00 
+stop                end of post date string
+
+
