@@ -17,3 +17,13 @@ Copy the key from screen.
 Paste it in the git-hub web site "add public key"
 Go back to your terminal on your home machine.
 Then git clone git@github.com:McGill-sea-ice/SIM.git
+
+1020  git status
+git add README.MD : % Include changes
+git help     % Get help
+git add GIT-HELP  % Include changes
+git status        % Check status: untrack vs tracked file and ready to commit
+git commit -m "Help file created to set up a clone" % Required b4 pushing
+git status  %
+git push origin master % Include changs to masters on github
+
