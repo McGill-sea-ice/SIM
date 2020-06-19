@@ -66,8 +66,8 @@
       return
     end subroutine JacfreeVec
 
-!****************************************************************************                                              
-!     calculates the vector given by Ax - rhs                                                                   
+!****************************************************************************                                        
+!     calculates the vector given by Ax - rhs                                          
 !**************************************************************************** 
 
 subroutine Funk (xtp,rhs,Fout)
@@ -81,7 +81,8 @@ subroutine Funk (xtp,rhs,Fout)
 
   call matvec(xtp,Fout) ! Fout here is Ax
 
-  Fout = Fout - rhs ! substract rhs vector                                                                     
+  Fout = Fout - rhs ! substract rhs vector                                               
+                    
 
   return
 end subroutine Funk
@@ -89,6 +90,8 @@ end subroutine Funk
 
 !****************************************************************************
 !     calculates matrix A times a vector x and outputs the vector Ax
+!     for stressBC see JF'notes EC5 p.23-39
+!     W: West, E: East, S: South, N: North
 !****************************************************************************
 
       subroutine MATVEC (x,Ax)
@@ -124,8 +127,20 @@ end subroutine Funk
 !     Coriolis term
 !------------------------------------------------------------------------
 
-            vavg = ( vtp(i,j)   + vtp(i,j+1) &
+            if (stressBC .and. i .eq. 1) then
+
+               vavg = ( vtp(i,j)   + vtp(i,j+1) ) / 2d0
+
+            elseif (stressBC .and. i .eq. nx+1) then
+
+               vavg = ( vtp(i-1,j) + vtp(i-1,j+1) ) / 2d0
+
+            else
+
+               vavg = ( vtp(i,j)   + vtp(i,j+1) &
                  + vtp(i-1,j) + vtp(i-1,j+1) ) / 4d0
+
+            endif
 
             hvert = ( h(i,j) + h(i-1,j) ) / 2d0
 
@@ -156,20 +171,51 @@ end subroutine Funk
 !     -d ( eta dv/dy ) / dx    B1_1  p.899... 
 !------------------------------------------------------------------------
 
-            Ax(k) = Ax(k) + &
+            if (stressBC .and. i .eq. 1) then ! W
+
+               Ax(k) = Ax(k) + &
+                       ( etaC(i,j)   * ( vtp(i,j+1)   - vtp(i,j)   ) &
+                       ) /  DxhDx
+
+            elseif (stressBC .and. i .eq. nx+1) then ! E
+
+               Ax(k) = Ax(k) - &
+                       ( etaC(i-1,j) * ( vtp(i-1,j+1) - vtp(i-1,j) ) &
+                       ) /  DxhDx
+
+            else
+
+               Ax(k) = Ax(k) + &
                        ( etaC(i,j)   * ( vtp(i,j+1)   - vtp(i,j)   ) &
                        - etaC(i-1,j) * ( vtp(i-1,j+1) - vtp(i-1,j) ) &
                        ) /  Deltax2
+
+            endif
 
 !------------------------------------------------------------------------
 !     d ( zeta dv/dy ) / dx    B1_2
 !------------------------------------------------------------------------
             
-            Ax(k) = Ax(k) - &
+            if (stressBC .and. i .eq. 1) then ! W
+
+               Ax(k) = Ax(k) - &
+                       ( zetaC(i,j)   * ( vtp(i,j+1)   - vtp(i,j)   ) &
+                       ) /  DxhDx
+
+            elseif (stressBC .and. i .eq. nx+1) then ! E
+
+               Ax(k) = Ax(k) + &
+                       ( zetaC(i-1,j) * ( vtp(i-1,j+1) - vtp(i-1,j) ) &
+                       ) /  DxhDx
+
+            else
+
+               Ax(k) = Ax(k) - &
                        ( zetaC(i,j)   * ( vtp(i,j+1)   - vtp(i,j)   ) &
                        - zetaC(i-1,j) * ( vtp(i-1,j+1) - vtp(i-1,j) ) &
                        ) /  Deltax2
 
+            endif
 
 !------------------------------------------------------------------------
 !     d ( eta dv/dx ) / dy    B1_3 see p.1219-1226
@@ -232,10 +278,34 @@ end subroutine Funk
 !     o o  --normal case or o o or o o
 !     o o                   o o    x x
                
-               Ax(k) = Ax(k) - &
+               if (stressBC .and. i .eq. 1) then ! W
+
+                  Ax(k) = Ax(k) + 0d0 ! terms in bvect
+
+               elseif (stressBC .and. i .eq. nx+1) then ! E
+
+                  Ax(k) = Ax(k) + 0d0 ! terms in bvect
+
+               elseif (stressBC .and. j .eq. 1 .and. i .ge. 2 .and. i .le. nx) then ! S
+
+                  Ax(k) = Ax(k) - &
+                       ( etaB(i,j+1) * ( vtp(i,j+1) - vtp(i-1,j+1)) &
+                        ) / Deltax2
+
+               elseif (stressBC .and. j .eq. ny .and. i .ge. 2 .and. i .le. nx) then ! N
+
+                  Ax(k) = Ax(k) - &
+                       ( etaB(i,j)   * ( vtp(i-1,j) - vtp(i,j)     )&
+                        ) / Deltax2
+
+               else
+
+                  Ax(k) = Ax(k) - &
                        ( etaB(i,j+1) * ( vtp(i,j+1) - vtp(i-1,j+1)) &
                        + etaB(i,j)   * ( vtp(i-1,j) - vtp(i,j)     )&
                         ) / Deltax2
+                  
+               endif
 
             endif
 
@@ -243,7 +313,27 @@ end subroutine Funk
 !     d [ (eta + zeta ) du/dx ] / dx      B1_4, D1_4 
 !------------------------------------------------------------------------
 
+            if (stressBC .and. i .eq. 1) then ! W
+            
               Ax(k) = Ax(k) + &
+                  utp(i,j) * ( etaC(i,j)  + zetaC(i,j) &
+                              ) / DxhDx     - &
+                  ( etaC(i,j)    * utp(i+1,j) &
+                  + zetaC(i,j)   * utp(i+1,j) &
+                   ) / DxhDx
+   
+            elseif (stressBC .and. i .eq. nx+1) then ! E
+
+               Ax(k) = Ax(k) + &
+                  utp(i,j) * ( etaC(i-1,j) + zetaC(i-1,j) &
+                              ) / DxhDx   - &
+                  ( etaC(i-1,j)  * utp(i-1,j) &
+                  + zetaC(i-1,j) * utp(i-1,j) &
+                   ) / DxhDx
+
+            else
+               
+               Ax(k) = Ax(k) + &
                   utp(i,j) * ( etaC(i,j)  + etaC(i-1,j) &
                               + zetaC(i,j) + zetaC(i-1,j) &
                               ) / Deltax2   - &
@@ -253,6 +343,8 @@ end subroutine Funk
                   + zetaC(i-1,j) * utp(i-1,j) &
                    ) / Deltax2
                
+            endif
+           
 !------------------------------------------------------------------------
 !     d ( eta du/dy ) / dy   B1_5, D1_5
 !------------------------------------------------------------------------
@@ -289,7 +381,7 @@ end subroutine Funk
 !     o o   -- open boundary just below
 !     . .
 
-           elseif ( maskB(i,j) .eq. 1 .and. j .eq. 1) then
+           elseif ( maskB(i,j) .eq. 1 .and. j .eq. 1 .and. .not. stressBC) then
 
               Ax(k) = Ax(k) + &
                   utp(i,j) * etaB(i,j+1) / Deltax2 - &
@@ -299,7 +391,7 @@ end subroutine Funk
 !     o o   -- open boundary just above
 !     o o
 
-           elseif ( maskB(i,j+1) .eq. 1 .and. j .eq. ny) then
+           elseif ( maskB(i,j+1) .eq. 1 .and. j .eq. ny .and. .not. stressBC) then
 
               Ax(k) = Ax(k) + &
                   utp(i,j) * etaB(i,j) / Deltax2 - &
@@ -311,14 +403,37 @@ end subroutine Funk
 
            else
 
-              Ax(k) = Ax(k) + &
+              if (stressBC .and. i .eq. 1) then ! W
+
+                 Ax(k) = Ax(k) + 0d0 ! terms in bvect                                      
+
+              elseif (stressBC .and. i .eq. nx+1) then ! E
+
+                 Ax(k) = Ax(k) + 0d0 ! terms in bvect
+
+              elseif (stressBC .and. j .eq. 1 .and. i .ge. 2 .and. i .le. nx) then ! S
+
+                 Ax(k) = Ax(k) + &
+                  utp(i,j) * etaB(i,j+1) / Deltax2 - &
+                    etaB(i,j+1) * utp(i,j+1) / Deltax2
+
+              elseif (stressBC .and. j .eq. ny .and. i .ge. 2 .and. i .le. nx) then ! N
+
+                 Ax(k) = Ax(k) + &
+                  utp(i,j) * etaB(i,j)  / Deltax2 - &
+                    etaB(i,j)   * utp(i,j-1) / Deltax2
+
+              else
+
+                 Ax(k) = Ax(k) + &
                   utp(i,j) * ( etaB(i,j+1) + etaB(i,j) ) / Deltax2 - &
                   ( etaB(i,j+1) * utp(i,j+1) &
                   + etaB(i,j)   * utp(i,j-1) &
                    ) / Deltax2
 
-           endif
+              endif
 
+           endif
 
 !------------------------------------------------------------------------
 !     Calculate the ice velocity using relaxation and apply boundary cond
@@ -327,6 +442,7 @@ end subroutine Funk
 !     .                u_t   = 0, only for viscous plastic, used in eta calc
 !------------------------------------------------------------------------
 
+           if (.not. stressBC) then
 
               if ( i .eq. 1 ) then
 
@@ -355,6 +471,8 @@ end subroutine Funk
 
               endif
 
+           endif
+
 
  100       continue
 
@@ -378,8 +496,20 @@ end subroutine Funk
 !     Coriolis term
 !------------------------------------------------------------------------
 
-            uavg  = ( utp(i,j)   + utp(i+1,j) &
+            if (stressBC .and. j .eq. 1) then
+
+               uavg  = ( utp(i,j)   + utp(i+1,j) ) / 2d0
+
+            elseif (stressBC .and. j .eq. ny+1) then
+
+               uavg  = ( utp(i,j-1) + utp(i+1,j-1) ) / 2d0
+
+            else
+
+               uavg  = ( utp(i,j)   + utp(i+1,j) &
                     + utp(i,j-1) + utp(i+1,j-1) ) / 4d0
+
+            endif
 
             hvert = ( h(i,j) + h(i,j-1) ) / 2d0
 
@@ -458,10 +588,34 @@ end subroutine Funk
 !     o o o -- normal case or x o o or o o x
 !     o o o                   x o o    o o x
 
-              Ax(k) = Ax(k) - &
+              if (stressBC .and. j .eq. 1) then ! S                                        
+
+                 Ax(k) = Ax(k) + 0d0 ! terms in bvect        
+
+              elseif (stressBC .and. j .eq. ny+1) then ! N 
+
+                 Ax(k) = Ax(k) + 0d0 ! terms in bvect 
+
+              elseif (stressBC .and. i .eq. 1 .and. j .ge. 2 .and. j .le. ny) then ! W
+
+                 Ax(k) = Ax(k) - &
+                      ( etaB(i+1,j) * ( utp(i+1,j) - utp(i+1,j-1)) &
+                       ) / Deltax2
+
+              elseif (stressBC .and. i .eq. nx .and. j .ge. 2 .and. j .le. ny) then ! E
+
+                 Ax(k) = Ax(k) + &
+                      ( etaB(i,j)   * ( utp(i,j)   - utp(i,j-1) ) &
+                       ) / Deltax2
+
+              else
+
+                 Ax(k) = Ax(k) - &
                       ( etaB(i+1,j) * ( utp(i+1,j) - utp(i+1,j-1)) &
                       - etaB(i,j)   * ( utp(i,j)   - utp(i,j-1) ) &
                        ) / Deltax2
+
+              endif
 
            endif
 
@@ -469,25 +623,76 @@ end subroutine Funk
 !     -d ( eta du/dx ) / dy    B2_1
 !------------------------------------------------------------------------
 
-           Ax(k) = Ax(k) + &
+           if (stressBC .and. j .eq. 1) then ! S                                           
+
+              Ax(k) = Ax(k) + &
+               ( etaC(i,j)   * ( utp(i+1,j)   - utp(i,j)   ) &
+                ) / DxhDx
+
+           elseif(stressBC .and. j .eq. ny+1) then ! N                                      
+              Ax(k) = Ax(k) - &
+               ( etaC(i,j-1) * ( utp(i+1,j-1) - utp(i,j-1) ) &
+                ) / DxhDx
+
+           else
+
+              Ax(k) = Ax(k) + &
                ( etaC(i,j)   * ( utp(i+1,j)   - utp(i,j)   ) &
                - etaC(i,j-1) * ( utp(i+1,j-1) - utp(i,j-1) ) &
                 ) / Deltax2
+
+           endif
 
 !------------------------------------------------------------------------
 !     d (zeta du/dx) / dy      B2_2
 !------------------------------------------------------------------------
 
-           Ax(k) = Ax(k) - &
+           if (stressBC .and. j .eq. 1) then ! S
+              
+              Ax(k) = Ax(k) - &
+               ( zetaC(i,j)   * ( utp(i+1,j)   - utp(i,j)   ) &
+                ) / DxhDx
+
+           elseif(stressBC .and. j .eq. ny+1) then ! N
+
+              Ax(k) = Ax(k) + &
+               ( zetaC(i,j-1) * ( utp(i+1,j-1) - utp(i,j-1) ) &
+                ) / DxhDx
+
+           else
+
+              Ax(k) = Ax(k) - &
                ( zetaC(i,j)   * ( utp(i+1,j)   - utp(i,j)   ) &
                - zetaC(i,j-1) * ( utp(i+1,j-1) - utp(i,j-1) ) &
                 ) / Deltax2
+
+           endif
 
 !------------------------------------------------------------------------
 !     d [ (eta + zeta) dv/dy ] / dy   D2_4, B2_4
 !------------------------------------------------------------------------
 
-               Ax(k) = Ax(k) + &
+           if (stressBC .and. j .eq. 1) then ! S       
+
+              Ax(k) = Ax(k) + &
+                   vtp(i,j) * ( etaC(i,j)  + zetaC(i,j) &
+                                ) / DxhDx - &
+                 ( etaC(i,j)    * vtp(i,j+1) &
+                 + zetaC(i,j)   * vtp(i,j+1) &
+                  ) / DxhDx
+
+           elseif(stressBC .and. j .eq. ny+1) then ! N
+
+              Ax(k) = Ax(k) + &
+                   vtp(i,j) * ( etaC(i,j-1) + zetaC(i,j-1) &
+                                ) / DxhDx  - &
+                 ( etaC(i,j-1)  * vtp(i,j-1) &
+                 + zetaC(i,j-1) * vtp(i,j-1) &
+                  ) / DxhDx
+
+           else
+
+              Ax(k) = Ax(k) + &
                    vtp(i,j) * ( etaC(i,j)  + etaC(i,j-1) &
                                + zetaC(i,j) + zetaC(i,j-1) &
                                 ) / Deltax2 - &
@@ -496,6 +701,8 @@ end subroutine Funk
                  + zetaC(i,j)   * vtp(i,j+1) &  
                  + zetaC(i,j-1) * vtp(i,j-1) &
                   ) / Deltax2
+
+           endif
    
 !------------------------------------------------------------------------
 !     d ( eta dv/dx ) / dx   D2_5, B2_5
@@ -525,7 +732,7 @@ end subroutine Funk
 
 !     . o o -- open boundary to the left
 
-           elseif ( maskB(i,j) .eq. 1 .and. i .eq. 1) then
+           elseif ( maskB(i,j) .eq. 1 .and. i .eq. 1 .and. .not. stressBC) then
 
               Ax(k) = Ax(k) + &
                   vtp(i,j) * etaB(i+1,j) / Deltax2 - &
@@ -533,7 +740,7 @@ end subroutine Funk
 
 !     o o . -- open boundary to the right
 
-           elseif ( maskB(i+1,j) .eq. 1 .and. i .eq. nx) then
+           elseif ( maskB(i+1,j) .eq. 1 .and. i .eq. nx .and. .not. stressBC) then
 
               Ax(k) = Ax(k) + &
                   vtp(i,j) * etaB(i,j) / Deltax2 - &
@@ -543,13 +750,39 @@ end subroutine Funk
 
            else
 
-              Ax(k) = Ax(k) + &
+              if (stressBC .and. j .eq. 1) then ! S                                        
+
+                 Ax(k) = Ax(k) + 0d0 ! terms in bvect                                      
+
+              elseif (stressBC .and. j .eq. ny+1) then ! N                               
+
+                 Ax(k) = Ax(k) + 0d0 ! terms in bvect 
+
+              elseif (stressBC .and. i .eq. 1 .and. j .ge. 2 .and. j .le. ny) then ! W
+
+                 Ax(k) = Ax(k) + &
+                  vtp(i,j) * ( etaB(i+1,j) ) / Deltax2 - &
+                ( etaB(i+1,j) * vtp(i+1,j) &
+                 ) / Deltax2
+
+              elseif (stressBC .and. i .eq. nx .and. j .ge. 2 .and. j .le. ny) then ! E
+
+                 Ax(k) = Ax(k) + &
+                  vtp(i,j) * ( etaB(i,j) ) / Deltax2 - &
+                ( etaB(i,j)   * vtp(i-1,j) &
+                 ) / Deltax2
+
+              else
+
+                 Ax(k) = Ax(k) + &
                   vtp(i,j) * ( etaB(i+1,j) + etaB(i,j) ) / Deltax2 - &
                 ( etaB(i+1,j) * vtp(i+1,j) &
                 + etaB(i,j)   * vtp(i-1,j) &
                  ) / Deltax2
-           endif
 
+              endif
+
+           endif
 
 !------------------------------------------------------------------------
 !     Calculate the ice velocity using relaxation and apply boundary cond
@@ -558,6 +791,11 @@ end subroutine Funk
 !     .                u_t   = 0, only for viscous plastic, used in eta calc
 !------------------------------------------------------------------------
  
+           if (stressBC .and. clipping) then
+
+              if (i .eq. nx+1 .and. j .eq. 1) Ax(k) = utp(nx+1,1)
+
+           elseif (.not. stressBC) then
 
               if ( j .eq. 1 ) then
 
@@ -579,6 +817,8 @@ end subroutine Funk
                  endif
 
               endif
+
+           endif
 
  200       continue
 

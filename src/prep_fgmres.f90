@@ -53,6 +53,7 @@
 !         CALL precondSOR ( wk1, wk2)  
 !         CALL precondJacobi ( wk1, wk2)          
 !         CALL precond_EVPC (wk1, wk2)     
+!        wk2=wk1
          GOTO 10
       ELSEIF ( icode >= 2 ) THEN
          CALL MATVEC ( wk1, wk2) 

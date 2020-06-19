@@ -7,7 +7,10 @@
                 Thermodyn,      &
                 BuoyTrack,      &
                 calc_month_mean,&
-                runoff
+		runoff,         &
+                stressBC,       &
+                clipping,       &
+                boat
 
       character(LEN=20)         &
                 BndyCond,       &
@@ -22,10 +25,11 @@
 		adv_scheme,     &
 	        startdate,      &
                 enddate,        &
+                initialh,       &
                 Buoys,          &
                 Jac_finite_diff  
                           
-      integer   Rheology, IMEX, BDF, visc_method
+  integer   Rheology, IMEX, BDF, visc_method
 
       common/options/           &
                 Dynamic,        & ! sea ice dynamic model (yes or no)
@@ -52,5 +56,10 @@
                 linearization,  & ! Tremblay, Zhang
 		regularization, & ! tanh, Kreyscher 
 		ini_guess,      & ! freedrift, previous time step
-                Jac_finite_diff  
+		Jac_finite_diff,& 
+                stressBC,       & ! option for stress defined at boundaries   
+                initialh,       & ! initial thickness field for stressBC exp
+		clipping,       & ! to clip (specify) velocity at one location
+		boat              ! boat is included in simulation if true
+                
 

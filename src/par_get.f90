@@ -30,6 +30,7 @@
       include 'parameter.h' 
 
       include 'CB_const.h'
+      include 'CB_const_stressBC.h'
       include 'CB_Dyndim.h'
       include 'CB_Thermodim.h'
       include 'CB_options.h'
@@ -45,7 +46,7 @@
       double precision deg2rad, rad2deg
       double precision Levap, Lsubli, Psurf
       double precision ellipticity, Cdair, Cdwater
-      double precision x1, y1, r1, rs, tanteta
+      double precision x1, y1, r1, rs, tanteta, ec_factor
       double precision lat(0:nx+1,0:ny+1), long(0:nx+1,0:ny+1)
       character(len=2) :: cdelta
       integer i, j
@@ -54,11 +55,11 @@
 !     set run parameters (dynamic - thermodynamic - options - domain)
 !------------------------------------------------------------------------
 
-      f          =  1.46d-04         ! Coriolis parameter [1/s] 
-      Cdair      =  1.2d-03          ! air-ice drag coeffient []1.2e-03
-      Cdwater    =  5.5d-03          ! water-ice drag coeffient[]5.5e-03
-      theta_a    =  25d0             ! wind turning angle [degree] 
-      theta_w    =  25d0             ! water turning angle [degree]
+      f          =  0d0!1.46d-04         ! Coriolis parameter [1/s] 
+      Cdair      =  0d0!1.2d-03          ! air-ice drag coeffient []1.2e-03
+      Cdwater    =  0d0!5.5d-03          ! water-ice drag coeffient[]5.5e-03
+      theta_a    =  0d0!25d0             ! wind turning angle [degree] 
+      theta_w    =  0d0!25d0             ! water turning angle [degree]
       Pstar      =  27.5d03            ! ice yield stress [N/m2] 
       C          =  20d0             ! ice concentration parameter  
       !phi        =  30d0             ! internal angle of friction
@@ -90,22 +91,31 @@
       DragLaw    = 'square'          ! square
       Rheology   = 1                 ! ellipse = 1, triangle = 2
       linearization = 'Zhang'        ! Tremblay, Zhang
-      regularization = 'tanh'        ! tanh, Kreyscher
+      regularization = 'tanh'     ! tanh, Kreyscher, capping, viscous
+      denomin    = 2d-09             ! delta min for capping
       visc_method = 2                ! see viscousCoeff routine for details
       ini_guess  = 'previous time step' ! freedrift, previous time step
       adv_scheme = 'upwind'       ! upwind, upwindRK2 
       IMEX       = 0                 ! 0:split in time, 1:Picard, 2:JFNK
       BDF         = 0                ! 0: back. Euler, 1: 2nd order back. diff. formula
       Dynamic    = .true.            ! ice model type
-      Thermodyn  = .true.           ! ice model type
+      Thermodyn  = .false.           ! ice model type
       BuoyTrack  = .false.
       Buoys      = 'Daily'           ! Buoy traj: 'Track' or 'Daily'
-      Current    = 'YearlyMean'      ! YearlyMean, specified
-      Wind       = '6hours'          ! 6hours, 60yrs_clim, specified
+      Current    = 'specified'       ! YearlyMean, specified
+      Wind       = 'specified'       ! 6hours, 60yrs_clim, specified
       AirTemp    = 'MonthlyMean'     ! MonthlyMean, specified (-10C)
       OcnTemp    = 'calculated'      ! MonthlyClim, specified,calculated
       calc_month_mean = .false.      ! to calc monthly mean fields
       runoff     = .false.
+      stressBC   = .true.
+      initialh   = 'crack' ! constant, whitenoise, normalDist, crack, icebridge
+      hlevel     = 2d0               ! level ice thickness for stress BC
+      clipping   = .false.
+      boat       = .false.
+      bpfactor   = 10d0              ! factor for boat ice strength
+      ec_factor  = 10d0              ! factor to reduce shear strength of boat contour
+      ecboat     = ellipticity*ec_factor ! e for boat contour
 
       if ((nx == 518) .and. (ny == 438)) then
          Deltax     =  10d03           ! grid size [m] 
@@ -116,11 +126,17 @@
       elseif  ((nx == 63) .and. (ny == 53)) then
          Deltax     =  80d03           ! grid size [m] 
       else
-         write(*,*) "Wrong grid size dimenions.", nx, ny
-         STOP
+         write(*,*) "Special grid size dimensions for downscaling study:", nx, ny
+!         STOP
       endif
 
+      Deltax = 5120d0/nx ! about the size of RIOPS grid cell
+
       Deltax2 = Deltax**2d0
+      Deltaxh = Deltax/2d0
+      DxhDx   = Deltaxh*Deltax
+
+      print *, 'Deltax =', Deltax
 
 !------------------------------------------------------------------------
 !     Numerical parameters
@@ -135,10 +151,10 @@
       ksor  = 10               ! nb of ite of precond SOR
       klsor = 10               ! nb of ite of precond line SOR
 
-      gamma_nl = 1d-03         ! nonlinear convergence criterion for JFNK 
+      gamma_nl = 1d-06         ! nonlinear convergence criterion for JFNK 
       dropini = 1.5d0          ! res_t = L2norm_ini/dropini (L2norm_ini: beg of Newton loop)
-      NLmax = 200              ! max nb of Newton loop for JFNK
-      OLmax = 500              ! max nb of Outer loop for Picard
+      NLmax = 5000              ! max nb of Newton loop for JFNK
+      OLmax = 5000              ! max nb of Outer loop for Picard
       klinesearch = 1          ! linesearch is applied for JFNK for k .ge. klinesearch
       Jac_finite_diff = 'forward' ! forward, centred (for JFNK solver)
 
@@ -163,7 +179,7 @@
 !     Time step
 !------------------------------------------------------------------------
 
-      Deltat     =  1200d0
+      Deltat     =  10d0
       DtoverDx   = Deltat / Deltax
       
       if (1d0*Deltat .gt. Deltax) then
@@ -193,7 +209,7 @@
       Tif      = 273.15d0            ! Freezing point of fresh water [K]
 
       rhoair   =  1.3d0              ! air density [kg/m3]
-      rhoice   =  9d02               ! ice density [kg/m3]
+      rhoice   =  0d0!9d02               ! ice density [kg/m3]
       rhowater =  1026d0             ! water density [kg/m3]
 
 !------------------------------------------------------------------------                
@@ -313,15 +329,49 @@
 !     Grid parameter: land mask (grid center), velocity mask (node)
 !------------------------------------------------------------------------
 
-      write(cdelta, '(I2)') int(Deltax)/1000
+      if (stressBC) then
+       
+       maskC=1
 
-      open (unit = 20, file = 'src/mask'//cdelta//'.dat', status = 'old')
-
-      do j = 0, ny+1               ! land mask
-         read (20,10) ( maskC(i,j), i = 0, nx+1 )
+       do j = 0, 2 ! South        
+         do i = 0, nx+1
+!            maskC(i,j)=0
+         enddo
       enddo
+
+      do j = ny-1, ny+1 ! North
+         do i = 0, nx+1
+!            maskC(i,j)=0
+         enddo
+      enddo
+
+      do j = 0, ny+1 ! West                                       
+         do i = 0, 2
+!            maskC(i,j)=0                                                    
+         enddo
+      enddo
+
+
+      do j = 0, ny+1 ! East
+         do i = nx-1, nx+1
+!            maskC(i,j)=0
+         enddo
+      enddo
+
+
+      else
+
+       write(cdelta, '(I2)') int(Deltax)/1000
+
+       open (unit = 20, file = 'src/mask'//cdelta//'.dat', status = 'old')
+
+       do j = 0, ny+1               ! land mask
+         read (20,10) ( maskC(i,j), i = 0, nx+1 )
+       enddo
      
-      close (unit = 20)
+       close (unit = 20)
+      
+      endif
 
 10   format (1x,1000(i1)) ! different format because of the grid      
       

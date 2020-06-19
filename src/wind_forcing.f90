@@ -104,14 +104,17 @@
          
       elseif ( Wind .eq. 'specified' ) then
          
-         wm = 10.0d0
-         
+         if (stressBC) then
+          wm = 0d0
+         else
+          wm = 10.0d0
+         endif         
+
          do i = 1, nx+1
             do j = 1, ny+1
                
-               uair(i,j) = 10d0 
+               uair(i,j) = wm 
                vair(i,j) =  0d0
-               
 !     call random_number(rdnumb)
 !               uair(i,j) = wm * (rdnumb - 0.5d0)
 !               call random_number(rdnumb)

@@ -13,6 +13,7 @@
       
       include 'parameter.h'
       include 'CB_const.h'
+      include 'CB_options.h'
 
       double precision rhs(nvar), wk2(nvar)
       double precision utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
@@ -135,17 +136,44 @@
 !     -d ( eta dv/dy ) / dx    B1_1  p.899... 
 !------------------------------------------------------------------------
 
-         rhs(i) = rhs(i) - ( etaCf(i,j) * ( vtp(i,j+1) - vtp(i,j) )     &
+         if (stressBC .and. i .eq. 1) then ! W
+
+            rhs(i) = rhs(i) - ( etaCf(i,j) * ( vtp(i,j+1) - vtp(i,j) )  &
+                            ) /  DxhDx
+
+         elseif (stressBC .and. i .eq. nx+1) then ! E                                         
+            rhs(i) = rhs(i) + ( etaCf(i-1,j) * ( vtp(i-1,j+1) - vtp(i-1,j)) &
+                                          ) /  DxhDx
+
+         else
+
+            rhs(i) = rhs(i) - ( etaCf(i,j) * ( vtp(i,j+1) - vtp(i,j) )  &
                          - etaCf(i-1,j) * ( vtp(i-1,j+1) - vtp(i-1,j) ) &
                             ) /  Deltax2
+
+         endif
 
 !------------------------------------------------------------------------
 !     d ( zeta dv/dy ) / dx    B1_2
 !------------------------------------------------------------------------
 
-         rhs(i) = rhs(i) + ( zetaCf(i,j) * ( vtp(i,j+1) - vtp(i,j) )    &
+         if (stressBC .and. i .eq. 1) then ! W
+
+            rhs(i) = rhs(i) + ( zetaCf(i,j) * ( vtp(i,j+1) - vtp(i,j) ) &
+                                          ) /  DxhDx
+
+         elseif (stressBC .and. i .eq. nx+1) then ! E 
+
+            rhs(i) = rhs(i) - ( zetaCf(i-1,j) * ( vtp(i-1,j+1) - vtp(i-1,j) )&
+                                          ) /  DxhDx
+
+         else
+
+            rhs(i) = rhs(i) + ( zetaCf(i,j) * ( vtp(i,j+1) - vtp(i,j) ) &
                          - zetaCf(i-1,j) * ( vtp(i-1,j+1) - vtp(i-1,j)) &
                                           ) /  Deltax2
+
+         endif
 
 !------------------------------------------------------------------------
 !     d ( eta dv/dx ) / dy    B1_3 see p.1219-1226
@@ -208,11 +236,32 @@
 !     o o                   x x    o o
 !     o o  --normal case or o o or o o
 !     o o                   o o    x x
-               
-               rhs(i) = rhs(i) + ( etaBf(i,j+1) *                         &
+               if (stressBC .and. i .eq. 1) then ! W
+
+                  rhs(i) = rhs(i) + 0d0
+
+               elseif (stressBC .and. i .eq. nx+1) then ! E
+
+                  rhs(i) = rhs(i) + 0d0
+
+               elseif (stressBC .and. j .eq. 1 .and. i .ge. 2 .and. i .le. nx) then ! S
+
+                  rhs(i) = rhs(i) + ( etaBf(i,j+1) *                      &
+                         ( vtp(i,j+1) - vtp(i-1,j+1) ) ) / Deltax2
+
+               elseif (stressBC .and. j .eq. ny .and. i .ge. 2 .and. i .le. nx) then ! N
+
+                  rhs(i) = rhs(i) + ( etaBf(i,j)   *                      &
+                         ( vtp(i-1,j) - vtp(i,j)     ) ) / Deltax2
+
+               else
+                     
+                  rhs(i) = rhs(i) + ( etaBf(i,j+1) *                      &
                          ( vtp(i,j+1) - vtp(i-1,j+1))                  &
                          + etaBf(i,j)   * ( vtp(i-1,j) - vtp(i,j)     ) &
                          ) / Deltax2
+
+               endif
 
             endif
 
@@ -220,17 +269,42 @@
 !     d [ (eta + zeta ) du/dx ] / dx      B1_4, D1_4 
 !------------------------------------------------------------------------
 
-         bVEC(i) = bVEC(i) + ( etaCf(i,j)  + etaCf(i-1,j)         &
+            if (stressBC .and. i .eq. 1) then ! W    
+
+
+               bVEC(i) = bVEC(i) + ( etaCf(i,j)  + zetaCf(i,j) ) / DxhDx
+
+
+               aVEC(i) = aVEC(i) + 0d0
+
+
+               cVEC(i) = cVEC(i) - ( etaCf(i,j) + zetaCf(i,j) ) / DxhDx
+
+            elseif (stressBC .and. i .eq. nx+1) then ! E  
+
+               bVEC(i) = bVEC(i) + ( etaCf(i-1,j) + zetaCf(i-1,j) ) / DxhDx
+
+
+               aVEC(i) = aVEC(i) - ( etaCf(i-1,j) + zetaCf(i-1,j) ) / DxhDx
+
+
+               cVEC(i) = cVEC(i) + 0d0
+
+            else
+
+               bVEC(i) = bVEC(i) + ( etaCf(i,j)  + etaCf(i-1,j)         &
                            +   zetaCf(i,j) + zetaCf(i-1,j)        &
                              ) / Deltax2
 
 
-         aVEC(i) = aVEC(i) - ( etaCf(i-1,j) +                    &
+               aVEC(i) = aVEC(i) - ( etaCf(i-1,j) +                    &
                                zetaCf(i-1,j) ) / Deltax2
 
 
-         cVEC(i) = cVEC(i) - ( etaCf(i,j) +                      &
+               cVEC(i) = cVEC(i) - ( etaCf(i,j) +                      &
                                zetaCf(i,j) ) / Deltax2           
+
+            endif
 
 !------------------------------------------------------------------------
 !     d ( eta du/dy ) / dy   B1_5, D1_5
@@ -268,7 +342,7 @@
 !     o o   -- open boundary just below
 !     . .
 
-         elseif ( maskB(i,j) .eq. 1 .and. j .eq. 1) then
+         elseif ( maskB(i,j) .eq. 1 .and. j .eq. 1 .and. .not. stressBC) then
 
             bVEC(i) = bVEC(i) + etaBf(i,j+1) / Deltax2
 
@@ -279,7 +353,7 @@
 !     o o   -- open boundary just above
 !     o o
 
-         elseif ( maskB(i,j+1) .eq. 1 .and. j .eq. ny) then
+         elseif ( maskB(i,j+1) .eq. 1 .and. j .eq. ny .and. .not. stressBC) then
 
             bVEC(i) = bVEC(i) +  etaBf(i,j) / Deltax2
 
@@ -292,12 +366,36 @@
 
          else
 
-            bVEC(i) = bVEC(i) + ( etaBf(i,j+1) + etaBf(i,j) &
-                                ) / Deltax2
+            if (stressBC .and. i .eq. 1) then ! W 
 
-            rhs(i) = rhs(i) + ( etaBf(i,j+1) * utp(i,j+1) &
-                            +   etaBf(i,j)   * utp(i,j-1) &
-                              ) / Deltax2
+               bVEC(i) = bVEC(i) + 0d0
+
+            elseif (stressBC .and. i .eq. nx+1) then ! E 
+
+               bVEC(i) = bVEC(i) + 0d0
+
+            elseif (stressBC .and. j .eq. 1 .and. i .ge. 2 .and. i .le. nx) then ! S  
+
+               bVEC(i) = bVEC(i) + ( etaBf(i,j+1) ) / Deltax2
+
+               rhs(i) = rhs(i) + ( etaBf(i,j+1) * utp(i,j+1) ) / Deltax2
+
+            elseif (stressBC .and. j .eq. ny .and. i .ge. 2 .and. i .le. nx) then ! N
+
+               bVEC(i) = bVEC(i) + ( etaBf(i,j) ) / Deltax2
+
+               rhs(i) = rhs(i) + ( etaBf(i,j)   * utp(i,j-1) ) / Deltax2
+
+            else
+
+               bVEC(i) = bVEC(i) + ( etaBf(i,j+1) + etaBf(i,j) &
+                    ) / Deltax2
+
+               rhs(i) = rhs(i) + ( etaBf(i,j+1) * utp(i,j+1) &
+                    +   etaBf(i,j)   * utp(i,j-1) &
+                    ) / Deltax2
+
+            endif
 
          endif
 
@@ -307,6 +405,19 @@
 !     close boundary : u_n   = 0
 !     .                u_t   = 0, only for viscous plastic, used in eta calc
 !------------------------------------------------------------------------
+
+         if (stressBC .and. clipping) then
+
+            if (i .eq. 1 .and. j .eq. 1) then
+
+               aVEC(i) = 0d0
+               bVEC(i) = 1.0d0 ! clipping                                    
+               cVEC(i) = 0d0
+               rhs(i)  = 0d0
+               
+            endif
+
+         elseif (.not. stressBC) then
 
             if ( i .eq. 1 ) then
 
@@ -347,6 +458,8 @@
                endif
 
             endif
+
+         endif
 
 
  100     continue
@@ -494,10 +607,34 @@
 !     o o o -- normal case or x o o or o o x
 !     o o o                   x o o    o o x
 
-              rhs(j)  = rhs(j)  + ( etaBf(i+1,j) *                      &
+              if (stressBC .and. j .eq. 1) then ! S 
+                 
+                 rhs(j) = rhs(j) + 0d0
+
+              elseif (stressBC .and. j .eq. ny+1) then ! N
+
+                 rhs(j) = rhs(j) + 0d0
+
+              elseif (stressBC .and. i .eq. 1 .and. j .ge. 2 .and. j .le. ny) then ! W 
+
+                 rhs(j)  = rhs(j)  + ( etaBf(i+1,j) *                      &
+                         ( utp(i+1,j) - utp(i+1,j-1) )                     &
+                         ) / Deltax2
+
+              elseif (stressBC .and. i .eq. nx .and. j .ge. 2 .and. j .le. ny) then ! E
+
+                 rhs(j)  = rhs(j) - ( etaBf(i,j)   *                       &
+                         ( utp(i,j)   - utp(i,j-1) )                       &
+                         ) / Deltax2
+
+              else
+
+                 rhs(j)  = rhs(j)  + ( etaBf(i+1,j) *                      &
                          ( utp(i+1,j) - utp(i+1,j-1))                &
                          - etaBf(i,j)   * ( utp(i,j)   - utp(i,j-1) ) &
                          ) / Deltax2
+
+              endif
 
            endif
            
@@ -505,35 +642,85 @@
 !     -d ( eta du/dx ) / dy    B2_1
 !------------------------------------------------------------------------
            
-         rhs(j) = rhs(j) - ( etaCf(i,j)   *                      &
+           if (stressBC .and. j .eq. 1) then ! S 
+
+              rhs(j) = rhs(j) - ( etaCf(i,j)   *                     &
+                           ( utp(i+1,j)   - utp(i,j)   ) ) / DxhDx
+
+           elseif(stressBC .and. j .eq. ny+1) then ! N                                          
+              rhs(j) = rhs(j) + ( etaCf(i,j-1) *                     &
+                           ( utp(i+1,j-1) - utp(i,j-1) )      &
+                           ) / DxhDx
+
+           else
+
+              rhs(j) = rhs(j) - ( etaCf(i,j)   *                      &
                            ( utp(i+1,j)   - utp(i,j)   )      &
                          -   etaCf(i,j-1)   *                    &
                            ( utp(i+1,j-1) - utp(i,j-1) )      &
                            ) / Deltax2
 
+           endif
+
 !------------------------------------------------------------------------
 !     d (zeta du/dx) / dy      B2_2
 !------------------------------------------------------------------------
 
-         rhs(j) = rhs(j) + ( zetaCf(i,j)   *                     &
+         if (stressBC .and. j .eq. 1) then ! S     
+
+            rhs(j) = rhs(j) + ( zetaCf(i,j)   *                     &
+                           ( utp(i+1,j)   - utp(i,j)   ) ) / DxhDx
+
+         elseif(stressBC .and. j .eq. ny+1) then ! N
+
+            rhs(j) = rhs(j) - ( zetaCf(i,j-1) *                     &
+                           ( utp(i+1,j-1) - utp(i,j-1) )      &
+                           ) / DxhDx
+            
+         else
+
+            rhs(j) = rhs(j) + ( zetaCf(i,j)   *                     &
                            ( utp(i+1,j)   - utp(i,j)   )      &
                          -   zetaCf(i,j-1) *                     &
                            ( utp(i+1,j-1) - utp(i,j-1) )      &
                            ) / Deltax2
 
+         endif
+
 !------------------------------------------------------------------------
 !     d [ (eta + zeta) dv/dy ] / dy   D2_4, B2_4
 !------------------------------------------------------------------------
 
-         bVEC(j) = bVEC(j) + ( etaCf(i,j)  + etaCf(i,j-1)         &
+         if (stressBC .and. j .eq. 1) then ! S
+
+            bVEC(j) = bVEC(j) + ( etaCf(i,j) + zetaCf(i,j) ) / DxhDx
+
+            aVEC(j) = aVEC(j) + 0d0
+
+            cVEC(j) = cVEC(j) - ( etaCf(i,j) + zetaCf(i,j) ) / DxhDx            
+
+         elseif(stressBC .and. j .eq. ny+1) then ! N                
+
+            bVEC(j) = bVEC(j) + ( etaCf(i,j-1) + zetaCf(i,j-1) ) / DxhDx
+
+            aVEC(j) = aVEC(j) - ( etaCf(i,j-1) + zetaCf(i,j-1) ) / DxhDx
+
+            cVEC(j) = cVEC(j) + 0d0
+
+
+         else
+
+            bVEC(j) = bVEC(j) + ( etaCf(i,j)  + etaCf(i,j-1)         &
                            +   zetaCf(i,j) + zetaCf(i,j-1)        &
                              ) / Deltax2
 
-         aVEC(j) = aVEC(j) - ( etaCf(i,j-1) + zetaCf(i,j-1)       &
+            aVEC(j) = aVEC(j) - ( etaCf(i,j-1) + zetaCf(i,j-1)       &
                              ) / Deltax2
 
-         cVEC(j) = cVEC(j) - ( etaCf(i,j) + zetaCf(i,j)           &
+            cVEC(j) = cVEC(j) - ( etaCf(i,j) + zetaCf(i,j)           &
                              ) / Deltax2
+
+         endif
 
 !------------------------------------------------------------------------
 !     d ( eta dv/dx ) / dx   D2_5, B2_5
@@ -563,7 +750,7 @@
 
 !     . o o -- open boundary to the left
 
-         elseif ( maskB(i,j) .eq. 1 .and. i .eq. 1) then
+         elseif ( maskB(i,j) .eq. 1 .and. i .eq. 1 .and. .not. stressBC) then
 
             bVEC(j) = bVEC(j) + etaBf(i+1,j) / Deltax2
 
@@ -572,7 +759,7 @@
 
 !     o o . -- open boundary to the right
 
-         elseif ( maskB(i+1,j) .eq. 1 .and. i .eq. nx) then
+         elseif ( maskB(i+1,j) .eq. 1 .and. i .eq. nx .and. .not. stressBC) then
 
             bVEC(j) = bVEC(j) + etaBf(i,j) / Deltax2
 
@@ -583,12 +770,38 @@
 
          else
 
-            bVEC(j) = bVEC(j) + ( etaBf(i+1,j) + etaBf(i,j) &
+            if (stressBC .and. j .eq. 1) then ! S       
+
+               bVEC(j) = bVEC(j) + 0d0
+
+            elseif (stressBC .and. j .eq. ny+1) then ! N
+
+               bVEC(j) = bVEC(j) + 0d0
+
+            elseif (stressBC .and. i .eq. 1 .and. j .ge. 2 .and. j .le. ny) then ! W 
+
+               bVEC(j) = bVEC(j) + ( etaBf(i+1,j) ) / Deltax2
+
+               rhs(j) = rhs(j) + ( etaBf(i+1,j) * vtp(i+1,j) ) / Deltax2
+
+            elseif (stressBC .and. i .eq. nx .and. j .ge. 2 .and. j .le. ny) then ! E
+
+               bVEC(j) = bVEC(j) + ( etaBf(i,j) ) / Deltax2
+
+               rhs(j) = rhs(j) + ( etaBf(i,j)   * vtp(i-1,j) &
+                              ) / Deltax2
+
+            else
+
+               bVEC(j) = bVEC(j) + ( etaBf(i+1,j) + etaBf(i,j) &
                                 ) / Deltax2
 
-            rhs(j) = rhs(j) + ( etaBf(i+1,j) * vtp(i+1,j) &
+               rhs(j) = rhs(j) + ( etaBf(i+1,j) * vtp(i+1,j) &
                             +   etaBf(i,j)   * vtp(i-1,j) &
                               ) / Deltax2
+
+            endif
+
          endif
 
 
@@ -598,6 +811,8 @@
 !     close boundary : u_n   = 0
 !     .                u_t   = 0, only for viscous plastic, used in eta calc
 !------------------------------------------------------------------------
+
+         if (.not. stressBC) then
 
          if ( j .eq. 1 ) then
 
@@ -632,6 +847,7 @@
             endif
 
          endif
+      endif
 
 
  200     continue

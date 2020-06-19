@@ -72,9 +72,18 @@ subroutine ViscousCoefficient(utp,vtp)
      print *, 'Wrong setting of visc_method'
      stop
   endif
+ 
+  if (stressBC) then
+   if (visc_method .ne. 2) then
+    print *, 'visc_method should be 2'
+    stop
+   endif
+  endif
 
-  call etaB_at_open_boundaries
-  
+  if (.not. stressBC) then
+   call etaB_at_open_boundaries
+  endif  
+
   return
 end subroutine ViscousCoefficient
 
@@ -99,11 +108,9 @@ subroutine ViscousCoeff_method1(utp,vtp)
 
   integer i, j, rheo
 
-  double precision dudx, dvdy, dudy, dvdx, deno, denoT, denomin
+  double precision dudx, dvdy, dudy, dvdx, deno, denoT
 
   double precision utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
-
-  denomin = 2d-09 ! Hibler, 1979
 
   rheo = Rheology ! define local variable to speed up the code
 
@@ -315,16 +322,20 @@ subroutine ViscousCoeff_method2(utp,vtp)
   include 'CB_DynVariables.h'
   include 'CB_const.h'
   include 'CB_mask.h'
+  include 'CB_mask_boat.h'
   include 'CB_options.h'
   
   integer i, j, rheo, summaskC
 
-  double precision dudx, dvdy, dudy, dvdx, deno, denomin, denoT, pnode
+  double precision dudx, dvdy, dudy, dvdx, deno, denoT
+  double precision pnode
   double precision utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
-  
-  denomin = 2d-09 ! Hibler, 1979
+
+  logical rep_pressure
 
   rheo = Rheology ! define local variable to speed up the code
+
+  rep_pressure=.true.
 
 !------------------------------------------------------------------------
 !     free slip boundary condition:
@@ -366,69 +377,116 @@ subroutine ViscousCoeff_method2(utp,vtp)
                   
               dudx = ( utp(i+1,j) - utp(i,j) ) / Deltax
               dvdy = ( vtp(i,j+1) - vtp(i,j) ) / Deltax
+
+              if (stressBC) then
+
+                 if (i .eq. 1) then ! 1st order 
+
+                    dvdx = ( ( vtp(i+1,j) + vtp(i+1,j+1) )/2d0 -  &
+                         ( vtp(i,j)   + vtp(i,j+1)   )/2d0 ) / Deltax
+
+                 elseif (i .eq. nx) then ! 1st order
+
+                    dvdx = ( ( vtp(i,j) + vtp(i,j+1) )/2d0 -  &
+                         ( vtp(i-1,j)   + vtp(i-1,j+1)   )/2d0 ) / Deltax
+
+                 else
+
+                    dvdx = ( ( vtp(i+1,j) + vtp(i+1,j+1) ) -        &
+                         ( vtp(i-1,j) + vtp(i-1,j+1) ) ) /      &
+                         ( 4d0 * Deltax )
+
+                 endif
+                 
+              elseif (.not. stressBC) then
                   
-              if     ( maskC(i+1,j) + maskC(i-1,j) .eq. 2 ) then
+                 if     ( maskC(i+1,j) + maskC(i-1,j) .eq. 2 ) then
                      
-                 dvdx = ( ( vtp(i+1,j) + vtp(i+1,j+1) ) -        &
-                      ( vtp(i-1,j) + vtp(i-1,j+1) ) ) /      &
-                      ( 4d0 * Deltax )
+                    dvdx = ( ( vtp(i+1,j) + vtp(i+1,j+1) ) -        &
+                         ( vtp(i-1,j) + vtp(i-1,j+1) ) ) /      &
+                         ( 4d0 * Deltax )
                      
-              elseif ( maskC(i+1,j) - maskC(i-1,j) .eq. 1 ) then
+                 elseif ( maskC(i+1,j) - maskC(i-1,j) .eq. 1 ) then
                      
-                 dvdx = ( 1d0 * ( vtp(i+1,j) + vtp(i+1,j+1) ) +  &
-                      3d0 * ( vtp(i,j)   + vtp(i,j+1) ) ) /  &
-                      ( 6d0 * Deltax )
+                    dvdx = ( 1d0 * ( vtp(i+1,j) + vtp(i+1,j+1) ) +  &
+                         3d0 * ( vtp(i,j)   + vtp(i,j+1) ) ) /  &
+                         ( 6d0 * Deltax )
                      
-              elseif ( maskC(i+1,j) - maskC(i-1,j) .eq. -1 ) then
+                 elseif ( maskC(i+1,j) - maskC(i-1,j) .eq. -1 ) then
                      
-                 dvdx = ( -1d0 * ( vtp(i-1,j) + vtp(i-1,j+1) ) - &
-                      3d0 * ( vtp(i,j)   + vtp(i,j+1) ) ) / &
-                      ( 6d0 * Deltax )
+                    dvdx = ( -1d0 * ( vtp(i-1,j) + vtp(i-1,j+1) ) - &
+                         3d0 * ( vtp(i,j)   + vtp(i,j+1) ) ) / &
+                         ( 6d0 * Deltax )
                      
-              elseif ( maskC(i+1,j) + maskC(i-1,j) .eq. 0 ) then
+                 elseif ( maskC(i+1,j) + maskC(i-1,j) .eq. 0 ) then
                      
-                 print *, 'WARNING: irregular grid cell case1', i, j
+                    print *, 'WARNING: irregular grid cell case1', i, j
                      
+                 endif
+
               endif
 
+              if (stressBC) then
+
+                 if (j .eq. 1) then ! 1st order
+
+                    dudy = ( ( utp(i,j+1) + utp(i+1,j+1) )/2d0 -  &
+                         ( utp(i,j)   + utp(i+1,j)   )/2d0 ) / Deltax
+
+                 elseif (j .eq. ny) then ! 1st order
+
+                    dudy = ( ( utp(i,j) + utp(i+1,j) )/2d0 -  &
+                         ( utp(i,j-1)   + utp(i+1,j-1)   )/2d0 ) / Deltax
+                    
+                 else
+
+                    dudy = ( ( utp(i,j+1) + utp(i+1,j+1) ) -        &
+                         ( utp(i,j-1) + utp(i+1,j-1) ) ) /     &
+                         ( 4d0 * Deltax )
+                    
+                 endif
+
+              elseif (.not. stressBC) then
+
                
-              if     ( maskC(i,j+1) + maskC(i,j-1) .eq. 2 ) then
+                 if     ( maskC(i,j+1) + maskC(i,j-1) .eq. 2 ) then
                      
-                 dudy = ( ( utp(i,j+1) + utp(i+1,j+1) ) -        &
-                      ( utp(i,j-1) + utp(i+1,j-1) ) ) /     &
-                      ( 4d0 * Deltax )
+                    dudy = ( ( utp(i,j+1) + utp(i+1,j+1) ) -        &
+                         ( utp(i,j-1) + utp(i+1,j-1) ) ) /     &
+                         ( 4d0 * Deltax )
                  
-              elseif ( maskC(i,j+1) - maskC(i,j-1) .eq. 1 ) then
+                 elseif ( maskC(i,j+1) - maskC(i,j-1) .eq. 1 ) then
                      
-                 dudy = ( 1d0 * ( utp(i,j+1) + utp(i+1,j+1) ) +  &
-                      3d0 * ( utp(i,j)   + utp(i+1,j) ) ) / &
-                      ( 6d0 * Deltax )
+                    dudy = ( 1d0 * ( utp(i,j+1) + utp(i+1,j+1) ) +  &
+                         3d0 * ( utp(i,j)   + utp(i+1,j) ) ) / &
+                         ( 6d0 * Deltax )
                      
-              elseif ( maskC(i,j+1) - maskC(i,j-1) .eq. -1 ) then
+                 elseif ( maskC(i,j+1) - maskC(i,j-1) .eq. -1 ) then
                      
-                 dudy = ( -1d0 * ( utp(i,j-1) + utp(i+1,j-1) ) - &
-                      3d0 * ( utp(i,j)   + utp(i+1,j) ) ) / &
-                      ( 6d0 * Deltax )
+                    dudy = ( -1d0 * ( utp(i,j-1) + utp(i+1,j-1) ) - &
+                         3d0 * ( utp(i,j)   + utp(i+1,j) ) ) / &
+                         ( 6d0 * Deltax )
                      
-              elseif ( maskC(i,j+1) + maskC(i,j-1) .eq. 0 ) then
+                 elseif ( maskC(i,j+1) + maskC(i,j-1) .eq. 0 ) then
                      
-                 print *, 'WARNING: irregular grid cell case2',i,j
+                    print *, 'WARNING: irregular grid cell case2',i,j
                  
-              endif
+                 endif
                   
+              endif
 
               if ( rheo .eq. 1 ) then ! ellipse, jfl p.892
 
 
-                 deno = sqrt(( dudx **2 + dvdy **2 )*(1.0d0 + ell_2) &
-                      + 2.0d0 * dudx * dvdy * (1.0d0 - ell_2) &
+                 deno = sqrt(( dudx **2 + dvdy **2 )*(1.0d0 + ell_2 ) &
+                      + 2.0d0 * dudx * dvdy * (1.0d0 - ell_2 ) &
                       + ell_2 * ( dvdx + dudy ) ** 2 )
 
  
                  if ( regularization .eq. 'tanh' ) then
 
                     deno = max( deno, 1d-20 )
-                     
+
                     zetaC(i,j) =  ( Pp(i,j)/denomin ) &
                          *( tanh(denomin*(1/deno)))
 
@@ -438,6 +496,16 @@ subroutine ViscousCoeff_method2(utp,vtp)
 
                     zetaC(i,j) = Pp(i,j)/denoT 
 
+                 elseif ( regularization .eq. 'capping' ) then
+
+                    denoT = max(deno,denomin)
+
+                    zetaC(i,j) = Pp(i,j)/denoT
+
+                 elseif ( regularization .eq. 'viscous' ) then
+
+                    zetaC(i,j) = Pp(i,j)/denomin
+
                  else
                         
                     print *, 'WRONG REGULARIZATION'
@@ -445,7 +513,15 @@ subroutine ViscousCoeff_method2(utp,vtp)
                     
                  endif
 
-                 P(i,j) = zetaC(i,j)*deno ! replacement pressure 
+                 if (rep_pressure) then
+
+                    P(i,j) = zetaC(i,j)*deno ! replacement pressure 
+
+                 else
+
+                    P(i,j)=Pp(i,j)
+
+                 endif
 
                  etaC(i,j)  = zetaC(i,j) * ell_2
                         
@@ -465,7 +541,7 @@ subroutine ViscousCoeff_method2(utp,vtp)
 !------------------------------------------------------------------------
 !     Set zetaC and etaC to 0.0 at the open boundaries (see p.32-33 EC-2)
 !------------------------------------------------------------------------
-
+    if (.not. stressBC) then
      do i = 1, nx+1
 
         if (maskC(i,0) .eq. 1) then
@@ -493,9 +569,12 @@ subroutine ViscousCoeff_method2(utp,vtp)
         endif
 
      enddo
+    endif
 
 !------------------------------------------------------------------------
 !     Shear viscosity calculation at the grid node (see p.2-118 PDF notebook)
+!
+!     stressBC: etaB is set to zero for i=1, i=nx+1, j=1, j=ny+1
 !------------------------------------------------------------------------
 
          
@@ -670,28 +749,53 @@ subroutine ViscousCoeff_method2(utp,vtp)
 
               if ( rheo .eq. 1 ) then ! ellipse, jfl p.892
 
-
-                 deno = sqrt(( dudx **2 + dvdy **2 )*(1.0d0 + ell_2) &
-                      + 2.0d0 * dudx * dvdy * (1.0d0 - ell_2) &
-                      + ell_2 * ( dvdx + dudy ) ** 2 )
+                 if (stressBC) then
+                    deno = sqrt(( dudx **2 + dvdy **2 )*(1.0d0 + ell_2B(i,j)) &
+                         + 2.0d0 * dudx * dvdy * (1.0d0 - ell_2B(i,j)) &
+                         + ell_2B(i,j) * ( dvdx + dudy ) ** 2 )
+                    pnode=PpB(i,j)
+                 else
+                    deno = sqrt(( dudx **2 + dvdy **2 )*(1.0d0 + ell_2 ) &
+                         + 2.0d0 * dudx * dvdy * (1.0d0 - ell_2 ) &
+                         + ell_2 * ( dvdx + dudy ) ** 2 )
+                 endif
 
                  if ( regularization .eq. 'tanh' ) then
 
                     deno = max( deno, 1d-20 )
 
-                    etaB(i,j) = ell_2 * ( pnode/denomin ) &
+                    etaB(i,j) = ell_2B(i,j) * ( pnode/denomin ) &
                          *(tanh( denomin*(1/deno)) )
 
                  elseif ( regularization .eq. 'Kreysher' ) then
 
                     denoT = deno + denomin
 
-                    etaB(i,j) = ell_2 * ( pnode/denoT )
+                    etaB(i,j) = ell_2B(i,j) * ( pnode/denoT )
+
+                 elseif ( regularization .eq. 'capping' ) then
+
+                    denoT = max(deno,denomin)
+
+                    etaB(i,j) = ell_2B(i,j) * ( pnode/denoT )
+
+                 elseif ( regularization .eq. 'viscous' ) then
+
+                    etaB(i,j) = ell_2B(i,j) * (pnode/denomin)
 
                  else
 
                     print *, 'WRONG REGULARIZATION'
                     stop
+
+                 endif
+                 
+                 if (stressBC) then
+
+                   if (i .eq. 1) etaB(i,j)=0d0
+                   if (i .eq. nx+1) etaB(i,j)=0d0
+                   if (j .eq. 1) etaB(i,j)=0d0                   
+                   if (j .eq. ny+1) etaB(i,j)=0d0
 
                  endif
 
@@ -749,11 +853,9 @@ subroutine ViscousCoeff_method3_and_4(utp,vtp)
 
   integer i, j, rheo, summaskC
 
-  double precision dudx, dvdy, dudy, dvdx, deno, denomin, denoT
+  double precision dudx, dvdy, dudy, dvdx, deno, denoT
   double precision utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
   double precision ep12(0:nx+2,0:ny+2), meanep12sq, meanep12
-  
-  denomin = 2d-09 ! Hibler, 1979
 
   rheo = Rheology ! define local variable to speed up the code
 
@@ -1135,7 +1237,7 @@ subroutine etaB_at_open_boundaries
 
 !------------------------------------------------------------------------                                                                                                      
 !     Set etaB to 0.0 at the open boundaries (see p.32-33 EC-2)                                                                                                                
-!------------------------------------------------------------------------                                                                                                      
+!------------------------------------------------------------------------                                                                                                     
 
   etaB(1,1)=0d0
   etaB(1,ny+1)=0d0
@@ -1248,6 +1350,197 @@ subroutine etaB_at_open_boundaries
 
   return
 end subroutine etaB_at_open_boundaries
+
+
+subroutine check_if_plastic(utp,vtp)
+  use ellipse
+  implicit none
+  
+  include 'parameter.h'
+  include 'CB_DynVariables.h'
+  include 'CB_const.h'
+  include 'CB_mask.h'
+  include 'CB_mask_boat.h'
+  include 'CB_options.h'
+  
+  integer i, j, rheo, summaskC
+
+  double precision dudx, dvdy, dudy, dvdx, deno, denoT
+  double precision pnode
+  double precision utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
+
+  logical rep_pressure
+
+  rheo = Rheology ! define local variable to speed up the code
+
+  rep_pressure=.true.
+
+!------------------------------------------------------------------------
+!     check if plastic at the grid center
+!------------------------------------------------------------------------   
+
+     do i = 1, nx
+        do j = 1, ny
+               
+               
+           if ( maskC(i,j) .eq. 1 ) then
+                  
+              dudx = ( utp(i+1,j) - utp(i,j) ) / Deltax
+              dvdy = ( vtp(i,j+1) - vtp(i,j) ) / Deltax
+
+              if (stressBC) then
+
+                 if (i .eq. 1) then ! 1st order 
+
+                    dvdx = ( ( vtp(i+1,j) + vtp(i+1,j+1) )/2d0 -  &
+                         ( vtp(i,j)   + vtp(i,j+1)   )/2d0 ) / Deltax
+
+                 elseif (i .eq. nx) then ! 1st order
+
+                    dvdx = ( ( vtp(i,j) + vtp(i,j+1) )/2d0 -  &
+                         ( vtp(i-1,j)   + vtp(i-1,j+1)   )/2d0 ) / Deltax
+
+                 else
+
+                    dvdx = ( ( vtp(i+1,j) + vtp(i+1,j+1) ) -        &
+                         ( vtp(i-1,j) + vtp(i-1,j+1) ) ) /      &
+                         ( 4d0 * Deltax )
+
+                 endif
+                 
+              elseif (.not. stressBC) then
+                  
+                 if     ( maskC(i+1,j) + maskC(i-1,j) .eq. 2 ) then
+                     
+                    dvdx = ( ( vtp(i+1,j) + vtp(i+1,j+1) ) -        &
+                         ( vtp(i-1,j) + vtp(i-1,j+1) ) ) /      &
+                         ( 4d0 * Deltax )
+                     
+                 elseif ( maskC(i+1,j) - maskC(i-1,j) .eq. 1 ) then
+                     
+                    dvdx = ( 1d0 * ( vtp(i+1,j) + vtp(i+1,j+1) ) +  &
+                         3d0 * ( vtp(i,j)   + vtp(i,j+1) ) ) /  &
+                         ( 6d0 * Deltax )
+                     
+                 elseif ( maskC(i+1,j) - maskC(i-1,j) .eq. -1 ) then
+                     
+                    dvdx = ( -1d0 * ( vtp(i-1,j) + vtp(i-1,j+1) ) - &
+                         3d0 * ( vtp(i,j)   + vtp(i,j+1) ) ) / &
+                         ( 6d0 * Deltax )
+                     
+                 elseif ( maskC(i+1,j) + maskC(i-1,j) .eq. 0 ) then
+                     
+                    print *, 'WARNING: irregular grid cell case1', i, j
+                     
+                 endif
+
+              endif
+
+              if (stressBC) then
+
+                 if (j .eq. 1) then ! 1st order
+
+                    dudy = ( ( utp(i,j+1) + utp(i+1,j+1) )/2d0 -  &
+                         ( utp(i,j)   + utp(i+1,j)   )/2d0 ) / Deltax
+
+                 elseif (j .eq. ny) then ! 1st order
+
+                    dudy = ( ( utp(i,j) + utp(i+1,j) )/2d0 -  &
+                         ( utp(i,j-1)   + utp(i+1,j-1)   )/2d0 ) / Deltax
+                    
+                 else
+
+                    dudy = ( ( utp(i,j+1) + utp(i+1,j+1) ) -        &
+                         ( utp(i,j-1) + utp(i+1,j-1) ) ) /     &
+                         ( 4d0 * Deltax )
+                    
+                 endif
+
+              elseif (.not. stressBC) then
+
+               
+                 if     ( maskC(i,j+1) + maskC(i,j-1) .eq. 2 ) then
+                     
+                    dudy = ( ( utp(i,j+1) + utp(i+1,j+1) ) -        &
+                         ( utp(i,j-1) + utp(i+1,j-1) ) ) /     &
+                         ( 4d0 * Deltax )
+                 
+                 elseif ( maskC(i,j+1) - maskC(i,j-1) .eq. 1 ) then
+                     
+                    dudy = ( 1d0 * ( utp(i,j+1) + utp(i+1,j+1) ) +  &
+                         3d0 * ( utp(i,j)   + utp(i+1,j) ) ) / &
+                         ( 6d0 * Deltax )
+                     
+                 elseif ( maskC(i,j+1) - maskC(i,j-1) .eq. -1 ) then
+                     
+                    dudy = ( -1d0 * ( utp(i,j-1) + utp(i+1,j-1) ) - &
+                         3d0 * ( utp(i,j)   + utp(i+1,j) ) ) / &
+                         ( 6d0 * Deltax )
+                     
+                 elseif ( maskC(i,j+1) + maskC(i,j-1) .eq. 0 ) then
+                     
+                    print *, 'WARNING: irregular grid cell case2',i,j
+                 
+                 endif
+                  
+              endif
+
+              if ( rheo .eq. 1 ) then ! ellipse, jfl p.892
+
+
+                 deno = sqrt(( dudx **2 + dvdy **2 )*(1.0d0 + ell_2 ) &
+                      + 2.0d0 * dudx * dvdy * (1.0d0 - ell_2 ) &
+                      + ell_2 * ( dvdx + dudy ) ** 2 )
+
+ 
+                 if ( regularization .eq. 'tanh' ) then
+
+                    deno = max( deno, 1d-20 )
+                     
+                    if (Pp(i,j) .gt. 100d0 .and. deno .gt. denomin) then
+                       print *, 'T tanh', i,j, deno, denomin
+                    endif
+
+                 elseif ( regularization .eq. 'Kreyscher' ) then
+                        
+                    denoT = deno + denomin
+
+
+                 elseif ( regularization .eq. 'capping' ) then
+
+                    denoT = max(deno,denomin)
+
+                    if (Pp(i,j) .gt. 100d0 .and. deno .gt. denomin) then
+                       print *, 'T capping', i,j, deno, denomin
+                    endif
+
+                 elseif ( regularization .eq. 'viscous' ) then
+                    
+                    if (Pp(i,j) .gt. 100d0 .and. deno .gt. denomin) then
+                       print *, 'T viscous', i,j, deno, denomin
+                    endif
+
+                 else
+                        
+                    print *, 'WRONG REGULARIZATION'
+                    stop
+                    
+                 endif
+                        
+              elseif ( rheo .eq. 2 ) then ! triangle, jfl p.1124
+
+                 stop
+                   
+              endif
+
+                  
+           endif
+               
+               
+        enddo
+     enddo
+
+end subroutine check_if_plastic
 
 
 

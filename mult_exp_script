@@ -1,0 +1,31 @@
+cp parameter_nx4.h src/parameter.h
+scons
+./zoupa < input_norestart                                            
+
+cp parameter_nx8.h src/parameter.h
+scons
+./zoupa < input_norestart
+
+cp parameter_nx16.h src/parameter.h
+scons
+./zoupa < input_norestart
+
+cp parameter_nx32.h src/parameter.h
+scons
+./zoupa < input_norestart
+
+cp parameter_nx64.h src/parameter.h
+scons
+./zoupa < input_norestart
+
+cp parameter_nx128.h src/parameter.h
+scons
+./zoupa < input_norestart
+
+cp parameter_nx256.h src/parameter.h
+scons
+./zoupa < input_norestart
+
+cp parameter_nx512.h src/parameter.h
+scons
+./zoupa < input_norestart

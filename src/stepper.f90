@@ -32,7 +32,7 @@
 
       subroutine stepper (date, tstep, expno)
         USE datetime, ONLY: datetime_type, datetime_str, datetime_str_6, time_init, time_set_from_datetime
-        !use datetime, only: operator(==), operator(/=) <= Why is this even here. Op /= doesn't exists and both are unused, PB-110619
+        use datetime, only: operator(==), operator(/=)
         use io, only: daily_air_temp_from_monthly_mean
         use numerical_VP
         use solver_choice
@@ -207,18 +207,13 @@
                sumtot_its = sumtot_its + tot_its
 
                if (k .eq. NLmax) then
-                  print *, 'WARNING JFNK DID NOT CONVERGE'
+                  print *, 'WARNING JFNK DID NOT CONVERGED'
                   nbfail = nbfail + 1
                endif
 
             enddo
 
 !------- End of Newton loop ----------------------------------------------            
-         
-!            if (tstep .eq. 4) then
-!               call stress_strain (uice, vice, date, 9, expno)
-!               stop
-!            endif
          
          elseif (solver .eq. 3) then ! EVP solver 
 
@@ -232,6 +227,13 @@
 
       endif
 
+            if (tstep .eq. 1) then
+!               call check_if_plastic(uice, vice)
+               call stress_strain (uice, vice, date, 9, expno)                 
+!               call stress_strainB (uice, vice, expno)
+!               stop                                                            
+            endif 
+
 !------------------------------------------------------------------------
 !     Integrate the continuity equations to get  h,A^t (and other tracers) 
 !     from h,A^t-1. We use uice and vice (u^t and v&t) to advect the tracers.
@@ -239,7 +241,7 @@
 
       if ( Dynamic ) then
 
-         if (IMEX .eq. 0) then ! already done with IMEX 1 and 2
+         if (IMEX .eq. 0 .and. .not. stressBC) then ! already done with IMEX 1 and 2
             call advection ( un1, vn1, uice, vice, hn1, An1, h, A )
          endif
          tracer(:,:,1) = h

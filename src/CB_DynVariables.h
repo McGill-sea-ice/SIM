@@ -16,6 +16,8 @@
                 un2      (0:nx+2,0:ny+2), &
 		vn2      (0:nx+2,0:ny+2), &
                 Pp       (0:nx+1,0:ny+1), &
+                PpB      (0:nx+2,0:ny+2), &
+                ell_2B   (0:nx+2,0:ny+2), &
 		P        (0:nx+1,0:ny+1), &
                 Pf       (0:nx+1,0:ny+1), &
 		etaC     (0:nx+1,0:ny+1), &
@@ -38,6 +40,8 @@
                 un2,            & ! previous time level solution
 		vn2,            & ! previous time level solution
 	        Pp,             & ! ice strength
+                PpB,            & ! ice strength at node
+	        ell_2B,         & ! array 1/e^2 defined at B...node location
 		P,              & ! replacement pressure
                 Pf,             & ! replacement pressure
                 etaC,           & ! coefficient of shear viscosity (C-grid)

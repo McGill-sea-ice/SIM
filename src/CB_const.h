@@ -8,7 +8,8 @@
                 sinlat(0:nx+1,0:ny+1), &
                 coslat(0:nx+1,0:ny+1)
 
-      double precision relhum, Deltax, Deltax2, theta_a, theta_w
+      double precision relhum, Deltax, Deltaxh, Deltax2, DxhDx
+      double precision theta_a, theta_w
       double precision sintheta_a, costheta_a, sintheta_w, costheta_w
       double precision Deltat, DtoverDx, rhof, Tif, Tof
       double precision emisice, emisatml,emisocn
@@ -21,6 +22,8 @@
                 relhum,         & ! atmosphere relative humidity
                 Deltax,         & ! grid size [m]
 		Deltax2,        & ! Deltax**2
+		Deltaxh,        & ! Deltax/2								     
+                DxhDx,          & ! Deltaxh*Deltax 
 		Deltat,         & ! time step
                 DtoverDx,       & ! Deltat / Deltax
                 theta_a,        & ! air turning angle
@@ -32,7 +35,6 @@
                 rhof,           & ! rhoice * Coriolis parameter
                 Tif,            & ! ice freezing point temperature
                 Tof               ! ocn freezing point temperature
-
 
 
       common/const/             &
@@ -48,4 +50,3 @@
 
       common/const/  &
                 ntracer           ! number of tracer ( max = 10 )
-

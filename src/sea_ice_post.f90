@@ -28,44 +28,60 @@
       include 'CB_ThermoVariables.h'
       include 'CB_ThermoForcing.h'
       include 'CB_DynForcing.h'
+      include 'CB_const.h'
+      include 'CB_const_stressBC.h'
       include 'CB_buoys.h'
+      include 'CB_mask_boat.h'
 
       type(datetime_type), intent(in) :: date
       
       integer, intent(in) :: expno
-      integer i, j, k, kk, year, month, day, hour, minute
+      integer i, j, k, kk, year, month, day, hour, minute, int11, int22, int12
 
-      character filename*32
+      character filename*60
 
-      double precision hactual(0:nx+1,0:ny+1)
+      double precision hactual(0:nx+1,0:ny+1), tempval
 
       year = date%year
       month = date%month
       day = date%day
       hour = date%hour
       minute = date%minute
+
+      tempval=abs(sig11bc)
+      int11=int(tempval)
+      tempval=abs(sig22bc)
+      int22=int(tempval)
+      tempval=abs(sig12bc)
+      int12=int(tempval)
      
-      write (filename,'("output/h",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,".",i2.2)') &
-           year, month, day, hour, minute, expno
+      write (filename,'("output/h","_nx",i4.4,"_sbc11_",i2.2,"_sbc22_",i2.2,"_sbc12_",i2.2,".",i2.2)') &
+           nx, int11, int22, int12, expno
       open (10, file = filename, status = 'unknown')
 
-      write (filename,'("output/A",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,".",i2.2)') &
-           year, month, day, hour, minute, expno
+
+      write (filename,'("output/A","_nx",i4.4,"_sbc11_",i2.2,"_sbc22_",i2.2,"_sbc12_",i2.2,".",i2.2)') &
+           nx, int11, int22, int12, expno
       open (11, file = filename, status = 'unknown')
+
+      write (filename,'("output/mask_boat","_nx",i4.4,".",i2.2)') &
+           nx, expno
+      open (14, file = filename, status = 'unknown')
 
       if ( Dynamic ) then
 
-         write (filename,'("output/u",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,".",i2.2)') &
-              year, month, day, hour, minute, expno
+
+         write (filename,'("output/u","_nx",i4.4,"_sbc11_",i2.2,"_sbc22_",i2.2,"_sbc12_",i2.2,".",i2.2)') &
+              nx, int11, int22, int12, expno
          open (12, file = filename, status = 'unknown')
          
-         write (filename,'("output/v",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,".",i2.2)') &
-              year, month, day, hour, minute, expno
+         write (filename,'("output/v","_nx",i4.4,"_sbc11_",i2.2,"_sbc22_",i2.2,"_sbc12_",i2.2,".",i2.2)') &
+              nx, int11, int22, int12, expno
          open (13, file = filename, status = 'unknown')
 
       endif
 
-      if ( Thermodyn ) then
+      if ( Thermodyn ) then ! not used for stressBC
 
          write (filename,'("output/Ta",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,".",i2.2)') &
               year, month, day, hour, minute, expno
@@ -129,6 +145,7 @@
          do j = 0, ny+1
 !            write(15,30) ( etaC(i,j), i = 0, nx+1 )
 !            write(38,30) ( zetaC(i,j), i = 0, nx+1 )
+            write(14,40) ( mboat(i,j), i = 0, nx+1 )
          enddo
 
          do j = 1, ny+1
@@ -182,7 +199,7 @@
  10   format (1x, 1000(f20.16, 1x))
  20   format (1x, 1000(f20.16, 1x))
  30   format (1x, 1000(f12.6, 1x))
- !40   format (1x, 1000(f12.6, 1x))
+ 40   format (1x, 1000(i1.1, 1x))
  !50   format (1x, 1000(f14.6, 1x))
  !80   format (1x, 1000(f12.6, 1x))
  !100  format (1x, 1000(e12.4, 1x))

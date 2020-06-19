@@ -2,6 +2,9 @@
 ! (R1, R2) with pressure gradient (bu_ind, bv_ind) and terms related to the 
 ! water drag
 
+! stress at BC option: to simplify things, bvect_ind is not modified. All the 
+! changes are made in bvect. 
+
       subroutine bvect (utp,vtp,rhs)
 
       use solver_choice
@@ -16,6 +19,8 @@
       include 'CB_mask.h'
       include 'CB_DynForcing.h'
       include 'CB_bathymetry.h'
+      include 'CB_options.h'
+      include 'CB_stressBC.h'
 
       integer i, j
 
@@ -66,10 +71,23 @@
                vavg = ( vtp(i,j)   + vtp(i,j+1) &
                     + vtp(i-1,j) + vtp(i-1,j+1) ) / 4d0
 
+               if (stressBC .and. i .eq. 1) then
+
+                vavg = ( vtp(i,j) + vtp(i,j+1) ) / 2d0
+
+               endif
+
+               if (stressBC .and. i .eq. nx+1) then
+
+                vavg = ( vtp(i-1,j) + vtp(i-1,j+1) ) / 2d0
+
+               endif
+
                speed1p = sqrt( ( utp(i,j) - uwatnd(i,j) ) ** 2 &
                        + ( vavg - vwavg(i,j)  ) ** 2 )
             
-               CdwC1(i,j) = max(Cdw * speed1p, 1d-10)
+!               CdwC1(i,j) = max(Cdw * speed1p, 1d-10)
+               CdwC1(i,j) = Cdw * speed1p
             
 	      if (BasalStress) then
 	      
@@ -126,6 +144,7 @@
          enddo
       enddo
 
+      if (stressBC .and. clipping) bu(nx+1,1)=-2.76d-09
 
        do j = 1, ny+1 ! v comp
          do i = 1, nx
@@ -135,10 +154,23 @@
                uavg = ( utp(i,j)   + utp(i+1,j) &
                     + utp(i,j-1) + utp(i+1,j-1) ) / 4d0
 
+               if (stressBC .and. j .eq. 1) then
+
+                uavg = ( utp(i,j) + utp(i+1,j) ) / 2d0
+
+               endif
+
+               if (stressBC .and. j .eq. ny+1) then
+
+                uavg = ( utp(i,j-1) + utp(i+1,j-1) ) / 2d0
+
+               endif
+
                speed2p = sqrt( ( uavg - uwavg(i,j)  ) ** 2 &
                        + ( vtp(i,j) - vwatnd(i,j) ) ** 2 )
 
-               CdwC2(i,j) = max(Cdw * speed2p, 1d-10)
+!               CdwC2(i,j) = max(Cdw * speed2p, 1d-10)
+               CdwC2(i,j) = Cdw * speed2p
 
               if (BasalStress) then
                
@@ -207,6 +239,43 @@
                          CdwC1(i,j) * ( uwatnd(i,j) * costheta_w - &
                          vwavg(i,j)  * sintheta_w   )
 
+             if (stressBC) then
+             
+              if (i .eq. 1) then ! West
+
+               bu(i,j)= bu_ind(i,j) - ( P(i,j) / Deltaxh ) + & 
+                        CdwC1(i,j) * ( uwatnd(i,j) * costheta_w - &
+                        vwavg(i,j)  * sintheta_w   ) - sigmaW(j)/ Deltaxh + &
+                        ( tauW(j+1)-tauW(j) ) / Deltax
+              endif
+
+              if (i .eq. nx+1) then ! East
+
+              bu(i,j) = bu_ind(i,j) + ( P(i-1,j) / Deltaxh ) + & 
+                        CdwC1(i,j) * ( uwatnd(i,j) * costheta_w - &
+                        vwavg(i,j)  * sintheta_w   ) + sigmaE(j)/ Deltaxh + &
+                        ( tauE(j+1)-tauE(j) ) / Deltax
+            
+              endif
+
+              if (j .eq. 1 .and. i .ne. 1 .and. i .ne. nx+1) then ! South
+
+              bu(i,j) = bu_ind(i,j) - ( P(i,j) - P(i-1,j) ) / Deltax + & 
+                        CdwC1(i,j) * ( uwatnd(i,j) * costheta_w - &
+                        vwavg(i,j)  * sintheta_w   ) - tauS(i) / Deltax   
+
+              endif
+
+              if (j .eq. ny .and. i .ne. 1 .and. i .ne. nx+1) then ! North
+
+              bu(i,j) = bu_ind(i,j) - ( P(i,j) - P(i-1,j) ) / Deltax + & 
+                        CdwC1(i,j) * ( uwatnd(i,j) * costheta_w - &
+                        vwavg(i,j)  * sintheta_w   ) + tauN(i) / Deltax   
+
+              endif
+
+             endif
+
             elseif (solver .eq. 3) then ! EVP solver
  
                bu(i,j) = R1(i,j) + &
@@ -236,12 +305,49 @@
                          CdwC2(i,j) * ( vwatnd(i,j) * costheta_w + &
                          uwavg(i,j)  * sintheta_w   )
 
+             if (stressBC) then             
+
+              if (j .eq. 1) then ! South
+       
+               bv(i,j) = bv_ind(i,j) - ( P(i,j) ) / Deltaxh + & 
+                        CdwC2(i,j) * ( vwatnd(i,j) * costheta_w + &
+                        uwavg(i,j)  * sintheta_w   ) - sigmaS(i)/ Deltaxh + &
+                        ( tauS(i+1)-tauS(i) ) / Deltax
+
+              endif
+
+             if (j .eq. ny+1) then ! North
+
+              bv(i,j) = bv_ind(i,j) + ( P(i,j-1) ) / Deltaxh + & 
+                        CdwC2(i,j) * ( vwatnd(i,j) * costheta_w + &
+                        uwavg(i,j)  * sintheta_w   ) + sigmaN(i)/ Deltaxh + &
+                        ( tauN(i+1)-tauN(i) ) / Deltax
+
+             endif
+
+             if (i .eq. 1 .and. j .ne. 1 .and. j .ne. ny+1) then ! West
+
+              bv(i,j) = bv_ind(i,j) - ( P(i,j) - P(i,j-1) ) / Deltax + & 
+                        CdwC2(i,j) * ( vwatnd(i,j) * costheta_w + &
+                        uwavg(i,j)  * sintheta_w   ) - tauW(j) / Deltax
+
+             endif
+
+             if (i .eq. nx .and. j .ne. 1 .and. j .ne. ny+1) then ! East
+
+              bv(i,j) = bv_ind(i,j) - ( P(i,j) - P(i,j-1) ) / Deltax + & 
+                        CdwC2(i,j) * ( vwatnd(i,j) * costheta_w + &
+                        uwavg(i,j)  * sintheta_w   ) + tauE(j) / Deltax
+
+             endif
+
             elseif (solver .eq. 3) then ! EVP solver
                
                bv(i,j) = R2(i,j) + &
                          CdwC2(i,j) * ( vwatnd(i,j) * costheta_w + &
                          uwavg(i,j)  * sintheta_w   )
             
+             endif
             endif
 
             else
@@ -256,7 +362,7 @@
 !-----------------------------------------------------------------------------
 !   Set bu and bv to 0.0 at the 'appropriate' open bc
 !-----------------------------------------------------------------------------
-
+     if (.not. stressBC) then
       do j = 1, ny+1
 
          bu(1,j)    = 0.0d0   ! Bering Strait
@@ -274,6 +380,7 @@
          bu(i,ny+1)    = 0.0d0 
 
       enddo
+     endif
 
       call transformer (bu,bv,rhs,1)
 

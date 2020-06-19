@@ -96,6 +96,7 @@ PROGRAM ice
       include 'parameter.h'
       include 'CB_options.h'
       include 'CB_const.h'
+      include 'CB_const_stressBC.h'
       include 'CB_ThermoForcing.h'
       include 'CB_DynVariables.h'
       include 'CB_mask.h'
@@ -112,6 +113,7 @@ PROGRAM ice
       type(datetime_delta_type) :: date_step
      
       double precision, DIMENSION(:,:), ALLOCATABLE :: hmean,Amean,umean,vmean
+      double precision :: tempvar
 
       data ndays   /31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31/
 
@@ -134,6 +136,26 @@ PROGRAM ice
       print *, 'experiment #?'
       read  *, expno 
       PRINT *, expno
+
+!---- read values [kN/m] of stresses at boudaries ---
+
+      print *, 'sig11 W-E'
+      read  *, sig11bc
+      PRINT *, sig11bc
+
+      print *, 'sig22 S-N'
+      read  *, sig22bc
+      PRINT *, sig22bc
+
+      print *, 'sig12'
+      read  *, sig12bc
+      PRINT *, sig12bc
+
+      print *, 'seed'
+      read  *, iseed
+      PRINT *, iseed
+
+!---------------------------------------------
 
       print *, 'Starting date?'
       read (*,'(a19)') datestring
@@ -168,6 +190,7 @@ PROGRAM ice
       call ocn_current               ! load current data
       call ocn_Tclim                 ! load monthly clim ocean T
       call ini_get (restart, expno_r,restart_date)! ini conds
+      if (stressBC) call get_BC_stress
 
       if ( Wind .eq. 'specified' .or. Wind .eq. '60yrs_clim') then      
          print *, 'calling specified or 60yrs_clim wind'

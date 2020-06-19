@@ -86,7 +86,7 @@
 !          CALL precond_EVPC (wk1, wk2)
          GOTO 10
       ELSEIF ( icode >= 2 ) THEN
-         epsilon = 1d-07
+         epsilon = 4d-07
          call JacfreeVec (wk1, wk2, Funeg, epsilon) ! approximates Jv
          GOTO 10
       ENDIF

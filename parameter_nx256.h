@@ -17,8 +17,8 @@ integer nx, ny, nxh, nyh, ntot, nbuoy, nvar, img, img1
       double precision beta, dx_pole, dy_pole, S0
 
       parameter (                             &
-                nx    = 512,                  & ! x-dim of the domain
-                ny    = 512,                  & ! y-dim of the domain
+                nx    = 256,                  & ! x-dim of the domain
+                ny    = 256,                  & ! y-dim of the domain
                 nxh   = 512,                  & ! define high res grid for coarsegraining
                 nyh   = 512,                  & ! define high res grid for coarsegraining
                 dx_pole= 2500d3,              & ! tracer point (0,0) x distance from North pole [m] 

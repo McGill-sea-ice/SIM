@@ -1,8 +1,12 @@
 0                   restart
-17                  exp version
+37                  exp version
+-10.0               sig11
+-10.0		    sig22
+0.0		    sig12
+324		    seed
 1990-01-01:00:00:00 starting date
-1990-01-01:04:00:00 end date
-1990-01-01:01:00:00 posting date
+1990-01-01:00:00:20 end date
+1990-01-01:00:00:10 posting date
 stop                end of post date string
 
 

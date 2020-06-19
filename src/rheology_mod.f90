@@ -5,7 +5,7 @@ MODULE ellipse
 ! ell2  : ellipticity**2 
 ! ell_2 : 1/ellipticity**2
   IMPLICIT NONE
-  DOUBLE PRECISION :: C, Pstar, ell2, ell_2
+  DOUBLE PRECISION :: C, Pstar, ell2, ell_2, denomin
 
 END MODULE ellipse
 
