@@ -151,7 +151,7 @@
       ksor  = 10               ! nb of ite of precond SOR
       klsor = 10               ! nb of ite of precond line SOR
 
-      gamma_nl = 1d-06         ! nonlinear convergence criterion for JFNK 
+      gamma_nl = 1d-03         ! nonlinear convergence criterion for JFNK 
       dropini = 1.5d0          ! res_t = L2norm_ini/dropini (L2norm_ini: beg of Newton loop)
       NLmax = 5000              ! max nb of Newton loop for JFNK
       OLmax = 5000              ! max nb of Outer loop for Picard
@@ -179,12 +179,12 @@
 !     Time step
 !------------------------------------------------------------------------
 
-      Deltat     =  10d0
+      Deltat     =  1800d0
       DtoverDx   = Deltat / Deltax
       
       if (1d0*Deltat .gt. Deltax) then
          print *, 'CFL condition not respected. Reduce time step'
-         stop
+!         stop
       endif
 
 !------------------------------------------------------------------------
@@ -209,7 +209,7 @@
       Tif      = 273.15d0            ! Freezing point of fresh water [K]
 
       rhoair   =  1.3d0              ! air density [kg/m3]
-      rhoice   =  0d0!9d02               ! ice density [kg/m3]
+      rhoice   =  9d02               ! ice density [kg/m3]
       rhowater =  1026d0             ! water density [kg/m3]
 
 !------------------------------------------------------------------------                

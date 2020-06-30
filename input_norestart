@@ -5,8 +5,8 @@
 0.0		    sig12
 324		    seed
 1990-01-01:00:00:00 starting date
-1990-01-01:00:00:20 end date
-1990-01-01:00:00:10 posting date
+1990-01-01:12:30:00 end date
+1991-01-01:12:00:00 posting date
 stop                end of post date string
 
 
