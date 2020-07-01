@@ -143,7 +143,7 @@
                
                if (k.eq. 1) NLtol = gamma_nl * res
 
-               if (res .lt. NLtol .or. res .lt. 1d-06) then
+               if (res .lt. NLtol .or. res .lt. 1d-03) then
                   print *, 'L2norm is', k,res,'(final)'
                   print *, 'nb outer ite, FGMRES ite =',k-1, sumtot_its
                   exit
@@ -194,7 +194,7 @@
                   res_t = res / dropini !transition between fast & slow phases 
                endif
                
-               if (res .lt. NLtol .or. res .lt. 1d-06) then
+               if (res .lt. NLtol .or. res .lt. 1d-03) then
                   print *, 'L2norm is', k,res,'(final)'
                   print *, 'nb Newton ite, FGMRES ite =',k-1, sumtot_its
                   exit
