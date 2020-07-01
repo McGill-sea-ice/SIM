@@ -151,7 +151,7 @@
       ksor  = 10               ! nb of ite of precond SOR
       klsor = 10               ! nb of ite of precond line SOR
 
-      gamma_nl = 1d-03         ! nonlinear convergence criterion for JFNK 
+      gamma_nl = 1d-01         ! nonlinear convergence criterion for JFNK 
       dropini = 1.5d0          ! res_t = L2norm_ini/dropini (L2norm_ini: beg of Newton loop)
       NLmax = 5000              ! max nb of Newton loop for JFNK
       OLmax = 5000              ! max nb of Outer loop for Picard

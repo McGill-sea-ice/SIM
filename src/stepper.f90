@@ -52,14 +52,14 @@
       integer, intent(in) :: tstep, expno
       integer ::  year    ! current year
 
-      integer :: k, tot_its
+      integer :: k, tot_its, i, j
       integer, save :: sumtot_its, nbfail
 
       double precision :: h2sec = 3.6d03            ! [sec] / [hour]
       double precision :: xtp(nvar), rhs(nvar), Fu(nvar)
       double precision :: uk2(0:nx+2,0:ny+2), vk2(0:nx+2,0:ny+2)
       double precision :: ul(0:nx+2,0:ny+2), vl(0:nx+2,0:ny+2)
-      double precision :: res, resk_1, time1, time2, timecrap
+      double precision :: res, resk_1, time1, time2, timecrap, maxdu, tpcalc
 
       double precision, save :: NLtol
 
@@ -226,6 +226,25 @@
          print *, 'Total nb of failures during the simulation =', nbfail
 
       endif
+
+!------- calc max(|uice-un1|) to check if steady-state is obtained ----------      
+
+      maxdu=0d0
+      do j=1,ny
+         do i=1,nx+1
+            tpcalc=abs(uice(i,j)-un1(i,j))
+            if ( tpcalc .gt. maxdu ) maxdu=tpcalc
+         enddo
+      enddo
+
+      do j=1,ny+1
+         do i=1,nx
+            tpcalc=abs(vice(i,j)-vn1(i,j))
+            if ( tpcalc .gt. maxdu ) maxdu=tpcalc
+         enddo
+      enddo
+
+      print *, '**** max delta uice ****=', maxdu
 
             if (tstep .eq. 24) then
 !               call check_if_plastic(uice, vice)
