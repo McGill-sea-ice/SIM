@@ -91,7 +91,7 @@
       DragLaw    = 'square'          ! square
       Rheology   = 1                 ! ellipse = 1, triangle = 2
       linearization = 'Zhang'        ! Tremblay, Zhang
-      regularization = 'tanh'     ! tanh, Kreyscher, capping, viscous
+      regularization = 'capping'     ! tanh, Kreyscher, capping, viscous
       denomin    = 2d-09             ! delta min for capping
       visc_method = 2                ! see viscousCoeff routine for details
       ini_guess  = 'previous time step' ! freedrift, previous time step
