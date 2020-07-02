@@ -153,7 +153,7 @@
 
       gamma_nl = 1d-01         ! nonlinear convergence criterion for JFNK 
       dropini = 1.5d0          ! res_t = L2norm_ini/dropini (L2norm_ini: beg of Newton loop)
-      NLmax = 150              ! max nb of Newton loop for JFNK
+      NLmax = 500              ! max nb of Newton loop for JFNK
       OLmax = 5000              ! max nb of Outer loop for Picard
       klinesearch = 1          ! linesearch is applied for JFNK for k .ge. klinesearch
       Jac_finite_diff = 'forward' ! forward, centred (for JFNK solver)
