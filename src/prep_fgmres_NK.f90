@@ -144,8 +144,10 @@
       else
          gamma = phi_e * (res/resk_1)**alp_e ! Eisenstat, 1996, equ.(2.6)      
          gamma = min(gamma_ini,gamma)
-         gamma = max(0.1d0,gamma)
+         gamma = max(0.5d0,gamma)
       endif
+
+      if (k .gt. 125) gamma = gamma_ini
 
     end subroutine forcing_term
 

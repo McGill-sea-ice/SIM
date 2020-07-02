@@ -39,7 +39,7 @@
       integer i, j, m, year, month, day, hour, minute, ncell, int11, int22, int12
 
       double precision dudx, dvdy, dudy, dvdx, land, lowA, pbc, maxdevp
-      double precision maxp, meanp, stdp, maxs, tempval, meanstrength
+      double precision maxp, minp, meanp, stdp, maxs, tempval, meanstrength
 
       double precision, intent(in):: utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
 
@@ -66,6 +66,7 @@
       meanp=0d0
       meanstrength=0d0
       ncell=0
+      minp=100000d0
 
 !      land=0d0
 !      lowA=0d0
@@ -229,7 +230,8 @@
                   sig11(i,j) = zetaCf(i,j)*( dudx + dvdy ) + etaCf(i,j)*( dudx - dvdy ) -Pf(i,j)
                   sig22(i,j) = zetaCf(i,j)*( dudx + dvdy ) + etaCf(i,j)*( dvdy - dudx ) -Pf(i,j)
 
-                  if (sigI(i,j) .gt. maxp) maxp=sigI(i,j) 
+                  if (sigI(i,j) .gt. maxp) maxp=sigI(i,j)
+                  if (sigI(i,j) .lt. minp) minp=sigI(i,j)
                   meanp=meanp+sigI(i,j)
                   meanstrength=meanstrength+Pp(i,j)
                   ncell=ncell+1
@@ -302,7 +304,8 @@
          stdp=sqrt(stdp/((ncell-1)*1d0))
 
          print *, '0.995 shear strength = ', 0.995d0*Pp(2,2)/sqrt(ell2)
-         print *, 'mean, max, var, max shear=', meanp, maxp, stdp, maxs
+         print *, 'mean, max, min, var = ', meanp, maxp, minp, stdp
+         print *, 'max shear = ', maxs
          print *, 'mean strength = ',  meanstrength
    
 !----- verify pressure at boundaries -------------------------------------------

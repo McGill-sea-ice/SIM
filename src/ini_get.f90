@@ -284,8 +284,8 @@ subroutine ini_get (restart, expno_r, restart_date)
             enddo
 
             crack_orientation='horizontal' ! horizontal, vertical, diagonal
-            nlength=0 ! yop
-            nwidth=1
+            nlength=50 ! yop
+            nwidth=2
             icrack=(nx-nlength)/2
             jcrack=nx/2 - 1
 
