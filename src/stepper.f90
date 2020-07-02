@@ -59,7 +59,8 @@
       double precision :: xtp(nvar), rhs(nvar), Fu(nvar)
       double precision :: uk2(0:nx+2,0:ny+2), vk2(0:nx+2,0:ny+2)
       double precision :: ul(0:nx+2,0:ny+2), vl(0:nx+2,0:ny+2)
-      double precision :: res, resk_1, time1, time2, timecrap, maxdu, tpcalc
+      double precision :: res, resk_1, time1, time2, timecrap
+      double precision :: maxdu, tpcalc, thmaxdu
 
       double precision, save :: NLtol
 
@@ -143,7 +144,7 @@
                
                if (k.eq. 1) NLtol = gamma_nl * res
 
-               if (res .lt. NLtol .or. res .lt. 1d-03) then
+               if (res .lt. NLtol .or. res .lt. 1d-06) then
                   print *, 'L2norm is', k,res,'(final)'
                   print *, 'nb outer ite, FGMRES ite =',k-1, sumtot_its
                   exit
@@ -194,7 +195,7 @@
                   res_t = res / dropini !transition between fast & slow phases 
                endif
                
-               if (res .lt. NLtol .or. res .lt. 1d-03) then
+               if (res .lt. NLtol .or. res .lt. 1d-06) then
                   print *, 'L2norm is', k,res,'(final)'
                   print *, 'nb Newton ite, FGMRES ite =',k-1, sumtot_its
                   exit
@@ -246,12 +247,15 @@
 
       print *, '**** max delta uice ****=', maxdu
 
-            if (tstep .eq. 24) then
-!               call check_if_plastic(uice, vice)
-               call stress_strain (uice, vice, date, 9, expno)                
-!               call stress_strainB (uice, vice, expno)
-!               stop                                                       
-            endif 
+!            if (tstep .eq. 24) then
+      thmaxdu=1d-09
+      if (maxdu .lt. thmaxdu) then
+      !               call check_if_plastic(uice, vice)
+         call stress_strain (uice, vice, date, 9, expno)                
+      !               call stress_strainB (uice, vice, expno)
+         call var_analysis
+         stop                                                       
+      endif
 
 !------------------------------------------------------------------------
 !     Integrate the continuity equations to get  h,A^t (and other tracers) 
