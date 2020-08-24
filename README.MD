@@ -1,6 +1,6 @@
 
 
-McGill sea ice model code.
+McGill sea ice model (SIM) code.
 
 connect to dumbo or other machine via zephyr
 cd where you want to go
