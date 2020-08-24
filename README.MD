@@ -2,6 +2,17 @@
 
 McGill sea ice model code.
 
+connect to dumbo or other machine via zephyr
+cd where you want to go
+git clone git@github.com:McGill-sea-ice/SIM.git
+cd SIM
+git branch -a (list branches)
+git checkout choose your branch
+./setup_script (to compile and create link for forcing) - ignore warnings
+./zoupa < input_file > outputfile &
+output files for fields are in the output directory
+
+
 ******* PULL REQUESTS *******
 
 -Run 1 day exp with new code and 1 day exp with reference code.
