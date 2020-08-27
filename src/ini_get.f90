@@ -42,12 +42,26 @@ subroutine ini_get (restart, expno_r, restart_date)
 
                h(i,j)   =  1d0 * maskC(i,j) ! initial ice thick
                A(i,j)   =  1d0 * maskC(i,j) ! initial ice conc
+!
+!     h and A set to zero on open boundaries !FB: This is to see effects on heterogineity (check Ringeisen et al. 2019)
+!	COMMMENT THIS UP TO ENDIF+ADD A FLAG
+!	       if (i.lt.11 .or. i.gt.nx-10 .or.j.eq.ny+1) then !lt.3 gt.2
+!                   h(i,j) = 0d0
+!                   A(i,j) = 0d0
+!	       endif 
 
-!     h and A set to zero on open boundaries !FB: 
+!     FB: a flag here for uniaxial loading experdiemnt the following is giving errors 
+      if (Uni_Load_Exp .eqv. .true.) then          
+
                if (i.lt.11 .or. i.gt.nx-10 .or. j.eq.ny+1) then !FB: lt. 3 gt.2
-                  h(i,j) = 0d0
-                  A(i,j) = 0d0
+                  h(i,j) = 0d0  !FB: initial ice thick. Check Ringeisen et al. 2019 section 3.2.3
+                  A(i,j) = 0d0  !FB: initial ice concentration
                endif
+      elseif (Uni_Load_Exp .eqv. .false.) then
+		  h(i,j) = 1d0 * maskC(i,j) ! initial ice thickness  
+		  A(i,j) = 1d0 * maskC(i,j) ! initial ice concentration	
+      endif !Uni_Load_Exp
+
 
                tracer(i,j,1) = h(i,j)
                tracer(i,j,2) = A(i,j)
@@ -73,7 +87,7 @@ subroutine ini_get (restart, expno_r, restart_date)
          un1  = 0d0  ! u-velocity pts 
          vn1  = 0d0  ! v-velocity pts 
 
-      endif
+      endif !restart
 
 !------------------------------------------------------------------------
 !     Load restart files for h,A,u,v,Ta,Ti,Tl initial conditions

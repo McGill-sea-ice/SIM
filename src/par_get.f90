@@ -86,7 +86,7 @@
 
       ntracer    =  2                ! total number of ice tracer
       
-      Idealized_domain  = .true.     ! FB: when false domain is the Arctic  
+      Uni_Load_Exp = .true.          ! FB: when false domain is the Arctic  
       BndyCond   = 'noslip'          ! noslip
       DragLaw    = 'square'          ! square
       Rheology   = 1 !FB 2           ! ellipse = 1, triangle = 2
@@ -108,9 +108,9 @@
       OcnTemp    = 'calculated'      ! MonthlyClim, specified,calculated
       calc_month_mean = .false.      ! to calc monthly mean fields
       runoff     = .false.
-      !FB: a flag here if idealized use new domain 20x50
-      if (Idealized_domain .eqv. .true.) then     
-          Deltax     =  10d03 !FB: originally 50d03 
+      !FB: a flag here if Uniaxial Loading experiment use new domain 20x50
+      if (Uni_Load_Exp .eqv. .true.) then     
+          Deltax     =  50d03 !FB: originally 50d03(test 10d03) 
           !if ((nx==20) .and. (ny==50)) then
             !Deltax     =  50d03           ! FB grid size [m]  
           !endif   
@@ -172,7 +172,7 @@
 !     Time step
 !------------------------------------------------------------------------
 
-      Deltat     =  240d0 !FB: originally 1200d0 now testing with smaller Deltat and posting date in input_norestart
+      Deltat     =  1200d0 !FB: originally 1200d0 now testing with smaller Deltat 240d0 and posting date in input_norestrt
       DtoverDx   = Deltat / Deltax
       
       if (1d0*Deltat .gt. Deltax) then
@@ -280,6 +280,8 @@
          stop
       endif
 
+ 
+	
 !------------------------------------------------------------------------
 !     Parameters (dynamic and thermodynamic)
 !------------------------------------------------------------------------
@@ -322,14 +324,14 @@
 !     Grid parameter: land mask (grid center), velocity mask (node)
 !------------------------------------------------------------------------
 
-      if ( Idealized_domain ) then
+      if ( Uni_Load_Exp ) then
          write(*, 888) nx,ny
          write(csize, 888) nx,ny
 888      format(I3.3, ('x'), I3.3)
-         open (unit = 20, file = 'src/mask'//csize//'.dat', status = 'old')
+         open (unit = 20, file = 'src/masks/mask'//csize//'.dat', status = 'old')
       else
          write(cdelta, '(I2)') int(Deltax)/1000
-         open (unit = 20, file = 'src/mask'//cdelta//'.dat', status = 'old')
+         open (unit = 20, file = 'src/masks/mask'//cdelta//'.dat', status = 'old')
       endif
 
 
@@ -359,8 +361,8 @@
          enddo
       enddo
 
-      if (.not. Idealized_domain) then !FB :use this when domain is Arctic
-         if (BasalStress) then ! FB ice basal stress param is used???
+      if (.not. Uni_Load_Exp) then !FB :use this when domain is Arctic
+         if (BasalStress) then ! FB ice basal stress = false for Uniaxial loading exp.
          
             open (unit=21,file='src/bathymetry'//cdelta//'km.dat', status = 'old')
 
@@ -504,7 +506,9 @@
       print *, 'time step [s] =   ', Deltat
       print *, 
 
+
       return
+	contains
     end subroutine par_get
 
 

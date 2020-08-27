@@ -85,29 +85,29 @@
 !--- set dh/dx, dA/dx = 0 at the outside cell when there is an open bc --------
 
 
-         do i = 0, nx+1
-
-            if (maskC(i,0) .eq. 1) then             
-               Pp(i,1)  = 0d0
-            endif
-
-            if (maskC(i,ny+1) .eq. 1) then             
-               Pp(i,ny)  = 0d0
-            endif
- 
-         enddo
-
-         do j = 0, ny+1
-
-            if (maskC(0,j) .eq. 1) then             
-               Pp(1,j)  = 0d0
-            endif
-
-            if (maskC(nx+1,j) .eq. 1) then             
-               Pp(nx,j)   = 0d0 
-            endif           
-
-         enddo
+!         do i = 0, nx+1
+!
+!            if (maskC(i,0) .eq. 1) then             
+!               Pp(i,1)  = 0d0
+!            endif
+!
+!            if (maskC(i,ny+1) .eq. 1) then             
+!               Pp(i,ny)  = 0d0
+!            endif
+! 
+!         enddo
+!
+!         do j = 0, ny+1
+!
+!            if (maskC(0,j) .eq. 1) then             
+!               Pp(1,j)  = 0d0
+!            endif
+!
+!            if (maskC(nx+1,j) .eq. 1) then             
+!               Pp(nx,j)   = 0d0 
+!            endif           
+!
+!         enddo
 
       endif !Rheology
 

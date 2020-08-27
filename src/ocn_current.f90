@@ -100,14 +100,15 @@
       endif
 
       if (Current .eq. 'specified' ) then
-         print *, 'Reading ocean currents from specified values'
+         stop
+	 print *, 'Reading ocean currents from specified values'
          do i = 1, nx+1
             do j = 1, ny+1
                        
 !     user specified ocean current
 
                uwater(i,j)  = 0.0d0  * maskB(i,j)
-               vwater(i,j)  = 0.0d0  * maskB(i,j)
+              vwater(i,j)  = 0.0d0  * maskB(i,j)
                uwatnd(i,j)  = 0.0d0  * min( maskB(i,j)   &
                                      + maskB(i,j+1), 1 )
                vwatnd(i,j)  = 0.0d0  * min( maskB(i,j) + &

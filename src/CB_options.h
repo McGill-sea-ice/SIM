@@ -1,6 +1,7 @@
 !========================================================================
 !     Common block options: program options
 ! FB: flag for domain Idealized in per_get.f90
+! FB2: Instead of Idealized Uni_Load_Exp (uniaxial loading experiment)
 !========================================================================
 
       logical                   &
@@ -9,8 +10,8 @@
                 BuoyTrack,      &
                 calc_month_mean,&
                 runoff,         &
-                Idealized_domain
-      character(LEN=20)         &
+                Uni_Load_Exp
+            character (LEN=20)   & !If not error in sim/LangrangianTracer buoys char
                 BndyCond,       &
                 DragLaw,        &
                 linearization,  &
@@ -39,7 +40,7 @@
                 OcnTemp,        & ! specified, MonthlyMean
                 Wind,           & ! specified, MonthlyMean
                 Current,        & ! specified, YearlyMean
-                Idealized_domain, & ! FB: true when domain is Idealized, false when domain is the Arctic 
+                Uni_Load_Exp, & ! FB: true when domain is Idealized, false when domain is the Arctic 
 		adv_scheme,     & ! advection scheme: upwind or upwindRK2
                 BndyCond,       & ! noslip or freeslip
                 DragLaw,        & ! linear, square, linearH or squareH
