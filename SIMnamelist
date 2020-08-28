@@ -18,3 +18,9 @@
 &other_nml
     Deltat  = 1200.0
 /
+
+&phys_param_nml
+    Pstar  = 27500.0
+    C = 20.0
+    e_ratio = 2.0
+/

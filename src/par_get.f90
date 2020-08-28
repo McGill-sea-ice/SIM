@@ -44,7 +44,7 @@
       double precision StefanB, Cpair, rhoair
       double precision deg2rad, rad2deg
       double precision Levap, Lsubli, Psurf
-      double precision ellipticity, Cdair, Cdwater
+      double precision e_ratio, Cdair, Cdwater
       double precision x1, y1, r1, rs, tanteta
       double precision lat(0:nx+1,0:ny+1), long(0:nx+1,0:ny+1)
       character(len=2) :: cdelta
@@ -65,8 +65,7 @@
       !delta      =  10d0             ! angle of dilatancy
       !Cohe       =  0d0 !4d03        ! cohesion (tensile strght) [N/m2]
       !etamax     =  1.0d12           ! max shear viscosity
-      ellipticity = 2.0d0            ! ellipticity for ellipse rheology 
-
+      e_ratio    = 2.0d0             ! ellipse aspect ratio 
       Ktracer(1) =  0d0!5d03         ! diff coeff for h [m2/s] 
       Ktracer(2) =  0d0!5d03         ! diff coeff for A [m2/s]
  
@@ -163,7 +162,7 @@
 !------------------------------------------------------------------------
 
       Deltat     =  1200d0
-      DtoverDx   = Deltat / Deltax
+!      DtoverDx   = Deltat / Deltax
       
       if (1d0*Deltat .gt. Deltax) then
          print *, 'CFL condition not respected. Reduce time step'
@@ -286,8 +285,8 @@
       !tandelta   = tan ( delta )
       !sinphi     = sin (phi)
 
-      ell2       = ellipticity**2
-      ell_2      = 1/(ellipticity**2)
+!      ell2       = e_ratio**2
+!      ell_2      = 1/(e_ratio**2)
 
       Kemis_i   = emisice  * StefanB
       Kemis_al  = emisatml * StefanB
@@ -465,7 +464,6 @@
       print *,
       print *, 'Rheology      =   ', Rheology
       print *, 'Pstar         =   ', Pstar
-      print *, 'ellipticity   =   ', ellipticity
       print *, 'linearization =   ', linearization
       print *, 'regularization=   ', regularization
       print *, 'initial guess =   ', ini_guess
@@ -490,9 +488,11 @@
 !                                                                                            
 !************************************************************************ 
 
+! to do: ellipse ratio, Cdair, Cdwater...
+
 subroutine read_namelist
 
-!        use ellipse
+        use ellipse
 !        use ice_albedo
 !        use numerical_VP
 !        use numerical_EVP
@@ -506,6 +506,7 @@ subroutine read_namelist
       include 'CB_const.h'
       
       integer :: nml_error, filenb
+      double precision :: e_ratio
       character filename*32
 
       !---- namelist variables -------
@@ -518,6 +519,9 @@ subroutine read_namelist
 
       namelist /other_nml/ &
            Deltat
+
+      namelist /phys_param_nml/ &
+           Pstar, C, e_ratio
 
       filename ='SIMnamelist'
       filenb = 10
@@ -537,6 +541,9 @@ subroutine read_namelist
          if (nml_error /= 0) exit
          print*,'Reading other_nml'
          read(filenb, nml=other_nml,iostat=nml_error)
+         if (nml_error /= 0) exit
+         print*,'Reading phys_param_nml'
+         read(filenb, nml=phys_param_nml,iostat=nml_error)
          print *, nml_error
       enddo
 
@@ -557,10 +564,14 @@ subroutine read_namelist
 
       print *, '********'
       print *, Deltat
+      print *, '********'
+      print *, Pstar, C, e_ratio
 
       close(filenb)
 
       DtoverDx   = Deltat / Deltax
+      ell2       = e_ratio**2
+      ell_2      = 1/(e_ratio**2)
 
       !stop
 
