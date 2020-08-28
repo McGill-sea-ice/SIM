@@ -488,7 +488,7 @@
 !                                                                                            
 !************************************************************************ 
 
-! to do: ellipse ratio, Cdair, Cdwater...
+! to do: ellipse ratio, Cdair, Cdwater, theta_a, theta_w
 
 subroutine read_namelist
 
@@ -496,7 +496,7 @@ subroutine read_namelist
 !        use ice_albedo
 !        use numerical_VP
 !        use numerical_EVP
-!        use solver_choice
+        use solver_choice
 !        use basal_param
 
       implicit none
@@ -515,7 +515,7 @@ subroutine read_namelist
            Dynamic, Thermodyn,                                 &
            linearization, regularization, ini_guess,           &
            adv_scheme, AirTemp, OcnTemp, Wind, Current,        &
-           Rheology, IMEX, BDF, visc_method
+           Rheology, IMEX, BDF, visc_method, solver
 
       namelist /other_nml/ &
            Deltat
@@ -560,7 +560,7 @@ subroutine read_namelist
       print *, Rheology
       print *, IMEX
       print *, BDF
-      print *, visc_method
+      print *, visc_method, solver
 
       print *, '********'
       print *, Deltat

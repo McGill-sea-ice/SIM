@@ -13,6 +13,7 @@
     IMEX = 0
     BDF = 0
     visc_method = 2
+    solver = 2
 /
 
 &other_nml
