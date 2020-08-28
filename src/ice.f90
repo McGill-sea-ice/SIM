@@ -159,8 +159,9 @@ PROGRAM ice
       startdate =  datetime_str_6(start_date)
       enddate =   datetime_str_6(end_date)
       ! e.g. start_date = 1990-01-01-00-00, startdate = 010190 (old stuff)
-      call read_namelist
-      call par_get                   ! initialize parameters
+
+      call get_default           ! get default settings and parameters
+      call read_namelist         ! overwrite default based on namelist
 
       ! This is a datetime delta. It can be added to a
       ! datetime object. 

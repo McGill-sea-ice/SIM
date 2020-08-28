@@ -1,7 +1,16 @@
 &option_nml
-    BndyCond  = 'noslip'
+    Dynamic  = .true.
+    ThermoDyn  = .true.
     linearization = 'Zhang'
     regularization = 'tanh'
     ini_guess = 'previous time step'
     adv_scheme = 'upwind'
+    Airtemp = 'MonthlyMean'
+    OcnTemp = 'calculated'
+    Wind = '6hours' 	
+    Current = 'YearlyMean'
+    Rheology = 1
+    IMEX = 0
+    BDF = 0
+    visc_method = 2
 /

@@ -16,7 +16,7 @@
 !
 !************************************************************************
 
-      subroutine par_get
+      subroutine get_default
 
         use ellipse
         use ice_albedo
@@ -480,7 +480,7 @@
       print *, 
 
       return
-    end subroutine par_get
+    end subroutine get_default
 
 !************************************************************************                    
 !     Subroutine read_namelist: read option choices and parameter values
@@ -509,8 +509,10 @@ subroutine read_namelist
       !---- namelist variables -------
              
       namelist /option_nml/ &
-           BndyCond, linearization, regularization, ini_guess, &
-           adv_scheme
+           Dynamic, Thermodyn,                                 &
+           linearization, regularization, ini_guess,           &
+           adv_scheme, AirTemp, OcnTemp, Wind, Current,        &
+           Rheology, IMEX, BDF, visc_method
 
       filename ='SIMnamelist'
       filenb = 10
@@ -530,11 +532,20 @@ subroutine read_namelist
          print *, nml_error
       enddo
 
-      print *, BndyCond
+      print *, Dynamic
+      print *, Thermodyn
       print *, linearization
       print *, regularization
       print *, ini_guess
       print *, adv_scheme
+      print *, Airtemp
+      print *, OcnTemp
+      print *, Wind
+      print *, Current
+      print *, Rheology
+      print *, IMEX
+      print *, BDF
+      print *, visc_method
 
       close(filenb)
       stop
