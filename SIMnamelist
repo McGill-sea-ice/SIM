@@ -14,3 +14,7 @@
     BDF = 0
     visc_method = 2
 /
+
+&other_nml
+    Deltat  = 1200.0
+/

@@ -1,5 +1,5 @@
 !************************************************************************
-!     Subroutine par_get: set constants, physical and grid parameters 
+!     Subroutine get_default: set options, constants, physical and grid parameters 
 !
 !     Revision History
 !     ----------------
@@ -501,8 +501,10 @@ subroutine read_namelist
 
       implicit none
 
+      include 'parameter.h'
       include 'CB_options.h'
-
+      include 'CB_const.h'
+      
       integer :: nml_error, filenb
       character filename*32
 
@@ -513,6 +515,9 @@ subroutine read_namelist
            linearization, regularization, ini_guess,           &
            adv_scheme, AirTemp, OcnTemp, Wind, Current,        &
            Rheology, IMEX, BDF, visc_method
+
+      namelist /other_nml/ &
+           Deltat
 
       filename ='SIMnamelist'
       filenb = 10
@@ -529,6 +534,9 @@ subroutine read_namelist
       do while (nml_error > 0)
          print*,'Reading option_nml'
          read(filenb, nml=option_nml,iostat=nml_error)
+         if (nml_error /= 0) exit
+         print*,'Reading other_nml'
+         read(filenb, nml=other_nml,iostat=nml_error)
          print *, nml_error
       enddo
 
@@ -547,8 +555,14 @@ subroutine read_namelist
       print *, BDF
       print *, visc_method
 
+      print *, '********'
+      print *, Deltat
+
       close(filenb)
-      stop
+
+      DtoverDx   = Deltat / Deltax
+
+      !stop
 
       end subroutine read_namelist
 
