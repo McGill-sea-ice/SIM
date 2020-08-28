@@ -1,0 +1,7 @@
+&option_nml
+    BndyCond  = 'noslip'
+    linearization = 'Zhang'
+    regularization = 'tanh'
+    ini_guess = 'previous time step'
+    adv_scheme = 'upwind'
+/

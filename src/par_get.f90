@@ -87,7 +87,6 @@
       ntracer    =  2                ! total number of ice tracer
 
       BndyCond   = 'noslip'          ! noslip
-      DragLaw    = 'square'          ! square
       Rheology   = 1                 ! ellipse = 1, triangle = 2
       linearization = 'Zhang'        ! Tremblay, Zhang
       regularization = 'tanh'        ! tanh, Kreyscher
@@ -216,11 +215,6 @@
          stop
       endif
 
-      if (DragLaw  .ne. 'square') then
-         print *, 'Wrong DragLaw chosen by user'
-         stop
-      endif
-      
       if ( Rheology .ne. 1 .and. Rheology .ne. 2) then
          print *, 'Wrong Rheology chosen by user'
          stop
@@ -488,5 +482,62 @@
       return
     end subroutine par_get
 
+!************************************************************************                    
+!     Subroutine read_namelist: read option choices and parameter values
+!                               from namelist file                        
+!                                                                                            
+!     Author: JF Lemieux                                           
+!                                                                                            
+!************************************************************************ 
 
+subroutine read_namelist
+
+!        use ellipse
+!        use ice_albedo
+!        use numerical_VP
+!        use numerical_EVP
+!        use solver_choice
+!        use basal_param
+
+      implicit none
+
+      include 'CB_options.h'
+
+      integer :: nml_error, filenb
+      character filename*32
+
+      !---- namelist variables -------
+             
+      namelist /option_nml/ &
+           BndyCond, linearization, regularization, ini_guess, &
+           adv_scheme
+
+      filename ='SIMnamelist'
+      filenb = 10
+
+      print *, 'Reading namelist values'
+        
+      open (filenb, file=filename, status='old',iostat=nml_error)
+      if (nml_error /= 0) then
+         nml_error = -1
+      else
+         nml_error =  1
+      endif
+         
+      do while (nml_error > 0)
+         print*,'Reading option_nml'
+         read(filenb, nml=option_nml,iostat=nml_error)
+         print *, nml_error
+      enddo
+
+      print *, BndyCond
+      print *, linearization
+      print *, regularization
+      print *, ini_guess
+      print *, adv_scheme
+
+      close(filenb)
+      stop
+
+      end subroutine read_namelist
 

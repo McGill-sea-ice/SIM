@@ -11,7 +11,6 @@
 
       character(LEN=20)         &
                 BndyCond,       &
-                DragLaw,        &
                 linearization,  &
 		regularization, &
                 ini_guess,      &
@@ -40,7 +39,6 @@
                 Current,        & ! specified, YearlyMean
 		adv_scheme,     & ! advection scheme: upwind or upwindRK2
                 BndyCond,       & ! noslip or freeslip
-                DragLaw,        & ! linear, square, linearH or squareH
 		Rheology,       & ! ellipse, triangle
 		IMEX,           & ! 0: standard (splitting in time), 1 and 2: IMEX
                 BDF,            & ! 0: standard, 1: Backward diff formula (2nd order)
