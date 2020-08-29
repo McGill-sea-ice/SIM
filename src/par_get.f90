@@ -162,7 +162,8 @@
 !------------------------------------------------------------------------
 
       Deltat     =  1200d0
-      
+      DtoverDx   = Deltat / Deltax
+
       if (1d0*Deltat .gt. Deltax) then
          print *, 'CFL condition not respected. Reduce time step'
          stop
@@ -224,6 +225,9 @@
 !      delta     =  delta * deg2rad        ! angle of dilatancy [rad]
       !tandelta   = tan ( delta )
       !sinphi     = sin (phi)
+
+      ell2       = e_ratio**2
+      ell_2      = 1/(e_ratio**2)
 
       Kemis_i   = emisice  * StefanB
       Kemis_al  = emisatml * StefanB
@@ -425,7 +429,7 @@
 !                                                                                            
 !************************************************************************ 
 
-! to do: ellipse ratio, Cdair, Cdwater, theta_a, theta_w
+! to do: theta_a, theta_w, bathy file
 
 subroutine read_namelist
 
@@ -441,9 +445,11 @@ subroutine read_namelist
       include 'parameter.h'
       include 'CB_options.h'
       include 'CB_const.h'
+      include 'CB_Dyndim.h'
       
       integer :: nml_error, filenb
       double precision :: e_ratio
+      double precision :: rhoair, Cdair, Cdwater
       character filename*32
 
       !---- namelist variables -------
@@ -459,7 +465,8 @@ subroutine read_namelist
            Deltat, gamma_nl, NLmax, OLmax, Nsub
 
       namelist /phys_param_nml/ &
-           Pstar, C, e_ratio, k1, k2
+           Pstar, C, e_ratio, k1, k2, rhoair, rhoice, rhowater, &
+           Cdair, Cdwater
 
       filename ='namelistSIM'
       filenb = 10
@@ -510,6 +517,9 @@ subroutine read_namelist
       DtoverDx   = Deltat / Deltax
       ell2       = e_ratio**2
       ell_2      = 1/(e_ratio**2)
+      Cdw        =  rhowater * Cdwater
+      Cda        =  rhoair * Cdair
+
 
       end subroutine read_namelist
 
@@ -584,6 +594,11 @@ subroutine read_namelist
       if ( OcnTemp .ne. 'MonthlyClim' .and. OcnTemp .ne. 'specified' &
            .and. OcnTemp .ne. 'calculated') then
          print *, 'Wrong OcnTemp chosen by user'
+         stop
+      endif
+
+      if (1d0*Deltat .gt. Deltax) then
+         print *, 'CFL condition not respected. Reduce time step'
          stop
       endif
 

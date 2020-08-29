@@ -29,6 +29,11 @@
     Pstar  = 27.5d03
     C = 20.0
     e_ratio = 2.0
-    k1=8.0
-    k2=15d0
+    k1 = 8.0
+    k2 = 15d0
+    rhoair   =  1.3d0      
+    rhoice   =  9d02               
+    rhowater =  1026d0 
+    Cdair = 1.2d-03
+    Cdwater = 5.5d-03
 /
