@@ -64,8 +64,8 @@
 
          enddo
 
-      elseif ( Rheology .eq. 2 ) then !FB: following calculation for Mohr-coulomb
-         !print *, 'HEEEEEEEEEEEEEYYYYYYYYY Rheo=2'
+      elseif ( Rheology .eq. 2 ) then !FB: working here
+         !print *, 'Calculating Rheo=2'
          do i = 1, nx
             do j = 1, ny
               if (maskC(i,j) .eq. 1) then
