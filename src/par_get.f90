@@ -164,15 +164,9 @@
       Deltat     =  1200d0
       DtoverDx   = Deltat / Deltax
 
-      if (1d0*Deltat .gt. Deltax) then
-         print *, 'CFL condition not respected. Reduce time step'
-         stop
-      endif
-
 !------------------------------------------------------------------------
 !     Material properties (in alphabetical order)
 !------------------------------------------------------------------------
-
 
       Cpair    = 1d03                ! Specific heat of air.
       Cpwater  = 4d03                ! Specific heat of water

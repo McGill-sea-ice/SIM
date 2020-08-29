@@ -106,7 +106,7 @@ PROGRAM ice
       integer ndays(12)
       INTEGER i, k, m_current, ts_m_counter, tstep
       INTEGER, parameter :: delta = 10
-      INTEGER expno_r, expno, restart
+      INTEGER expno_r, expno, restart, readnamelist
       TYPE(datetime_type) :: post_date(1000), start_date, end_date
       TYPE(datetime_type) :: now_date, restart_date, tic, tac
       type(datetime_delta_type) :: date_step
@@ -120,6 +120,11 @@ PROGRAM ice
 !------------------------------------------------------------------------
 
       tic = now()
+
+      print *, 'Read namelist?'
+      read *, readnamelist
+      PRINT *, readnamelist
+
       print *, 'Use restart file for (h,A,u,v)?'
       read  *, restart
 
@@ -161,7 +166,9 @@ PROGRAM ice
       ! e.g. start_date = 1990-01-01-00-00, startdate = 010190 (old stuff)
 
       call get_default           ! get default settings and parameters
-      call read_namelist         ! overwrite default based on namelist
+      if (readnamelist .eq. 1) then
+         call read_namelist      ! overwrite default based on namelist
+      endif
       call verify_options        ! verify if options chosen exist
 
       ! This is a datetime delta. It can be added to a
