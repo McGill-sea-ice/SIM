@@ -172,7 +172,7 @@
 !     Time step
 !------------------------------------------------------------------------
 
-      Deltat     =  1200d0 !FB: originally 1200d0 now testing with smaller Deltat 240d0 and posting date in input_norestrt
+      Deltat     =  240d0 !FB: originally 1200d0 but doesn't help convergence: I tried smaller Deltat  and posting date in input_norestrt
       DtoverDx   = Deltat / Deltax
       
       if (1d0*Deltat .gt. Deltax) then
