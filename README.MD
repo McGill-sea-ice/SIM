@@ -2,7 +2,7 @@
 
 McGill sea ice model (SIM) code.
 
-connect to dumbo or other machine via zephyr
+connect to dumbo or other machine via zephyr<br/>
 cd where you want to go
 git clone git@github.com:McGill-sea-ice/SIM.git
 cd SIM
