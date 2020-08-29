@@ -423,8 +423,6 @@
 !                                                                                            
 !************************************************************************ 
 
-! to do: theta_a, theta_w, bathy file
-
 subroutine read_namelist
 
         use ellipse
@@ -576,3 +574,119 @@ subroutine read_namelist
       endif
 
     end subroutine verify_options
+
+    subroutine get_mask_and_bathy
+
+      use basal_param
+
+      implicit none
+
+      include 'parameter.h'
+
+      include 'CB_const.h'
+      include 'CB_options.h'
+      include 'CB_mask.h'
+      include 'CB_bathymetry.h'
+
+      integer :: i,j
+      character(len=2) :: cdelta
+
+!------------------------------------------------------------------------                                     
+!     Grid parameter: land mask (grid center), velocity mask (node)                                           
+!------------------------------------------------------------------------                                     
+
+      write(cdelta, '(I2)') int(Deltax)/1000
+
+      open (unit = 20, file = 'src/mask'//cdelta//'.dat', status = 'old')
+
+      do j = 0, ny+1               ! land mask                                                                
+         read (20,10) ( maskC(i,j), i = 0, nx+1 )
+      enddo
+
+      close (unit = 20)
+      
+10    format (1x,1000(i1)) ! different format because of the grid                                              
+
+!-----------------------------------------                                                                    
+
+      do j = 0, ny+2                   ! velocity mask                                                        
+         do i = 0, nx+2
+            maskB(i,j) = 0
+         enddo
+      enddo
+      
+
+      do j = 1, ny+1
+         do i = 1, nx+1
+            
+            maskB(i,j) = ( maskC(i,j)   + maskC(i-1,j) +          &
+                 maskC(i,j-1) + maskC(i-1,j-1) ) / 4
+            
+         enddo
+      enddo
+
+!------------------------------------------------------------------------                                                              
+!     load bathymetry for seabed (basal) stress paramaterization                                                                   
+!------------------------------------------------------------------------   
+
+      if (BasalStress) then ! LF ice basal stress param is used                                                                        
+
+         open (unit=21,file='src/bathymetry'//cdelta//'km.dat', status = 'old')
+
+         do j = 0, ny+1               ! bathy                                                                                        
+            read (21,*) ( bathy(i,j), i = 0, nx+1 )
+         enddo
+
+         close (unit = 21)
+
+         do j=0,ny+1
+            do i=0,3
+               if (maskC(i,j) .eq. 1) then
+                  bathy(i,j)=9999d0
+               endif
+            enddo
+         enddo
+
+         do j=0,ny+1
+            do i=nx-2,nx+1
+               if (maskC(i,j) .eq. 1) then
+                  bathy(i,j)=9999d0
+               endif
+            enddo
+         enddo
+
+
+         do i=0,nx+1
+            do j=0,3
+               if (maskC(i,j) .eq. 1) then
+                  bathy(i,j)=9999d0
+               endif
+            enddo
+         enddo
+
+         do j = 0, ny+1 ! bathy should be gt 5m (+) for ocean and -10 for land  
+            do i = 0, nx+1
+
+               if (maskC(i,j) .eq. 0) then
+                  if (bathy(i,j) .ne. -10d0) then
+                     print *, 'wrong bathy on land'
+                     stop
+                  endif
+               else
+                  if (bathy(i,j) .lt. 4.9999d0) then
+                     print *, 'wrong bathy on ocean'
+                     stop
+                  endif
+               endif
+
+            enddo
+         enddo
+
+         if ( Current .ne. 'specified' ) then
+            print *, 'Currents should be zero (specified) with basal stress param'
+            stop
+         endif
+
+      endif
+      
+    end subroutine get_mask_and_bathy

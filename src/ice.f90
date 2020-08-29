@@ -169,7 +169,8 @@ PROGRAM ice
       if (readnamelist .eq. 1) then
          call read_namelist      ! overwrite default based on namelist
       endif
-      call verify_options        ! verify if options chosen exist
+      call verify_options        ! verify validity of options
+      call get_mask_and_bathy
 
       ! This is a datetime delta. It can be added to a
       ! datetime object. 
