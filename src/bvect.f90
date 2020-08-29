@@ -26,7 +26,7 @@
       double precision speed1p, speed2p, rhs(nvar) 
       double precision uavg, vavg
       double precision utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
-      double precision A_at_u, Ae, bathy_at_u, CBfactor
+      double precision A_at_u, bathy_at_u, CBfactor
       double precision h_at_u, hc, minA, h1,h2, A1,A2, alpha
       double precision v1,v2,va,vb,vc,vd,v_at_u, u_at_v
 
@@ -71,53 +71,53 @@
             
                CdwC1(i,j) = max(Cdw * speed1p, 1d-10)
             
-	      if (BasalStress) then
+               if (BasalStress) then
 	      
-               bathy_at_u = min(bathy(i-1,j), bathy(i,j))
+                  bathy_at_u = min(bathy(i-1,j), bathy(i,j))
 
-               h1=h(i-1,j)
-               h2=h(i,j)
-               A1=A(i-1,j)
-               A2=A(i,j)
+                  h1=h(i-1,j)
+                  h2=h(i,j)
+                  A1=A(i-1,j)
+                  A2=A(i,j)
 
-               h_at_u = (h1+h2)/2d0 + (h1/2d0)*tanh(alpha*(h1-h2)) + & 
-                                      (h2/2d0)*tanh(alpha*(h2-h1))
+                  h_at_u = (h1+h2)/2d0 + (h1/2d0)*tanh(alpha*(h1-h2)) + & 
+                       (h2/2d0)*tanh(alpha*(h2-h1))
 
-               A_at_u = (A1+A2)/2d0 + (A1/2d0)*tanh(alpha*(A1-A2)) + &
-                                      (A2/2d0)*tanh(alpha*(A2-A1))
+                  A_at_u = (A1+A2)/2d0 + (A1/2d0)*tanh(alpha*(A1-A2)) + &
+                       (A2/2d0)*tanh(alpha*(A2-A1))
 
-               if ( A_at_u .gt. minA ) then 
-                  hc = ( A_at_u * bathy_at_u ) / k1
-               else
-                  hc = 10000d0
-               endif
+                  if ( A_at_u .gt. minA ) then 
+                     hc = ( A_at_u * bathy_at_u ) / k1
+                  else
+                     hc = 10000d0
+                  endif
                                     
-               Cbasal1(i,j)=0d0
-
-               if (h_at_u .gt. hc) then
-
-                  va=abs(vtp(i-1,j+1))
-                  vb=abs(vtp(i,j+1))
-                  vc=abs(vtp(i-1,j))
-                  vd=abs(vtp(i,j))
-
-                  v1 = (va+vb)/2d0 - (va/2d0)*tanh(alpha*(va-vb)) - &
-                       (vb/2d0)*tanh(alpha*(vb-va))
-
-                  v2 = (vc+vd)/2d0 - (vc/2d0)*tanh(alpha*(vc-vd)) - &
-                       (vd/2d0)*tanh(alpha*(vd-vc))
-                  
-                  v_at_u = (v1+v2)/2d0 - (v1/2d0)*tanh(alpha*(v1-v2)) - &
-                       (v2/2d0)*tanh(alpha*(v2-v1))
-
-                  speed1p=sqrt( utp(i,j)**2 + v_at_u**2 )
-
-                  Cbfactor=k2/(speed1p+umin)
-!                     Cbasal1(i,j) = Cbfactor * (h_at_u -hc) * dexp(-CC * (1d0 - A_at_u))
-                  Cbasal1(i,j)=Cbfactor * (h_at_u - hc) * dexp(-CC * (1d0 - A_at_u))
-               else
                   Cbasal1(i,j)=0d0
-               endif
+
+                  if (h_at_u .gt. hc) then
+
+                     va=abs(vtp(i-1,j+1))
+                     vb=abs(vtp(i,j+1))
+                     vc=abs(vtp(i-1,j))
+                     vd=abs(vtp(i,j))
+                     
+                     v1 = (va+vb)/2d0 - (va/2d0)*tanh(alpha*(va-vb)) - &
+                          (vb/2d0)*tanh(alpha*(vb-va))
+
+                     v2 = (vc+vd)/2d0 - (vc/2d0)*tanh(alpha*(vc-vd)) - &
+                          (vd/2d0)*tanh(alpha*(vd-vc))
+                  
+                     v_at_u = (v1+v2)/2d0 - (v1/2d0)*tanh(alpha*(v1-v2)) - &
+                          (v2/2d0)*tanh(alpha*(v2-v1))
+
+                     speed1p=sqrt( utp(i,j)**2 + v_at_u**2 )
+
+                     Cbfactor=k2/(speed1p+umin)
+!                     Cbasal1(i,j) = Cbfactor * (h_at_u -hc) * dexp(-CC * (1d0 - A_at_u))
+                     Cbasal1(i,j)=Cbfactor * (h_at_u - hc) * dexp(-CC * (1d0 - A_at_u))
+                  else
+                     Cbasal1(i,j)=0d0
+                  endif
                
                endif
                
@@ -127,66 +127,66 @@
       enddo
 
 
-       do j = 1, ny+1 ! v comp
+      do j = 1, ny+1 ! v comp
          do i = 1, nx
-
+            
             if ( maskB(i,j) + maskB(i+1,j) .gt. 0 ) then
 
                uavg = ( utp(i,j)   + utp(i+1,j) &
                     + utp(i,j-1) + utp(i+1,j-1) ) / 4d0
 
                speed2p = sqrt( ( uavg - uwavg(i,j)  ) ** 2 &
-                       + ( vtp(i,j) - vwatnd(i,j) ) ** 2 )
+                    + ( vtp(i,j) - vwatnd(i,j) ) ** 2 )
 
                CdwC2(i,j) = max(Cdw * speed2p, 1d-10)
-
-              if (BasalStress) then
                
-               bathy_at_u = min(bathy(i,j), bathy(i,j-1)) ! in fact at v
+               if (BasalStress) then
+               
+                  bathy_at_u = min(bathy(i,j), bathy(i,j-1)) ! in fact at v
  
-               h1=h(i,j-1)
-               h2=h(i,j)
-               A1=A(i,j-1)
-               A2=A(i,j)
+                  h1=h(i,j-1)
+                  h2=h(i,j)
+                  A1=A(i,j-1)
+                  A2=A(i,j)
 
-               h_at_u = (h1+h2)/2d0 + (h1/2d0)*tanh(alpha*(h1-h2)) + &
-                                      (h2/2d0)*tanh(alpha*(h2-h1))
+                  h_at_u = (h1+h2)/2d0 + (h1/2d0)*tanh(alpha*(h1-h2)) + &
+                       (h2/2d0)*tanh(alpha*(h2-h1))
 
-               A_at_u = (A1+A2)/2d0 + (A1/2d0)*tanh(alpha*(A1-A2)) + &
-                                      (A2/2d0)*tanh(alpha*(A2-A1))
+                  A_at_u = (A1+A2)/2d0 + (A1/2d0)*tanh(alpha*(A1-A2)) + &
+                       (A2/2d0)*tanh(alpha*(A2-A1))
 
-               if ( A_at_u .gt. minA ) then
-                  hc = ( A_at_u * bathy_at_u ) / k1
-               else
-                  hc = 10000d0
-               endif
+                  if ( A_at_u .gt. minA ) then
+                     hc = ( A_at_u * bathy_at_u ) / k1
+                  else
+                     hc = 10000d0
+                  endif
 
-               Cbasal2(i,j)=0d0
-
-               if (h_at_u .gt. hc) then
-
-                  va=abs(utp(i,j))
-                  vb=abs(utp(i,j-1))
-                  vc=abs(utp(i+1,j))
-                  vd=abs(utp(i+1,j-1))
-
-                  v1 = (va+vb)/2d0 - (va/2d0)*tanh(alpha*(va-vb)) - &
-                       (vb/2d0)*tanh(alpha*(vb-va))
-
-                  v2 = (vc+vd)/2d0 - (vc/2d0)*tanh(alpha*(vc-vd)) - &
-                       (vd/2d0)*tanh(alpha*(vd-vc))
-
-                  u_at_v = (v1+v2)/2d0 - (v1/2d0)*tanh(alpha*(v1-v2)) - &
-                       (v2/2d0)*tanh(alpha*(v2-v1))
-
-                  speed2p=sqrt( u_at_v**2 + vtp(i,j)**2 )
-
-                  Cbfactor=k2/(speed2p+umin)
-                  !                  Cbasal2(i,j) = Cbfactor * (h_at_u -hc) * dexp(-CC * (1d0 - A_at_u))
-                  Cbasal2(i,j)=Cbfactor * (h_at_u - hc) * dexp(-CC * (1d0 - A_at_u))
-               else
                   Cbasal2(i,j)=0d0
-               endif
+
+                  if (h_at_u .gt. hc) then
+
+                     va=abs(utp(i,j))
+                     vb=abs(utp(i,j-1))
+                     vc=abs(utp(i+1,j))
+                     vd=abs(utp(i+1,j-1))
+
+                     v1 = (va+vb)/2d0 - (va/2d0)*tanh(alpha*(va-vb)) - &
+                          (vb/2d0)*tanh(alpha*(vb-va))
+
+                     v2 = (vc+vd)/2d0 - (vc/2d0)*tanh(alpha*(vc-vd)) - &
+                          (vd/2d0)*tanh(alpha*(vd-vc))
+
+                     u_at_v = (v1+v2)/2d0 - (v1/2d0)*tanh(alpha*(v1-v2)) - &
+                          (v2/2d0)*tanh(alpha*(v2-v1))
+
+                     speed2p=sqrt( u_at_v**2 + vtp(i,j)**2 )
+                     
+                     Cbfactor=k2/(speed2p+umin)
+                  !                  Cbasal2(i,j) = Cbfactor * (h_at_u -hc) * dexp(-CC * (1d0 - A_at_u))
+                     Cbasal2(i,j)=Cbfactor * (h_at_u - hc) * dexp(-CC * (1d0 - A_at_u))
+                  else
+                     Cbasal2(i,j)=0d0
+                  endif
                
                endif
                
@@ -201,20 +201,20 @@
 
             if ( maskB(i,j) + maskB(i,j+1) .gt. 0 ) then
 
-            if (solver .le. 2) then ! Picard or JFNK
+               if (solver .le. 2) then ! Picard or JFNK
                
-               bu(i,j) = bu_ind(i,j) - ( P(i,j) - P(i-1,j) ) / Deltax + & ! P is the replacement pressure 
-                         CdwC1(i,j) * ( uwatnd(i,j) * costheta_w - &
-                         vwavg(i,j)  * sintheta_w   )
+                  bu(i,j) = bu_ind(i,j) - ( P(i,j) - P(i-1,j) ) / Deltax + & ! P is the replacement pressure 
+                       CdwC1(i,j) * ( uwatnd(i,j) * costheta_w - &
+                       vwavg(i,j)  * sintheta_w   )
 
-            elseif (solver .eq. 3) then ! EVP solver
+               elseif (solver .eq. 3) then ! EVP solver
  
-               bu(i,j) = R1(i,j) + &
-                         CdwC1(i,j) * ( uwatnd(i,j) * costheta_w - &
-                         vwavg(i,j)  * sintheta_w   )
+                  bu(i,j) = R1(i,j) + &
+                       CdwC1(i,j) * ( uwatnd(i,j) * costheta_w - &
+                       vwavg(i,j)  * sintheta_w   )
 
-            endif
-
+               endif
+               
             else
 
                bu(i,j) = 0d0
@@ -230,20 +230,20 @@
             
             if ( maskB(i,j) + maskB(i+1,j) .gt. 0 ) then
 
-            if (solver .le. 2) then ! Picard or JFNK
+               if (solver .le. 2) then ! Picard or JFNK
 
-               bv(i,j) = bv_ind(i,j) - ( P(i,j) - P(i,j-1) ) / Deltax + & ! P is the replacement pressure
-                         CdwC2(i,j) * ( vwatnd(i,j) * costheta_w + &
-                         uwavg(i,j)  * sintheta_w   )
+                  bv(i,j) = bv_ind(i,j) - ( P(i,j) - P(i,j-1) ) / Deltax + & ! P is the replacement pressure
+                       CdwC2(i,j) * ( vwatnd(i,j) * costheta_w + &
+                       uwavg(i,j)  * sintheta_w   )
 
-            elseif (solver .eq. 3) then ! EVP solver
+               elseif (solver .eq. 3) then ! EVP solver
                
-               bv(i,j) = R2(i,j) + &
-                         CdwC2(i,j) * ( vwatnd(i,j) * costheta_w + &
-                         uwavg(i,j)  * sintheta_w   )
+                  bv(i,j) = R2(i,j) + &
+                       CdwC2(i,j) * ( vwatnd(i,j) * costheta_w + &
+                       uwavg(i,j)  * sintheta_w   )
             
-            endif
-
+               endif
+               
             else
 
                bv(i,j) = 0d0
@@ -261,11 +261,11 @@
 
          bu(1,j)    = 0.0d0   ! Bering Strait
          bu(nx+1,j) = 0.0d0   !
-
+         
          bv(nx+1,j)    = 0.0d0 
-
+         
       enddo
-
+      
       do i = 1, nx+1
 
          bv(i,1)    = 0.0d0   ! North Atlantic

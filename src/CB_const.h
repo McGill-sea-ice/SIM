@@ -20,8 +20,8 @@
                 coslat,         & ! cos (lat) of every grid point
                 relhum,         & ! atmosphere relative humidity
                 Deltax,         & ! grid size [m]
-		Deltax2,        & ! Deltax**2
-		Deltat,         & ! time step
+                Deltax2,        & ! Deltax**2
+                Deltat,         & ! time step
                 DtoverDx,       & ! Deltat / Deltax
                 theta_a,        & ! air turning angle
                 theta_w,        & ! water turning angle

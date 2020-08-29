@@ -56,24 +56,24 @@
 
             if (OcnTemp .eq. 'calculated') then
 	      
-	      if (BasalStress) then
-               if (bathy(i,j) .gt. Hocn) then
-                  Hmix=Hocn
-               elseif (bathy(i,j) .lt. 0d0) then
-                  Hmix=1d30 ! land
+               if (BasalStress) then
+                  if (bathy(i,j) .gt. Hocn) then
+                     Hmix=Hocn
+                  elseif (bathy(i,j) .lt. 0d0) then
+                     Hmix=1d30 ! land
+                  else
+                     Hmix=bathy(i,j)
+                  endif
                else
-                  Hmix=bathy(i,j)
+                  Hmix = Hocn
                endif
-	      else
-		Hmix = Hocn
-	      endif
 
                To(i,j) = To(i,j) + Deltat * Qnet / (Kadvo*Hmix)
                To(i,j) = max( To(i,j), Tof ) * maskC(i,j) 
 
             endif
             
-
+            
          enddo
       enddo
      

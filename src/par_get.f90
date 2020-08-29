@@ -47,7 +47,6 @@
       double precision e_ratio, Cdair, Cdwater
       double precision x1, y1, r1, rs, tanteta
       double precision lat(0:nx+1,0:ny+1), long(0:nx+1,0:ny+1)
-      character(len=2) :: cdelta
       integer i, j
 
 !------------------------------------------------------------------------

@@ -47,7 +47,7 @@
 
       Funeg = Fu
       Fu = -1d0 * Fu ! mult by -1 because we solve Jdu = -F(u)
-
+      
 !------------------------------------------------------------------------
 !     Initial guess vector: because we solve for du and du is just a 
 !     correction, we set the initial guess to zero
@@ -61,7 +61,7 @@
 
       call forcing_term(k,res,resk_1,gamma)
       resk_1 = res
-
+      
 !------------------------------------------------------------------------
 !      Begining of FGMRES method    
 !------------------------------------------------------------------------
@@ -74,10 +74,10 @@
       iout   = 0    ! set higher than 0 to have res(ite)
 
       icode = 0
- 10   CONTINUE
+10    CONTINUE
 
       call fgmres (nvar,img,Fu,sol,iter,vv,wk,wk1,wk2, &
-                   eps,maxits,iout,icode,tot_its)
+           eps,maxits,iout,icode,tot_its)
 
       IF ( icode == 1 ) THEN
          CALL precondLSOR (wk1, wk2)
@@ -107,13 +107,13 @@
 !      Find kth iterate
 !------------------------------------------------------------------------
 
-       if ( k .lt. klinesearch ) then
-          x = x + sol ! u^k = u^k-1 + du  
-       else
-          call linesearch(sol, x, res, Fu) !u^k=u^k-1 +a*du (a=0.125,0.25,0.5 or 1)
-       endif
+      if ( k .lt. klinesearch ) then
+         x = x + sol ! u^k = u^k-1 + du  
+      else
+         call linesearch(sol, x, res, Fu) !u^k=u^k-1 +a*du (a=0.125,0.25,0.5 or 1)
+      endif
 
-       call transformer(uice,vice,x,0)
+      call transformer(uice,vice,x,0)
 
       return
     end subroutine PrepFGMRES_NK
@@ -124,11 +124,11 @@
       implicit none
 
       integer, intent(in) :: k
-
+      
       double precision, intent(in) :: res, resk_1
       double precision :: gamma_ini, phi_e, alp_e
       double precision, intent(out) :: gamma
-             
+      
       gamma_ini = 0.99d0
       phi_e     = 1d0
       alp_e     = 1.5d0 !      alp_e = (1d0 + 5d0**0.5d0)/2d0 !2d0                                                                                  
@@ -164,6 +164,10 @@
 
       Fmaxu=0d0
       Fmaxv=0d0
+      imaxu=0
+      jmaxu=0
+      imaxv=0
+      jmaxv=0
 
       do j = 1, ny
          do i = 1, nx+1
@@ -190,10 +194,9 @@
          enddo
       enddo
          
-
       print *, 'k, Fmaxu, imaxu, jmaxu: ', k,Fmaxu,imaxu,jmaxu
       print *, 'k, Fmaxv, imaxv, jmaxv: ', k,Fmaxv,imaxv,jmaxv
-
+      
     end subroutine locate_max_residual
 
     subroutine linesearch(sol,x, res, Fu)
@@ -217,21 +220,21 @@
 
       do l = 1, 4
 
-	aLS = 1d0/(2d0**(1d0*(l-1)))
-	x = xini + aLS*sol
-	call transformer (utp,vtp,x,0)
-        if ( IMEX .gt. 0 ) then ! IMEX method 1 or 2   
-           call advection ( un1, vn1, utp, vtp, hn1, An1, h, A )
-           call Ice_strength()
-           call bvect_ind
-        endif
-	call ViscousCoefficient(utp,vtp)
-	call bvect (utp,vtp,rhs)
-	call Funk (x,rhs,Fu)
-	resnew = sqrt(DOT_PRODUCT(Fu,Fu))
+         aLS = 1d0/(2d0**(1d0*(l-1)))
+         x = xini + aLS*sol
+         call transformer (utp,vtp,x,0)
+         if ( IMEX .gt. 0 ) then ! IMEX method 1 or 2   
+            call advection ( un1, vn1, utp, vtp, hn1, An1, h, A )
+            call Ice_strength()
+            call bvect_ind
+         endif
+         call ViscousCoefficient(utp,vtp)
+         call bvect (utp,vtp,rhs)
+         call Funk (x,rhs,Fu)
+         resnew = sqrt(DOT_PRODUCT(Fu,Fu))
 
-        if (resnew .lt. res) exit
-        print *, 'LINESEARCH', l, res, resnew
+         if (resnew .lt. res) exit
+         print *, 'LINESEARCH', l, res, resnew
 
       enddo
 
