@@ -43,14 +43,13 @@ subroutine ini_get (restart, expno_r, restart_date)
                h(i,j)   =  1d0 * maskC(i,j) ! initial ice thick
                A(i,j)   =  1d0 * maskC(i,j) ! initial ice conc
 !
-!     h and A set to zero on open boundaries !FB: This is to see effects on heterogineity (check Ringeisen et al. 2019)
-!	COMMMENT THIS UP TO ENDIF+ADD A FLAG
+!     h and A set to zero on open boundaries 
 !	       if (i.lt.11 .or. i.gt.nx-10 .or.j.eq.ny+1) then !lt.3 gt.2
 !                   h(i,j) = 0d0
 !                   A(i,j) = 0d0
 !	       endif 
 
-!     FB: a flag here for uniaxial loading experdiemnt the following is giving errors 
+!     FB: This is to see effects on heterogineity check Ringeisen et al. 2019 
       if (Uni_Load_Exp .eqv. .true.) then          
 
                if (i.lt.11 .or. i.gt.nx-10 .or. j.eq.ny+1) then !FB: lt. 3 gt.2
