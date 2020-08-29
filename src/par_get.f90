@@ -1,5 +1,5 @@
 !************************************************************************
-!     Subroutine par_get: set constants, physical and grid parameters 
+!     Subroutine get_default: set options, constants, physical and grid parameters 
 !
 !     Revision History
 !     ----------------
@@ -16,7 +16,7 @@
 !
 !************************************************************************
 
-      subroutine par_get
+      subroutine get_default
 
         use ellipse
         use ice_albedo
@@ -26,7 +26,7 @@
         use basal_param
         
         implicit none
-
+        
       include 'parameter.h' 
 
       include 'CB_const.h'
@@ -44,7 +44,7 @@
       double precision StefanB, Cpair, rhoair
       double precision deg2rad, rad2deg
       double precision Levap, Lsubli, Psurf
-      double precision ellipticity, Cdair, Cdwater
+      double precision e_ratio, Cdair, Cdwater
       double precision x1, y1, r1, rs, tanteta
       double precision lat(0:nx+1,0:ny+1), long(0:nx+1,0:ny+1)
       character(len=2) :: cdelta
@@ -65,8 +65,7 @@
       !delta      =  10d0             ! angle of dilatancy
       !Cohe       =  0d0 !4d03        ! cohesion (tensile strght) [N/m2]
       !etamax     =  1.0d12           ! max shear viscosity
-      ellipticity = 2.0d0            ! ellipticity for ellipse rheology 
-
+      e_ratio    = 2.0d0             ! ellipse aspect ratio 
       Ktracer(1) =  0d0!5d03         ! diff coeff for h [m2/s] 
       Ktracer(2) =  0d0!5d03         ! diff coeff for A [m2/s]
  
@@ -87,7 +86,6 @@
       ntracer    =  2                ! total number of ice tracer
 
       BndyCond   = 'noslip'          ! noslip
-      DragLaw    = 'square'          ! square
       Rheology   = 1                 ! ellipse = 1, triangle = 2
       linearization = 'Zhang'        ! Tremblay, Zhang
       regularization = 'tanh'        ! tanh, Kreyscher
@@ -165,16 +163,10 @@
 
       Deltat     =  1200d0
       DtoverDx   = Deltat / Deltax
-      
-      if (1d0*Deltat .gt. Deltax) then
-         print *, 'CFL condition not respected. Reduce time step'
-         stop
-      endif
 
 !------------------------------------------------------------------------
 !     Material properties (in alphabetical order)
 !------------------------------------------------------------------------
-
 
       Cpair    = 1d03                ! Specific heat of air.
       Cpwater  = 4d03                ! Specific heat of water
@@ -202,75 +194,11 @@
 
       CC=20d0
       k1=8d0
-      k2=0d0
+      k2=15d0
       umin=5d-05
       crit=5d-04      
       BasalStress = .false. ! T if LF ice basal stress param is used
       
-!-------------------------------------------------------------------------
-!     Verify validity of some inputs
-!-------------------------------------------------------------------------
-
-      if (BndyCond .ne. 'noslip') then
-         print *, 'Wrong BndyCond chosen by user'
-         stop
-      endif
-
-      if (DragLaw  .ne. 'square') then
-         print *, 'Wrong DragLaw chosen by user'
-         stop
-      endif
-      
-      if ( Rheology .ne. 1 .and. Rheology .ne. 2) then
-         print *, 'Wrong Rheology chosen by user'
-         stop
-      endif
-
-      if ( linearization .ne. 'Zhang' .and.                            &
-           linearization .ne. 'Tremblay' ) then
-         print *, 'Wrong linearization chosen by user'
-         stop
-      endif
-
-      if ( solver .eq. 1 .and. IMEX .eq. 2 ) then
-         print *, 'IMEX 2 does not work with Picard solver'
-         stop
-      endif
-
-      if ( solver .eq. 3 .and. IMEX .gt. 0) then
-         print *, 'IMEX does not work with EVP solver'
-         stop
-      endif
-
-      if ( ini_guess .ne. 'freedrift' .and.                            &
-           ini_guess .ne. 'previous time step' ) then
-         print *, 'Wrong initial guess chosen by user'
-         stop
-      endif
-
-      if ( Current .ne. 'YearlyMean' .and.                             &
-           Current .ne. 'specified' ) then
-         print *, 'Wrong Current chosen by user'
-         stop
-      endif
-
-      if ( Wind .ne. '6hours' .and. Wind .ne. 'specified' .and.        &
-           Wind .ne. '60yrs_clim' ) then
-         print *, 'Wrong Wind chosen by user'
-         stop
-      endif
-
-      if ( AirTemp .ne. 'MonthlyMean' .and.  AirTemp .ne. 'specified') then
-         print *, 'Wrong AirTemp chosen by user'
-         stop
-      endif
-
-      if ( OcnTemp .ne. 'MonthlyClim' .and. OcnTemp .ne. 'specified' &
-           .and. OcnTemp .ne. 'calculated') then
-         print *, 'Wrong OcnTemp chosen by user'
-         stop
-      endif
-
 !------------------------------------------------------------------------
 !     Parameters (dynamic and thermodynamic)
 !------------------------------------------------------------------------
@@ -292,8 +220,8 @@
       !tandelta   = tan ( delta )
       !sinphi     = sin (phi)
 
-      ell2       = ellipticity**2
-      ell_2      = 1/(ellipticity**2)
+      ell2       = e_ratio**2
+      ell_2      = 1/(e_ratio**2)
 
       Kemis_i   = emisice  * StefanB
       Kemis_al  = emisatml * StefanB
@@ -309,99 +237,6 @@
       Ksens_ai  = rhoair   * Csens_ia * Cpair    ! cts of sensible heat
       Ksens_ao  = rhoair   * Csens_oa * Cpair    ! cts of sensible heat
 
-!------------------------------------------------------------------------
-!     Grid parameter: land mask (grid center), velocity mask (node)
-!------------------------------------------------------------------------
-
-      write(cdelta, '(I2)') int(Deltax)/1000
-
-      open (unit = 20, file = 'src/mask'//cdelta//'.dat', status = 'old')
-
-      do j = 0, ny+1               ! land mask
-         read (20,10) ( maskC(i,j), i = 0, nx+1 )
-      enddo
-     
-      close (unit = 20)
-
-10   format (1x,1000(i1)) ! different format because of the grid      
-      
-!-----------------------------------------
-
-      do j = 0, ny+2                   ! velocity mask
-         do i = 0, nx+2
-            maskB(i,j) = 0
-         enddo
-      enddo
-
-
-      do j = 1, ny+1
-         do i = 1, nx+1
-
-            maskB(i,j) = ( maskC(i,j)   + maskC(i-1,j) +          &
-                             maskC(i,j-1) + maskC(i-1,j-1) ) / 4
-           
-         enddo
-      enddo
-
-      if (BasalStress) then ! LF ice basal stress param is used
-      
-      open (unit=21,file='src/bathymetry'//cdelta//'km.dat', status = 'old')
-
-      do j = 0, ny+1               ! bathy
-         read (21,*) ( bathy(i,j), i = 0, nx+1 )
-      enddo
-
-      close (unit = 21)
-
-      do j=0,ny+1
-         do i=0,3
-            if (maskC(i,j) .eq. 1) then
-               bathy(i,j)=9999d0
-            endif
-         enddo
-      enddo
-
-      do j=0,ny+1
-         do i=nx-2,nx+1
-            if (maskC(i,j) .eq. 1) then
-               bathy(i,j)=9999d0
-            endif
-         enddo
-      enddo
-
-      do i=0,nx+1
-         do j=0,3
-            if (maskC(i,j) .eq. 1) then
-               bathy(i,j)=9999d0
-            endif
-         enddo
-      enddo
-      
-      do j = 0, ny+1 ! bathy should be gt 5m (+) for ocean and -10 for land
-         do i = 0, nx+1
-            
-            if (maskC(i,j) .eq. 0) then
-               if (bathy(i,j) .ne. -10d0) then
-                  print *, 'wrong bathy on land'
-                  stop
-               endif
-            else
-               if (bathy(i,j) .lt. 4.9999d0) then
-                  print *, 'wrong bathy on ocean'
-                  stop
-               endif
-            endif
-
-         enddo
-      enddo
-
-       if ( Current .ne. 'specified' ) then
-         print *, 'Currents should be zero (specified) with basal stress param'
-         stop
-      endif
-      
-      endif
-      
 !------------------------------------------------------------------------
 !     latitude and longitude of mask's tracer points
 !     same calculation as in mask_gen.f (see p.1017-1018)
@@ -464,14 +299,174 @@
          enddo
       enddo
 
-!-------------------------------------------------------------------------
-! print info of the run for the output txt file
-!-------------------------------------------------------------------------
+      return
+    end subroutine get_default
+
+!************************************************************************                    
+!     Subroutine read_namelist: read option choices and parameter values
+!                               from namelist file                        
+!                                                                                            
+!     Author: JF Lemieux                                           
+!                                                                                            
+!************************************************************************ 
+
+subroutine read_namelist
+
+        use ellipse
+        use numerical_VP
+        use numerical_EVP
+        use solver_choice
+        use basal_param
+
+      implicit none
+
+      include 'parameter.h'
+      include 'CB_options.h'
+      include 'CB_const.h'
+      include 'CB_Dyndim.h'
       
+      integer :: nml_error, filenb
+      double precision :: e_ratio
+      double precision :: rhoair, Cdair, Cdwater, f
+      character filename*32
+
+      !---- namelist variables -------
+             
+      namelist /option_nml/ &
+           Dynamic, Thermodyn,                                  &
+           linearization, regularization, ini_guess,            &
+           adv_scheme, AirTemp, OcnTemp, Wind, Current,         &
+           Rheology, IMEX, BDF, visc_method, solver,            &
+           BasalStress
+
+      namelist /numerical_param_nml/ &
+           Deltat, gamma_nl, NLmax, OLmax, Nsub
+
+      namelist /phys_param_nml/ &
+           Pstar, C, e_ratio, k1, k2, rhoair, rhoice, rhowater, &
+           Cdair, Cdwater, f
+
+      filename ='namelistSIM'
+      filenb = 10
+
+      print *, 'Reading namelist values'
+        
+      open (filenb, file=filename, status='old',iostat=nml_error)
+      if (nml_error /= 0) then
+         nml_error = -1
+      else
+         nml_error =  1
+      endif
+         
+      do while (nml_error > 0)
+         print*,'Reading option_nml'
+         read(filenb, nml=option_nml,iostat=nml_error)
+         if (nml_error /= 0) exit
+         print*,'Reading other_nml'
+         read(filenb, nml=numerical_param_nml,iostat=nml_error)
+         if (nml_error /= 0) exit
+         print*,'Reading phys_param_nml'
+         read(filenb, nml=phys_param_nml,iostat=nml_error)
+         print *, nml_error
+      enddo
+
+      close(filenb)
+
+      DtoverDx   = Deltat / Deltax
+      ell2       = e_ratio**2
+      ell_2      = 1/(e_ratio**2)
+      Cdw        =  rhowater * Cdwater
+      Cda        =  rhoair * Cdair
+      rhof       =  rhoice * f
+
+      end subroutine read_namelist
+
+      subroutine verify_options
+
+        use ellipse
+
+        use numerical_VP
+        use numerical_EVP
+        use solver_choice
+        use basal_param
+        
+        implicit none
+
+        include 'parameter.h'
+        include 'CB_options.h'
+        include 'CB_const.h'
+
+!-------------------------------------------------------------------------                         
+!     Verify validity of some inputs                                                               
+!-------------------------------------------------------------------------                         
+
+      if (BndyCond .ne. 'noslip') then
+         print *, 'Wrong BndyCond chosen by user'
+         stop
+      endif
+
+      if ( Rheology .ne. 1 .and. Rheology .ne. 2) then
+         print *, 'Wrong Rheology chosen by user'
+         stop
+      endif
+
+      if ( linearization .ne. 'Zhang' .and.                            &
+           linearization .ne. 'Tremblay' ) then
+         print *, 'Wrong linearization chosen by user'
+         stop
+      endif
+
+      if ( solver .eq. 1 .and. IMEX .eq. 2 ) then
+         print *, 'IMEX 2 does not work with Picard solver'
+         stop
+      endif
+
+      if ( solver .eq. 3 .and. IMEX .gt. 0) then
+         print *, 'IMEX does not work with EVP solver'
+         stop
+      endif
+
+      if ( ini_guess .ne. 'freedrift' .and.                            &
+           ini_guess .ne. 'previous time step' ) then
+         print *, 'Wrong initial guess chosen by user'
+         stop
+      endif
+
+      if ( Current .ne. 'YearlyMean' .and.                             &
+           Current .ne. 'specified' ) then
+         print *, 'Wrong Current chosen by user'
+         stop
+      endif
+
+      if ( Wind .ne. '6hours' .and. Wind .ne. 'specified' .and.        &
+           Wind .ne. '60yrs_clim' ) then
+         print *, 'Wrong Wind chosen by user'
+         stop
+      endif
+
+      if ( AirTemp .ne. 'MonthlyMean' .and.  AirTemp .ne. 'specified') then
+         print *, 'Wrong AirTemp chosen by user'
+         stop
+      endif
+
+      if ( OcnTemp .ne. 'MonthlyClim' .and. OcnTemp .ne. 'specified' &
+           .and. OcnTemp .ne. 'calculated') then
+         print *, 'Wrong OcnTemp chosen by user'
+         stop
+      endif
+
+      if (1d0*Deltat .gt. Deltax) then
+         print *, 'CFL condition not respected. Reduce time step'
+         stop
+      endif
+
+!-------------------------------------------------------------------------                                                  
+! print info of the run for the output txt file                                                                                        
+!-------------------------------------------------------------------------                                                      
+ 
       print *,
       print *, 'Rheology      =   ', Rheology
       print *, 'Pstar         =   ', Pstar
-      print *, 'ellipticity   =   ', ellipticity
       print *, 'linearization =   ', linearization
       print *, 'regularization=   ', regularization
       print *, 'initial guess =   ', ini_guess
@@ -483,10 +478,122 @@
       print *, 'OcnTemp       =   ', OcnTemp
       print *,
       print *, 'time step [s] =   ', Deltat
-      print *, 
+      print *,
 
-      return
-    end subroutine par_get
+    end subroutine verify_options
+
+    subroutine get_mask_and_bathy
+
+      use basal_param
+
+      implicit none
+
+      include 'parameter.h'
+
+      include 'CB_const.h'
+      include 'CB_options.h'
+      include 'CB_mask.h'
+      include 'CB_bathymetry.h'
+
+      integer :: i,j
+      character(len=2) :: cdelta
+
+!------------------------------------------------------------------------                                     
+!     Grid parameter: land mask (grid center), velocity mask (node)                                           
+!------------------------------------------------------------------------                                     
+
+      write(cdelta, '(I2)') int(Deltax)/1000
+
+      open (unit = 20, file = 'src/mask'//cdelta//'.dat', status = 'old')
+
+      do j = 0, ny+1               ! land mask                                                                
+         read (20,10) ( maskC(i,j), i = 0, nx+1 )
+      enddo
+
+      close (unit = 20)
+      
+10    format (1x,1000(i1)) ! different format because of the grid                                              
+
+!-----------------------------------------                                                                    
+
+      do j = 0, ny+2                   ! velocity mask                                                        
+         do i = 0, nx+2
+            maskB(i,j) = 0
+         enddo
+      enddo
+      
+
+      do j = 1, ny+1
+         do i = 1, nx+1
+            
+            maskB(i,j) = ( maskC(i,j)   + maskC(i-1,j) +          &
+                 maskC(i,j-1) + maskC(i-1,j-1) ) / 4
+            
+         enddo
+      enddo
+
+!------------------------------------------------------------------------                                                              
+!     load bathymetry for seabed (basal) stress paramaterization                                                                   
+!------------------------------------------------------------------------   
+
+      if (BasalStress) then ! LF ice basal stress param is used                                                                        
+
+         open (unit=21,file='src/bathymetry'//cdelta//'km.dat', status = 'old')
+
+         do j = 0, ny+1               ! bathy                                                                                        
+            read (21,*) ( bathy(i,j), i = 0, nx+1 )
+         enddo
+
+         close (unit = 21)
+
+         do j=0,ny+1
+            do i=0,3
+               if (maskC(i,j) .eq. 1) then
+                  bathy(i,j)=9999d0
+               endif
+            enddo
+         enddo
+
+         do j=0,ny+1
+            do i=nx-2,nx+1
+               if (maskC(i,j) .eq. 1) then
+                  bathy(i,j)=9999d0
+               endif
+            enddo
+         enddo
 
 
+         do i=0,nx+1
+            do j=0,3
+               if (maskC(i,j) .eq. 1) then
+                  bathy(i,j)=9999d0
+               endif
+            enddo
+         enddo
 
+         do j = 0, ny+1 ! bathy should be gt 5m (+) for ocean and -10 for land  
+            do i = 0, nx+1
+
+               if (maskC(i,j) .eq. 0) then
+                  if (bathy(i,j) .ne. -10d0) then
+                     print *, 'wrong bathy on land'
+                     stop
+                  endif
+               else
+                  if (bathy(i,j) .lt. 4.9999d0) then
+                     print *, 'wrong bathy on ocean'
+                     stop
+                  endif
+               endif
+
+            enddo
+         enddo
+
+         if ( Current .ne. 'specified' ) then
+            print *, 'Currents should be zero (specified) with basal stress param'
+            stop
+         endif
+
+      endif
+      
+    end subroutine get_mask_and_bathy
