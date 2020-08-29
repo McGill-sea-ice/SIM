@@ -26,7 +26,7 @@
         use basal_param
         
         implicit none
-
+        
       include 'parameter.h' 
 
       include 'CB_const.h'
@@ -162,7 +162,6 @@
 !------------------------------------------------------------------------
 
       Deltat     =  1200d0
-!      DtoverDx   = Deltat / Deltax
       
       if (1d0*Deltat .gt. Deltax) then
          print *, 'CFL condition not respected. Reduce time step'
@@ -200,70 +199,11 @@
 
       CC=20d0
       k1=8d0
-      k2=0d0
+      k2=15d0
       umin=5d-05
       crit=5d-04      
       BasalStress = .false. ! T if LF ice basal stress param is used
       
-!-------------------------------------------------------------------------
-!     Verify validity of some inputs
-!-------------------------------------------------------------------------
-
-      if (BndyCond .ne. 'noslip') then
-         print *, 'Wrong BndyCond chosen by user'
-         stop
-      endif
-
-      if ( Rheology .ne. 1 .and. Rheology .ne. 2) then
-         print *, 'Wrong Rheology chosen by user'
-         stop
-      endif
-
-      if ( linearization .ne. 'Zhang' .and.                            &
-           linearization .ne. 'Tremblay' ) then
-         print *, 'Wrong linearization chosen by user'
-         stop
-      endif
-
-      if ( solver .eq. 1 .and. IMEX .eq. 2 ) then
-         print *, 'IMEX 2 does not work with Picard solver'
-         stop
-      endif
-
-      if ( solver .eq. 3 .and. IMEX .gt. 0) then
-         print *, 'IMEX does not work with EVP solver'
-         stop
-      endif
-
-      if ( ini_guess .ne. 'freedrift' .and.                            &
-           ini_guess .ne. 'previous time step' ) then
-         print *, 'Wrong initial guess chosen by user'
-         stop
-      endif
-
-      if ( Current .ne. 'YearlyMean' .and.                             &
-           Current .ne. 'specified' ) then
-         print *, 'Wrong Current chosen by user'
-         stop
-      endif
-
-      if ( Wind .ne. '6hours' .and. Wind .ne. 'specified' .and.        &
-           Wind .ne. '60yrs_clim' ) then
-         print *, 'Wrong Wind chosen by user'
-         stop
-      endif
-
-      if ( AirTemp .ne. 'MonthlyMean' .and.  AirTemp .ne. 'specified') then
-         print *, 'Wrong AirTemp chosen by user'
-         stop
-      endif
-
-      if ( OcnTemp .ne. 'MonthlyClim' .and. OcnTemp .ne. 'specified' &
-           .and. OcnTemp .ne. 'calculated') then
-         print *, 'Wrong OcnTemp chosen by user'
-         stop
-      endif
-
 !------------------------------------------------------------------------
 !     Parameters (dynamic and thermodynamic)
 !------------------------------------------------------------------------
@@ -284,9 +224,6 @@
 !      delta     =  delta * deg2rad        ! angle of dilatancy [rad]
       !tandelta   = tan ( delta )
       !sinphi     = sin (phi)
-
-!      ell2       = e_ratio**2
-!      ell_2      = 1/(e_ratio**2)
 
       Kemis_i   = emisice  * StefanB
       Kemis_al  = emisatml * StefanB
@@ -494,10 +431,10 @@ subroutine read_namelist
 
         use ellipse
 !        use ice_albedo
-!        use numerical_VP
-!        use numerical_EVP
+        use numerical_VP
+        use numerical_EVP
         use solver_choice
-!        use basal_param
+        use basal_param
 
       implicit none
 
@@ -512,18 +449,19 @@ subroutine read_namelist
       !---- namelist variables -------
              
       namelist /option_nml/ &
-           Dynamic, Thermodyn,                                 &
-           linearization, regularization, ini_guess,           &
-           adv_scheme, AirTemp, OcnTemp, Wind, Current,        &
-           Rheology, IMEX, BDF, visc_method, solver
+           Dynamic, Thermodyn,                                  &
+           linearization, regularization, ini_guess,            &
+           adv_scheme, AirTemp, OcnTemp, Wind, Current,         &
+           Rheology, IMEX, BDF, visc_method, solver,            &
+           BasalStress
 
-      namelist /other_nml/ &
-           Deltat
+      namelist /numerical_param_nml/ &
+           Deltat, gamma_nl, NLmax, OLmax, Nsub
 
       namelist /phys_param_nml/ &
-           Pstar, C, e_ratio
+           Pstar, C, e_ratio, k1, k2
 
-      filename ='SIMnamelist'
+      filename ='namelistSIM'
       filenb = 10
 
       print *, 'Reading namelist values'
@@ -540,7 +478,7 @@ subroutine read_namelist
          read(filenb, nml=option_nml,iostat=nml_error)
          if (nml_error /= 0) exit
          print*,'Reading other_nml'
-         read(filenb, nml=other_nml,iostat=nml_error)
+         read(filenb, nml=numerical_param_nml,iostat=nml_error)
          if (nml_error /= 0) exit
          print*,'Reading phys_param_nml'
          read(filenb, nml=phys_param_nml,iostat=nml_error)
@@ -565,7 +503,7 @@ subroutine read_namelist
       print *, '********'
       print *, Deltat
       print *, '********'
-      print *, Pstar, C, e_ratio
+      print *, Pstar, C, e_ratio, k1, k2
 
       close(filenb)
 
@@ -573,7 +511,80 @@ subroutine read_namelist
       ell2       = e_ratio**2
       ell_2      = 1/(e_ratio**2)
 
-      !stop
-
       end subroutine read_namelist
 
+      subroutine verify_options
+
+        use ellipse
+
+        use numerical_VP
+        use numerical_EVP
+        use solver_choice
+        use basal_param
+        
+        implicit none
+
+        include 'parameter.h'
+        include 'CB_options.h'
+        include 'CB_const.h'
+
+!-------------------------------------------------------------------------                         
+!     Verify validity of some inputs                                                               
+!-------------------------------------------------------------------------                         
+
+      if (BndyCond .ne. 'noslip') then
+         print *, 'Wrong BndyCond chosen by user'
+         stop
+      endif
+
+      if ( Rheology .ne. 1 .and. Rheology .ne. 2) then
+         print *, 'Wrong Rheology chosen by user'
+         stop
+      endif
+
+      if ( linearization .ne. 'Zhang' .and.                            &
+           linearization .ne. 'Tremblay' ) then
+         print *, 'Wrong linearization chosen by user'
+         stop
+      endif
+
+      if ( solver .eq. 1 .and. IMEX .eq. 2 ) then
+         print *, 'IMEX 2 does not work with Picard solver'
+         stop
+      endif
+
+      if ( solver .eq. 3 .and. IMEX .gt. 0) then
+         print *, 'IMEX does not work with EVP solver'
+         stop
+      endif
+
+      if ( ini_guess .ne. 'freedrift' .and.                            &
+           ini_guess .ne. 'previous time step' ) then
+         print *, 'Wrong initial guess chosen by user'
+         stop
+      endif
+
+      if ( Current .ne. 'YearlyMean' .and.                             &
+           Current .ne. 'specified' ) then
+         print *, 'Wrong Current chosen by user'
+         stop
+      endif
+
+      if ( Wind .ne. '6hours' .and. Wind .ne. 'specified' .and.        &
+           Wind .ne. '60yrs_clim' ) then
+         print *, 'Wrong Wind chosen by user'
+         stop
+      endif
+
+      if ( AirTemp .ne. 'MonthlyMean' .and.  AirTemp .ne. 'specified') then
+         print *, 'Wrong AirTemp chosen by user'
+         stop
+      endif
+
+      if ( OcnTemp .ne. 'MonthlyClim' .and. OcnTemp .ne. 'specified' &
+           .and. OcnTemp .ne. 'calculated') then
+         print *, 'Wrong OcnTemp chosen by user'
+         stop
+      endif
+
+    end subroutine verify_options

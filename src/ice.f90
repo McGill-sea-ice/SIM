@@ -162,6 +162,7 @@ PROGRAM ice
 
       call get_default           ! get default settings and parameters
       call read_namelist         ! overwrite default based on namelist
+      call verify_options        ! verify if options chosen exist
 
       ! This is a datetime delta. It can be added to a
       ! datetime object. 

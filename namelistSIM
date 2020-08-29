@@ -14,14 +14,21 @@
     BDF = 0
     visc_method = 2
     solver = 2
+    BasalStress = .false.
 /
 
-&other_nml
+&numerical_param_nml
     Deltat  = 1200.0
+    gamma_nl = 1d-03
+    NLmax = 200     
+    OLmax = 500
+    Nsub  = 120  
 /
 
 &phys_param_nml
-    Pstar  = 27500.0
+    Pstar  = 27.5d03
     C = 20.0
     e_ratio = 2.0
+    k1=8.0
+    k2=15d0
 /
