@@ -36,4 +36,5 @@
     rhowater =  1026d0 
     Cdair = 1.2d-03
     Cdwater = 5.5d-03
+    f = 1.46d-04
 /

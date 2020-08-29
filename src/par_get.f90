@@ -428,7 +428,6 @@
 subroutine read_namelist
 
         use ellipse
-!        use ice_albedo
         use numerical_VP
         use numerical_EVP
         use solver_choice
@@ -443,7 +442,7 @@ subroutine read_namelist
       
       integer :: nml_error, filenb
       double precision :: e_ratio
-      double precision :: rhoair, Cdair, Cdwater
+      double precision :: rhoair, Cdair, Cdwater, f
       character filename*32
 
       !---- namelist variables -------
@@ -460,7 +459,7 @@ subroutine read_namelist
 
       namelist /phys_param_nml/ &
            Pstar, C, e_ratio, k1, k2, rhoair, rhoice, rhowater, &
-           Cdair, Cdwater
+           Cdair, Cdwater, f
 
       filename ='namelistSIM'
       filenb = 10
@@ -486,26 +485,6 @@ subroutine read_namelist
          print *, nml_error
       enddo
 
-      print *, Dynamic
-      print *, Thermodyn
-      print *, linearization
-      print *, regularization
-      print *, ini_guess
-      print *, adv_scheme
-      print *, Airtemp
-      print *, OcnTemp
-      print *, Wind
-      print *, Current
-      print *, Rheology
-      print *, IMEX
-      print *, BDF
-      print *, visc_method, solver
-
-      print *, '********'
-      print *, Deltat
-      print *, '********'
-      print *, Pstar, C, e_ratio, k1, k2
-
       close(filenb)
 
       DtoverDx   = Deltat / Deltax
@@ -513,7 +492,7 @@ subroutine read_namelist
       ell_2      = 1/(e_ratio**2)
       Cdw        =  rhowater * Cdwater
       Cda        =  rhoair * Cdair
-
+      rhof       =  rhoice * f
 
       end subroutine read_namelist
 
