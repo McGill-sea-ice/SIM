@@ -38,9 +38,7 @@
          do nn = 1, nbuoys
                                     
             if (BuoyActive(nn) .eq. 1) then
-               write(96,'(i6, X, a6, X, f12.3, X, f12.3, X,  &
-                    i2, X, i2, X, f10.3, X, f10.3, X,  & 
-                    f10.6, X, f10.6)') &
+               write(96,'(i6,X,a6,X,f12.3,X,f12.3,X,i2,X,i2,X,f10.3,X,f10.3,X,f10.6,X,f10.6)') &
                     buoynb(nn), &
                     Buoydate(nn), &     
                     BuoyPosition(nn,1)/1000.0, & ![km]      
@@ -65,9 +63,7 @@
          do nn = 1, nbuoys
 
             if (BuoyActive(nn) .eq. 1) then
-               write(97,'(i6, X, a6, X, f12.3, X, f12.3, X,  &
-                    i2, X, i2, X, f10.3, X, f10.3, X,  &
-                    f10.6, X, f10.6)') &
+               write(97,'(i6,X,a6,X,f12.3,X,f12.3,X,i2,X,i2,X,f10.3,X,f10.3,X,f10.6,X,f10.6)') &
                     buoynb(nn), &
                     Buoydate(nn), &
                     BuoyPosition(nn,1)/1000.0, & ![km] 

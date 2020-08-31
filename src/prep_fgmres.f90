@@ -12,7 +12,7 @@
 
       double precision, intent(in) :: res,rhs(nvar)
       double precision  eps
-      double precision  sol(nvar), Flin(nvar)
+      double precision  sol(nvar)
       double precision  vv(nvar,img1), wk(nvar,img)
       double precision  wk1(nvar), wk2(nvar)
 

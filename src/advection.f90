@@ -37,274 +37,273 @@
       double precision                :: hstar(0:nx+1,0:ny+1), Astar(0:nx+1,0:ny+1)
       double precision dFx(nx,ny), dFy(nx,ny)
 
-      
 !------------------------------------------------------------------------ 
 !     set dhin/dx, dAin/dx = 0 at the outside cell when there is an open bc 
 !------------------------------------------------------------------------ 
 
-            do i = 0, nx+1
+      do i = 0, nx+1
                
-               if (maskC(i,0) .eq. 1) then
-
-                  hin(i,0) = ( 4d0 * hin(i,1) - hin(i,2) )/3d0
-                  hin(i,0) = max(hin(i,0), 0d0)
-                  Ain(i,0) = ( 4d0 * Ain(i,1) - Ain(i,2) )/3d0
-                  Ain(i,0) = max(Ain(i,0), 0d0)
-                  Ain(i,0) = min(Ain(i,0), 1d0)
+         if (maskC(i,0) .eq. 1) then
+            
+            hin(i,0) = ( 4d0 * hin(i,1) - hin(i,2) )/3d0
+            hin(i,0) = max(hin(i,0), 0d0)
+            Ain(i,0) = ( 4d0 * Ain(i,1) - Ain(i,2) )/3d0
+            Ain(i,0) = max(Ain(i,0), 0d0)
+            Ain(i,0) = min(Ain(i,0), 1d0)
                   
-               endif
+         endif
 
-               if (maskC(i,ny+1) .eq. 1) then
-                  
-                  hin(i,ny+1)= ( 4d0 * hin(i,ny) - hin(i,ny-1) ) / 3d0
-                  hin(i,ny+1)= max(hin(i,ny+1), 0d0)
-                  Ain(i,ny+1)= ( 4d0 * Ain(i,ny) - Ain(i,ny-1) ) / 3d0
-                  Ain(i,ny+1)= max(Ain(i,ny+1), 0d0)
-                  Ain(i,ny+1)= min(Ain(i,ny+1), 1d0)
+         if (maskC(i,ny+1) .eq. 1) then
+            
+            hin(i,ny+1)= ( 4d0 * hin(i,ny) - hin(i,ny-1) ) / 3d0
+            hin(i,ny+1)= max(hin(i,ny+1), 0d0)
+            Ain(i,ny+1)= ( 4d0 * Ain(i,ny) - Ain(i,ny-1) ) / 3d0
+            Ain(i,ny+1)= max(Ain(i,ny+1), 0d0)
+            Ain(i,ny+1)= min(Ain(i,ny+1), 1d0)
 
-               endif
+         endif
  
-            enddo
+      enddo
 
-            do j = 0, ny+1
+      do j = 0, ny+1
 
-               if (maskC(0,j) .eq. 1) then
+         if (maskC(0,j) .eq. 1) then
                   
-                  hin(0,j)  = ( 4d0 * hin(1,j) - hin(2,j) ) / 3d0
-                  hin(0,j)  = max(hin(0,j), 0d0)
-                  Ain(0,j)  = ( 4d0 * Ain(1,j) - Ain(2,j) ) / 3d0
-                  Ain(0,j)  = max(Ain(0,j), 0d0)
-                  Ain(0,j)  = min(Ain(0,j), 1d0)
+            hin(0,j)  = ( 4d0 * hin(1,j) - hin(2,j) ) / 3d0
+            hin(0,j)  = max(hin(0,j), 0d0)
+            Ain(0,j)  = ( 4d0 * Ain(1,j) - Ain(2,j) ) / 3d0
+            Ain(0,j)  = max(Ain(0,j), 0d0)
+            Ain(0,j)  = min(Ain(0,j), 1d0)
 
-               endif
+         endif
 
-               if (maskC(nx+1,j) .eq. 1) then
+         if (maskC(nx+1,j) .eq. 1) then
                  
-                  hin(nx+1,j) = ( 4d0 * hin(nx,j) - hin(nx-1,j) ) / 3d0
-                  hin(nx+1,j) = max(hin(nx+1,j), 0d0)
-                  Ain(nx+1,j) = ( 4d0 * Ain(nx,j) - Ain(nx-1,j) ) / 3d0
-                  Ain(nx+1,j) = max(Ain(nx+1,j), 0d0)
-                  Ain(nx+1,j) = min(Ain(nx+1,j), 1d0)
+            hin(nx+1,j) = ( 4d0 * hin(nx,j) - hin(nx-1,j) ) / 3d0
+            hin(nx+1,j) = max(hin(nx+1,j), 0d0)
+            Ain(nx+1,j) = ( 4d0 * Ain(nx,j) - Ain(nx-1,j) ) / 3d0
+            Ain(nx+1,j) = max(Ain(nx+1,j), 0d0)
+            Ain(nx+1,j) = min(Ain(nx+1,j), 1d0)
 
-               endif
+         endif
 
-            enddo
+      enddo
 
-            if ( adv_scheme .eq. 'upwind' ) then
+      if ( adv_scheme .eq. 'upwind' ) then
 
 !------------------------------------------------------------------------
 !     compute the difference of the flux for thickness 
 !------------------------------------------------------------------------
 
-               call calc_dFx (utp, hin, dFx)
-               call calc_dFy (vtp, hin, dFy)
+         call calc_dFx (utp, hin, dFx)
+         call calc_dFy (vtp, hin, dFy)
 
 !------------------------------------------------------------------------
 !     update the thickness values
 !     (in a separate do-loop to conserve mass)
 !------------------------------------------------------------------------
             
-               do i = 1, nx
-                  do j = 1, ny
+         do i = 1, nx
+            do j = 1, ny
 
-                     if (maskC(i,j) .eq. 1) then
+               if (maskC(i,j) .eq. 1) then
 
-                        hout(i,j) = hin(i,j) - DtoverDx * ( dFx(i,j) + dFy(i,j) )
-                        hout(i,j) = max(hout(i,j), 0d0)
+                  hout(i,j) = hin(i,j) - DtoverDx * ( dFx(i,j) + dFy(i,j) )
+                  hout(i,j) = max(hout(i,j), 0d0)
 
-                     endif
+               endif
                      
-                  enddo
-               enddo
+            enddo
+         enddo
 
 !------------------------------------------------------------------------  
 !     compute the difference of the flux for concentration                                 
 !------------------------------------------------------------------------                  
 
-               call calc_dFx (utp, Ain, dFx)
-               call calc_dFy (vtp, Ain, dFy)
+         call calc_dFx (utp, Ain, dFx)
+         call calc_dFy (vtp, Ain, dFy)
 
 !------------------------------------------------------------------------ 
 !     update the concentration values      
 !     (in a separate do-loop to conserve mass)                                             
 !------------------------------------------------------------------------   
 
-               do i = 1, nx
-                  do j = 1, ny
+         do i = 1, nx
+            do j = 1, ny
 
-                     if (maskC(i,j) .eq. 1) then
+               if (maskC(i,j) .eq. 1) then
 
-                        Aout(i,j) = Ain(i,j) - DtoverDx * ( dFx(i,j) + dFy(i,j) )
-                        Aout(i,j) = max(Aout(i,j), 0d0)
-                        Aout(i,j) = min(Aout(i,j), 1d0)
+                  Aout(i,j) = Ain(i,j) - DtoverDx * ( dFx(i,j) + dFy(i,j) )
+                  Aout(i,j) = max(Aout(i,j), 0d0)
+                  Aout(i,j) = min(Aout(i,j), 1d0)
 
-                     endif
+               endif
 
-                  enddo
-               enddo
+            enddo
+         enddo
 
-            elseif ( adv_scheme .eq. 'upwindRK2' ) then
+      elseif ( adv_scheme .eq. 'upwindRK2' ) then
                
 !------------------------------------------------------------------------
 !     predictor: compute the difference of the flux for thickness 
 !------------------------------------------------------------------------
 
-               call calc_dFx (upts, hin, dFx)
-               call calc_dFy (vpts, hin, dFy)
+         call calc_dFx (upts, hin, dFx)
+         call calc_dFy (vpts, hin, dFy)
 
 !------------------------------------------------------------------------
 !     predictor: update the thickness values
 !     (in a separate do-loop to conserve mass)
 !------------------------------------------------------------------------
             
-               do i = 1, nx
-                  do j = 1, ny
+         do i = 1, nx
+            do j = 1, ny
 
-                     if (maskC(i,j) .eq. 1) then
+               if (maskC(i,j) .eq. 1) then
 
-                        hstar(i,j) = hin(i,j) - (DtoverDx / 2d0) * ( dFx(i,j) + dFy(i,j) )
-                        hstar(i,j) = max(hstar(i,j), 0d0)
+                  hstar(i,j) = hin(i,j) - (DtoverDx / 2d0) * ( dFx(i,j) + dFy(i,j) )
+                  hstar(i,j) = max(hstar(i,j), 0d0)
 
-                     endif
+               endif
                      
-                  enddo
-               enddo
+            enddo
+         enddo
 
 !------------------------------------------------------------------------  
 !     predictor: compute the difference of the flux for concentration   
 !------------------------------------------------------------------------                  
 
-               call calc_dFx (upts, Ain, dFx)
-               call calc_dFy (vpts, Ain, dFy)
+         call calc_dFx (upts, Ain, dFx)
+         call calc_dFy (vpts, Ain, dFy)
 
 !------------------------------------------------------------------------ 
 !     predictor: update the concentration values      
 !     (in a separate do-loop to conserve mass)                                             
 !------------------------------------------------------------------------   
 
-               do i = 1, nx
-                  do j = 1, ny
+         do i = 1, nx
+            do j = 1, ny
 
-                     if (maskC(i,j) .eq. 1) then
+               if (maskC(i,j) .eq. 1) then
 
-                        Astar(i,j) = Ain(i,j) - (DtoverDx / 2d0) * ( dFx(i,j) + dFy(i,j) )
-                        Astar(i,j) = max(Astar(i,j), 0d0)
-                        Astar(i,j) = min(Astar(i,j), 1d0)
+                  Astar(i,j) = Ain(i,j) - (DtoverDx / 2d0) * ( dFx(i,j) + dFy(i,j) )
+                  Astar(i,j) = max(Astar(i,j), 0d0)
+                  Astar(i,j) = min(Astar(i,j), 1d0)
 
-                     endif
+               endif
 
-                  enddo
-               enddo
+            enddo
+         enddo
 
 !------------------------------------------------------------------------ 
 !     set dhstar/dx, dAstar/dx = 0 at the outside cell when there is an open bc 
 !------------------------------------------------------------------------ 
 
-	      do i = 0, nx+1
-               
-		if (maskC(i,0) .eq. 1) then
+         do i = 0, nx+1
+            
+            if (maskC(i,0) .eq. 1) then
 
-		    hstar(i,0) = ( 4d0 * hstar(i,1) - hstar(i,2) )/3d0
-		    hstar(i,0) = max(hstar(i,0), 0d0)
-		    Astar(i,0) = ( 4d0 * Astar(i,1) - Astar(i,2) )/3d0
-		    Astar(i,0) = max(Astar(i,0), 0d0)
-		    Astar(i,0) = min(Astar(i,0), 1d0)
+               hstar(i,0) = ( 4d0 * hstar(i,1) - hstar(i,2) )/3d0
+               hstar(i,0) = max(hstar(i,0), 0d0)
+               Astar(i,0) = ( 4d0 * Astar(i,1) - Astar(i,2) )/3d0
+               Astar(i,0) = max(Astar(i,0), 0d0)
+               Astar(i,0) = min(Astar(i,0), 1d0)
                   
-		endif
+            endif
 
-		if (maskC(i,ny+1) .eq. 1) then
+            if (maskC(i,ny+1) .eq. 1) then
                   
-		    hstar(i,ny+1)= ( 4d0 * hstar(i,ny) - hstar(i,ny-1) ) / 3d0
-		    hstar(i,ny+1)= max(hstar(i,ny+1), 0d0)
-		    Astar(i,ny+1)= ( 4d0 * Astar(i,ny) - Astar(i,ny-1) ) / 3d0
-		    Astar(i,ny+1)= max(Astar(i,ny+1), 0d0)
-		    Astar(i,ny+1)= min(Astar(i,ny+1), 1d0)
+               hstar(i,ny+1)= ( 4d0 * hstar(i,ny) - hstar(i,ny-1) ) / 3d0
+               hstar(i,ny+1)= max(hstar(i,ny+1), 0d0)
+               Astar(i,ny+1)= ( 4d0 * Astar(i,ny) - Astar(i,ny-1) ) / 3d0
+               Astar(i,ny+1)= max(Astar(i,ny+1), 0d0)
+               Astar(i,ny+1)= min(Astar(i,ny+1), 1d0)
 
-		endif
+            endif
  
-	      enddo
+         enddo
 
-	      do j = 0, ny+1
+         do j = 0, ny+1
 
-		if (maskC(0,j) .eq. 1) then
+            if (maskC(0,j) .eq. 1) then
                   
-		    hstar(0,j)  = ( 4d0 * hstar(1,j) - hstar(2,j) ) / 3d0
-		    hstar(0,j)  = max(hstar(0,j), 0d0)
-		    Astar(0,j)  = ( 4d0 * Astar(1,j) - Astar(2,j) ) / 3d0
-		    Astar(0,j)  = max(Astar(0,j), 0d0)
-		    Astar(0,j)  = min(Astar(0,j), 1d0)
+               hstar(0,j)  = ( 4d0 * hstar(1,j) - hstar(2,j) ) / 3d0
+               hstar(0,j)  = max(hstar(0,j), 0d0)
+               Astar(0,j)  = ( 4d0 * Astar(1,j) - Astar(2,j) ) / 3d0
+               Astar(0,j)  = max(Astar(0,j), 0d0)
+               Astar(0,j)  = min(Astar(0,j), 1d0)
 
-		endif
+            endif
 
-		if (maskC(nx+1,j) .eq. 1) then
+            if (maskC(nx+1,j) .eq. 1) then
                  
-		    hstar(nx+1,j) = ( 4d0 * hstar(nx,j) - hstar(nx-1,j) ) / 3d0
-		    hstar(nx+1,j) = max(hstar(nx+1,j), 0d0)
-		    Astar(nx+1,j) = ( 4d0 * Astar(nx,j) - Astar(nx-1,j) ) / 3d0
-		    Astar(nx+1,j) = max(Astar(nx+1,j), 0d0)
-		    Astar(nx+1,j) = min(Astar(nx+1,j), 1d0)
+               hstar(nx+1,j) = ( 4d0 * hstar(nx,j) - hstar(nx-1,j) ) / 3d0
+               hstar(nx+1,j) = max(hstar(nx+1,j), 0d0)
+               Astar(nx+1,j) = ( 4d0 * Astar(nx,j) - Astar(nx-1,j) ) / 3d0
+               Astar(nx+1,j) = max(Astar(nx+1,j), 0d0)
+               Astar(nx+1,j) = min(Astar(nx+1,j), 1d0)
 
-		endif
+            endif
 
-	      enddo
+         enddo
 
 !------------------------------------------------------------------------
 !     corrector: compute the difference of the flux for thickness 
 !------------------------------------------------------------------------
   
-	       ustar = ( upts + utp ) / 2d0
-	       vstar = ( vpts + vtp ) / 2d0
+         ustar = ( upts + utp ) / 2d0
+         vstar = ( vpts + vtp ) / 2d0
 
-               call calc_dFx (ustar, hstar, dFx)
-               call calc_dFy (vstar, hstar, dFy)
+         call calc_dFx (ustar, hstar, dFx)
+         call calc_dFy (vstar, hstar, dFy)
 
 !------------------------------------------------------------------------
 !     corrector: update the thickness values
 !     (in a separate do-loop to conserve mass)
 !------------------------------------------------------------------------
             
-               do i = 1, nx
-                  do j = 1, ny
+         do i = 1, nx
+            do j = 1, ny
 
-                     if (maskC(i,j) .eq. 1) then
+               if (maskC(i,j) .eq. 1) then
 
-                        hout(i,j) = hin(i,j) - DtoverDx * ( dFx(i,j) + dFy(i,j) )
-                        hout(i,j) = max(hout(i,j), 0d0)
+                  hout(i,j) = hin(i,j) - DtoverDx * ( dFx(i,j) + dFy(i,j) )
+                  hout(i,j) = max(hout(i,j), 0d0)
 
-                     endif
+               endif
                      
-                  enddo
-               enddo
+            enddo
+         enddo
 
 !------------------------------------------------------------------------  
 !     corrector: compute the difference of the flux for concentration                                 
 !------------------------------------------------------------------------                  
 
-               call calc_dFx (ustar, Astar, dFx)
-               call calc_dFy (vstar, Astar, dFy)
+         call calc_dFx (ustar, Astar, dFx)
+         call calc_dFy (vstar, Astar, dFy)
 
 !------------------------------------------------------------------------ 
 !     corrector: update the concentration values      
 !     (in a separate do-loop to conserve mass)                                             
 !------------------------------------------------------------------------   
 
-               do i = 1, nx
-                  do j = 1, ny
+         do i = 1, nx
+            do j = 1, ny
 
-                     if (maskC(i,j) .eq. 1) then
+               if (maskC(i,j) .eq. 1) then
 
-                        Aout(i,j) = Ain(i,j) - DtoverDx * ( dFx(i,j) + dFy(i,j) )
-                        Aout(i,j) = max(Aout(i,j), 0d0)
-                        Aout(i,j) = min(Aout(i,j), 1d0)
+                  Aout(i,j) = Ain(i,j) - DtoverDx * ( dFx(i,j) + dFy(i,j) )
+                  Aout(i,j) = max(Aout(i,j), 0d0)
+                  Aout(i,j) = min(Aout(i,j), 1d0)
 
-                     endif
+               endif
 
-                  enddo
-               enddo
+            enddo
+         enddo
 
-
-	      endif
-
+         
+      endif
+      
       return
     end subroutine advection
 
@@ -319,7 +318,7 @@
       double precision, intent(in) :: utp(0:nx+2,0:ny+2),tracertp(0:nx+1,0:ny+1)
       double precision, intent(out):: dFx(nx,ny)
       double precision :: F1, F2
-
+      
       do i = 1, nx
          do j = 1, ny
             
@@ -343,7 +342,7 @@
 
          enddo
       enddo
-
+      
     end subroutine calc_dFx
 
     subroutine calc_dFy (vtp, tracertp, dFy)

@@ -45,6 +45,8 @@
       tol    = 1d-07       ! could be increased to 1d-04
       nmax   = 20          ! maximum number of iteration
       k      = 0           ! counter for # of iteration
+      uflag  = 0
+      vflag  = 0
 
 !------------------------------------------------------------------------
 !     Initialize velocity field 

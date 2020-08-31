@@ -215,10 +215,10 @@
 
 !------- End of Newton loop ----------------------------------------------            
          
-!            if (tstep .eq. 4) then
-!               call stress_strain (uice, vice, date, 9, expno)
+            if (tstep .eq. -1) then ! change tstep value to output stresses and strain rates
+               call stress_strain (uice, vice, date, 9, expno)
 !               stop
-!            endif
+            endif
          
          elseif (solver .eq. 3) then ! EVP solver 
 
