@@ -56,6 +56,8 @@
       tol    = 1d-6     !1d-06  jfl watchout
       nmax   = 20000
       kit    = 0
+      uflag  = 0
+      vflag  = 0
 
 !------------------------------------------------------------------------
 !     Set the over(under)-relaxation parameter:

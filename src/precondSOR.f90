@@ -34,7 +34,7 @@
 
             utp = 0.0d0
             vtp = 0.0d0
-
+            D   = 0d0
 !------------------------------------------------------------------------
 !     Solve for the ice velocity field, usind SOR, 
 !     .       [A] {u_i} = R'
@@ -80,8 +80,8 @@
 !     water drag  (theta_w is considered to be zero in the precond)
 !------------------------------------------------------------------------
 
-            D  = D + CdwC1f(i,j) !* costheta_w 
-	    D  = D + Cbasal1(i,j) ! basal drag
+         D  = D + CdwC1f(i,j) !* costheta_w 
+         D  = D + Cbasal1(i,j) ! basal drag
 !            B1 = B1 + CdwC1f(i,j) * sintheta_w * vavg 
  
 !------------------------------------------------------------------------

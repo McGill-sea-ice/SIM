@@ -12,14 +12,14 @@
       character(LEN=20)         &
                 BndyCond,       &
                 linearization,  &
-		regularization, &
+                regularization, &
                 ini_guess,      &
                 AirTemp,        &
                 OcnTemp,        &
                 Wind,           &
                 Current,        &
-		adv_scheme,     &
-	        startdate,      &
+                adv_scheme,     &
+                startdate,      &
                 enddate,        &
                 Buoys,          &
                 Jac_finite_diff  
@@ -37,18 +37,18 @@
                 OcnTemp,        & ! specified, MonthlyMean
                 Wind,           & ! specified, MonthlyMean
                 Current,        & ! specified, YearlyMean
-		adv_scheme,     & ! advection scheme: upwind or upwindRK2
+                adv_scheme,     & ! advection scheme: upwind or upwindRK2
                 BndyCond,       & ! noslip or freeslip
-		Rheology,       & ! ellipse, triangle
-		IMEX,           & ! 0: standard (splitting in time), 1 and 2: IMEX
+                Rheology,       & ! ellipse, triangle
+                IMEX,           & ! 0: standard (splitting in time), 1 and 2: IMEX
                 BDF,            & ! 0: standard, 1: Backward diff formula (2nd order)
-		visc_method,    & ! choice of calc of visc coeff
-		startdate,      & ! starting date
+                visc_method,    & ! choice of calc of visc coeff
+                startdate,      & ! starting date
                 enddate           ! end date
 
       common/options/           &
                 linearization,  & ! Tremblay, Zhang
-		regularization, & ! tanh, Kreyscher 
-		ini_guess,      & ! freedrift, previous time step
+                regularization, & ! tanh, Kreyscher 
+                ini_guess,      & ! freedrift, previous time step
                 Jac_finite_diff  
 

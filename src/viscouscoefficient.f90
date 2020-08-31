@@ -135,14 +135,14 @@ subroutine ViscousCoeff_method1(utp,vtp)
         enddo
      enddo
 
+     dudx       = 0d0
+     dvdy       = 0d0
+     dudy       = 0d0
+     dvdx       = 0d0
+
      do i = 1, nx
         do j = 1, ny
 
-           dudx       = 0d0
-           dvdy       = 0d0
-           dudy       = 0d0
-           dvdx       = 0d0
-               
            if ( maskC(i,j) .eq. 1 ) then
                   
               dudx = ( utp(i+1,j) - utp(i,j) ) / Deltax
@@ -354,13 +354,18 @@ subroutine ViscousCoeff_method2(utp,vtp)
         enddo
      enddo
 
+     dudx       = 0d0
+     dvdy       = 0d0
+     dudy       = 0d0
+     dvdx       = 0d0
+     pnode      = 0d0
+
 !------------------------------------------------------------------------
 !     Shear and bulk viscosity calculation at the grid center
 !------------------------------------------------------------------------   
 
      do i = 1, nx
-        do j = 1, ny
-               
+        do j = 1, ny               
                
            if ( maskC(i,j) .eq. 1 ) then
                   
@@ -785,6 +790,11 @@ subroutine ViscousCoeff_method3_and_4(utp,vtp)
         enddo
      enddo
 
+     dudx       = 0d0
+     dvdy       = 0d0
+     dudy       = 0d0
+     dvdx       = 0d0
+     deno       = 0d0
 
 !------------------------------------------------------------------------
 !     ep12 calculation at the grid node (see p.2-118 PDF notebook)
