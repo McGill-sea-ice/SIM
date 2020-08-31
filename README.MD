@@ -8,7 +8,8 @@ git clone git@github.com:McGill-sea-ice/SIM.git<br/>
 cd SIM<br/>
 git branch -a (list branches)<br/>
 git checkout choose your branch<br/>
-./setup_script (to compile and create link for forcing) - ignore warnings<br/>
+./setup_script (to compile and create link for forcing)<br/>
+export HDF5_DISABLE_VERSION_CHECK=2<br/>
 ./zoupa < input_file > outputfile &<br/>
 output files for fields are in the output directory<br/>
 
