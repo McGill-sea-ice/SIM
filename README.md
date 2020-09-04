@@ -14,3 +14,5 @@ run experience with "./zoupa input_norestart >outEXPERIENCENo" or "./zoupa nano 
 
 
   
+KNOWN BUGS:
+Sometimes when adding changes the compilation doesn't include them. Before compiling try : rm -r build/ zoupa libs/*
