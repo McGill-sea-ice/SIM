@@ -15,4 +15,4 @@ run experience with "./zoupa input_norestart >outEXPERIENCENo" or "./zoupa nano 
 
   
 KNOWN BUGS:
-Sometimes when adding changes + compilation doesn't include the changes. Before compiling clean everything try: ( rm -r build/ zoupa libs/* and then compile again and launch experience
+Sometimes when adding changes + compiling doesn't include the changes. Before compiling clean everything try: ( rm -r build/ zoupa libs/* and then compile again and launch experience
