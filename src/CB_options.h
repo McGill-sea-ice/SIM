@@ -7,7 +7,8 @@
                 Thermodyn,      &
                 BuoyTrack,      &
                 calc_month_mean,&
-                runoff
+                runoff,         &
+                Uniaxial_Load   
 
       character(LEN=20)         &
                 BndyCond,       &
@@ -36,7 +37,8 @@
                 AirTemp,        & ! specified, MonthlyMean
                 OcnTemp,        & ! specified, MonthlyMean
                 Wind,           & ! specified, MonthlyMean
-                Current,        & ! specified, YearlyMean
+                Current,        & ! specified, YearlyMean 
+		Uniaxial_Load,  & ! FB: True: mask, False: Domain is the Arctic
                 adv_scheme,     & ! advection scheme: upwind or upwindRK2
                 BndyCond,       & ! noslip or freeslip
                 Rheology,       & ! ellipse, triangle
