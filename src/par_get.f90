@@ -83,7 +83,7 @@
       relhum     =  0.8d0            ! atmosphere relative humidity
 
       ntracer    =  2                ! total number of ice tracer
-
+      Uniaxial_Load = .false.         !FB: when false domain is the Arctic  
       BndyCond   = 'noslip'          ! noslip
       Rheology   = 1                 ! ellipse = 1, triangle = 2
       linearization = 'Zhang'        ! Tremblay, Zhang
@@ -104,20 +104,50 @@
       calc_month_mean = .false.      ! to calc monthly mean fields
       runoff     = .false.
 
-      if ((nx == 518) .and. (ny == 438)) then
-         Deltax     =  10d03           ! grid size [m] 
-      elseif  ((nx == 258) .and. (ny == 218)) then
-         Deltax     =  20d03           ! grid size [m] 
-      elseif  ((nx == 128) .and. (ny == 108)) then
-         Deltax     =  40d03           ! grid size [m] 
-      elseif  ((nx == 63) .and. (ny == 53)) then
-         Deltax     =  80d03           ! grid size [m] 
-      else
-         write(*,*) "Wrong grid size dimenions.", nx, ny
-         STOP
-      endif
+!      if ((nx == 518) .and. (ny == 438)) then
+!         Deltax     =  10d03           ! grid size [m] 
+!      elseif  ((nx == 258) .and. (ny == 218)) then
+!         Deltax     =  20d03           ! grid size [m] 
+!      elseif  ((nx == 128) .and. (ny == 108)) then
+!         Deltax     =  40d03           ! grid size [m] 
+!      elseif  ((nx == 63) .and. (ny == 53)) then
+!         Deltax     =  80d03           ! grid size [m] 
+!      else
+!         write(*,*) "Wrong grid size dimenions.", nx, ny
+!         STOP
+!      endif
+!FB: adding unixial loading experiment +usying mask
+      if (Uniaxial_Load .eqv. .true.) then     
+          Deltax     =  10d03 !FB: originally 50d03 
+          if ((nx==100) .and. (ny==250)) then
+            Deltax     =  1d03           ! FB: grid size 1km resolution[m]  
+          !------------generate mask for Uniaxial_Load---- 	 
+                    do i = 0, nx+1
+                    do j = 0, ny+1
+                    maskC(i,j) = 1
+                     if ((j .lt. 1)) then
+                      maskC(i,j) = 0
+                     endif !mask
+                    enddo
+                    enddo          
+          endif !-------------new domain-------------------
+      else  
+         if ((nx == 518) .and. (ny == 438)) then
+            Deltax     =  10d03           ! grid size [m] 
+         elseif  ((nx == 258) .and. (ny == 218)) then
+            Deltax     =  20d03           ! grid size [m] 
+         elseif  ((nx == 128) .and. (ny == 108)) then
+            Deltax     =  40d03           ! grid size [m] 
+         elseif  ((nx == 63) .and. (ny == 53)) then
+            Deltax     =  80d03           ! grid size [m] 
+         else 
+            write(*,*) "Wrong grid size dimenions.", nx, ny
+            STOP
+         endif
+      endif !Uniaxial_Load
+ 
 
-      Deltax2 = Deltax**2d0
+     Deltax2 = Deltax**2d0
 
 !------------------------------------------------------------------------
 !     Numerical parameters
