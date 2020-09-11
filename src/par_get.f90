@@ -409,6 +409,87 @@ subroutine read_namelist
       rhof       =  rhoice * f
 
       end subroutine read_namelist
+!************************************************************************
+!     Subroutine read_namelist_uniaxial: read option choices and parameter values
+!                               from namelist uniaxial file
+!
+!     Author: F Boucher
+!
+!************************************************************************
+
+
+subroutine read_namelist_uniaxial
+
+        use ellipse
+        use numerical_VP
+        use numerical_EVP
+        use solver_choice
+        use basal_param
+
+      implicit none
+
+      include 'parameter.h'
+      include 'CB_options.h'
+      include 'CB_const.h'
+      include 'CB_Dyndim.h'
+      
+      integer :: nml_error, filenb
+      double precision :: e_ratio
+      double precision :: rhoair, Cdair, Cdwater, f
+      character filename*32
+
+      !---- namelist variables -------
+             
+      namelist /option_nml/ &
+           Dynamic, Thermodyn,                                  &
+           linearization, regularization, ini_guess,            &
+           adv_scheme, AirTemp, OcnTemp, Wind, Current,         &
+           Rheology, IMEX, BDF, visc_method, solver,            &
+           BasalStress
+
+      namelist /numerical_param_nml/ &
+           Deltat, gamma_nl, NLmax, OLmax, Nsub
+
+      namelist /phys_param_nml/ &
+           Pstar, C, e_ratio, k1, k2, rhoair, rhoice, rhowater, &
+           Cdair, Cdwater, f
+
+      filename ='namelistSIM_control'
+      filenb = 10
+
+      print *, 'Reading namelist_uniaxial values'
+        
+      open (filenb, file=filename, status='old',iostat=nml_error)
+      if (nml_error /= 0) then
+         nml_error = -1
+      else
+         nml_error =  1
+      endif
+         
+      do while (nml_error > 0)
+         print*,'Reading option_nml'
+         read(filenb, nml=option_nml,iostat=nml_error)
+         if (nml_error /= 0) exit
+         print*,'Reading other_nml'
+         read(filenb, nml=numerical_param_nml,iostat=nml_error)
+         if (nml_error /= 0) exit
+         print*,'Reading phys_param_nml'
+         read(filenb, nml=phys_param_nml,iostat=nml_error)
+         print *, nml_error
+      enddo
+
+      close(filenb)
+
+      DtoverDx   = Deltat / Deltax
+      ell2       = e_ratio**2
+      ell_2      = 1/(e_ratio**2)
+      Cdw        =  rhowater * Cdwater
+      Cda        =  rhoair * Cdair
+      rhof       =  rhoice * f
+
+      end subroutine read_namelist_uniaxial
+
+
 
       subroutine verify_options
 

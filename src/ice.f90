@@ -106,7 +106,7 @@ PROGRAM ice
       integer ndays(12)
       INTEGER i, k, m_current, ts_m_counter, tstep
       INTEGER, parameter :: delta = 10
-      INTEGER expno_r, expno, restart, readnamelist
+      INTEGER expno_r, expno, restart, readnamelist, readnamelist_control
       TYPE(datetime_type) :: post_date(1000), start_date, end_date
       TYPE(datetime_type) :: now_date, restart_date, tic, tac
       type(datetime_delta_type) :: date_step
@@ -168,6 +168,9 @@ PROGRAM ice
       call get_default           ! get default settings and parameters
       if (readnamelist .eq. 1) then
          call read_namelist      ! overwrite default based on namelist
+      
+      else
+         call read_namelist_uniaxial !FB: different parameters   
       endif
       call verify_options        ! verify validity of options
       call get_mask_and_bathy
