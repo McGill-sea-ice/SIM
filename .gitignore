@@ -40,3 +40,10 @@ build/
 # When configure fails, SCons outputs these
 config.log
 .sconf_temp
+
+#Ignore also output files
+zoupa
+output
+bin
+forcing
+out*
