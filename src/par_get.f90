@@ -614,7 +614,7 @@ subroutine read_namelist_uniaxial
 
       write(cdelta, '(I2)') int(Deltax)/1000
 
-      open (unit = 20, file = 'src/mask'//cdelta//'.dat', status = 'old')
+      open (unit = 20, file = 'src/masks/mask'//cdelta//'.dat', status = 'old')
 
       do j = 0, ny+1               ! land mask                                                                
          read (20,10) ( maskC(i,j), i = 0, nx+1 )
@@ -648,7 +648,7 @@ subroutine read_namelist_uniaxial
 
       if (BasalStress) then ! LF ice basal stress param is used                                                                        
 
-         open (unit=21,file='src/bathymetry'//cdelta//'km.dat', status = 'old')
+         open (unit=21,file='src/masks/bathymetry'//cdelta//'km.dat', status = 'old')
 
          do j = 0, ny+1               ! bathy                                                                                        
             read (21,*) ( bathy(i,j), i = 0, nx+1 )
