@@ -22,7 +22,7 @@
     gamma_nl = 1d-03
     NLmax = 200     
     OLmax = 500
-    Nsub  = 120  
+    Nsub  = 240  
 /
 
 &phys_param_nml

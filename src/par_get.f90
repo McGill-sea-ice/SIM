@@ -139,7 +139,7 @@
       klinesearch = 1          ! linesearch is applied for JFNK for k .ge. klinesearch
       Jac_finite_diff = 'forward' ! forward, centred (for JFNK solver)
 
-      Nsub  = 120              ! nb of EVP subcycles
+      Nsub  = 240              ! nb of EVP subcycles
       Eo    = 0.36d0           ! T = Eo*Deltat    
       init_stress = 'VP'       ! init stress (VP or zero) EVP(tstep=1, s=1)
 
