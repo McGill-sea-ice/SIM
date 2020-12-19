@@ -100,7 +100,6 @@ subroutine ViscousCoeff_method1(utp,vtp)
   integer i, j, rheo
 
   double precision dudx, dvdy, dudy, dvdx, deno, denoT, denomin
-
   double precision utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
 
   denomin = 2d-09 ! Hibler, 1979
@@ -319,7 +318,7 @@ subroutine ViscousCoeff_method2(utp,vtp)
   
   integer i, j, rheo, summaskC
 
-  double precision dudx, dvdy, dudy, dvdx, deno, denomin, denoT, pnode
+  double precision dudx, dvdy, dudy, dvdx, deno, denoT, denomin, pnode
   double precision utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
   
   denomin = 2d-09 ! Hibler, 1979
@@ -755,7 +754,7 @@ subroutine ViscousCoeff_method3_and_4(utp,vtp)
 
   integer i, j, rheo, summaskC
 
-  double precision dudx, dvdy, dudy, dvdx, deno, denomin, denoT
+  double precision dudx, dvdy, dudy, dvdx, deno, denoT, denomin
   double precision utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
   double precision ep12(0:nx+2,0:ny+2), meanep12sq, meanep12
   
