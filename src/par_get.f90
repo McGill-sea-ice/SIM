@@ -477,7 +477,7 @@ subroutine read_namelist
       print *, 'OcnTemp       =   ', OcnTemp
       print *,
       print *, 'time step [s] =   ', Deltat
-      print *,
+      print *, 'Basal', BasalStress
 
     end subroutine verify_options
 

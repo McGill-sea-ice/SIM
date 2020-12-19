@@ -180,11 +180,6 @@ PROGRAM ice
       call ocn_Tclim                 ! load monthly clim ocean T
       call ini_get (restart, expno_r,restart_date)! ini conds
 
-      if ( Wind .eq. 'specified' .or. Wind .eq. '60yrs_clim') then      
-         print *, 'calling specified or 60yrs_clim wind'
-         call wind_forcing (start_date)
-      endif
-
 !------------------------------------------------------------------------
 !     Allocate variables to calc monthly mean fields if specified by user
 !------------------------------------------------------------------------

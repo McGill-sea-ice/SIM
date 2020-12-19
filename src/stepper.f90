@@ -70,11 +70,7 @@
 
       if ( Dynamic ) then
 
-         if ( Wind .eq. '6hours' ) then
-
-            call wind_forcing (date) ! get wind forcing field
-
-         endif
+         call wind_forcing (date, tstep) ! get wind forcing field
 
          if ( BDF .eq. 1 ) then
             un2 = un1

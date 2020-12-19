@@ -1,5 +1,5 @@
   
-      subroutine wind_forcing (date) 
+      subroutine wind_forcing (date, tstep) 
         use datetime, only: datetime_type, datetime_delta_type, operator(+), operator(-)
         use datetime, only: delta_init, datetime_str, seconds, time_set_from_datetime
         use io, only: load_geostrophic_wind, RP!, load_climatological_wind
@@ -17,6 +17,7 @@
 
  
       type(datetime_type), intent(in) :: date
+      integer, intent(in) :: tstep
       type(datetime_type) :: date1, date2
       type(datetime_delta_type) :: diff, step
       integer :: dseconds, delta
@@ -28,12 +29,13 @@
       integer  ncell
       integer, parameter :: h2sec = 3600
 
-      double precision tauax, tauay, wm, uairmax, uairmean,alpha
+      double precision tauax, tauay, wspeed, rampfactor, Tramp
+      double precision uairmax, uairmean,alpha
       double precision uair1(0:nx+2,0:ny+2),vair1(0:nx+2,0:ny+2)
       double precision uair2(0:nx+2,0:ny+2),vair2(0:nx+2,0:ny+2)
       double precision uuair(0:nx+2,0:ny+2),uvair(0:nx+2,0:ny+2)
  
-      logical :: verbose = .false.
+      logical :: verbose = .false., RampupWind
      
       delta =  int(deltax)/1000
 
@@ -104,12 +106,22 @@
          
       elseif ( Wind .eq. 'specified' ) then
          
-         wm = 10.0d0
-         
+         wspeed = 10.0d0
+         Tramp=6d0*3600d0
+         RampupWind = .false.
+
+         if (RampupWind) then
+            rampfactor=1d0-exp(-1d0*tstep*Deltat/Tramp)
+         else
+            rampfactor=1d0
+         endif
+
+         print *, 'Specified uair(m/s) =', tstep, rampfactor*wspeed
+
          do i = 1, nx+1
             do j = 1, ny+1
                
-               uair(i,j) = 10d0 
+               uair(i,j) = rampfactor*wspeed
                vair(i,j) =  0d0
                
 !     call random_number(rdnumb)
