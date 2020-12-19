@@ -99,6 +99,7 @@
       Buoys      = 'Daily'           ! Buoy traj: 'Track' or 'Daily'
       Current    = 'YearlyMean'      ! YearlyMean, specified
       Wind       = '6hours'          ! 6hours, 60yrs_clim, specified
+      RampupWind  = .false.           ! smooth increase of specified wind
       AirTemp    = 'MonthlyMean'     ! MonthlyMean, specified (-10C)
       OcnTemp    = 'calculated'      ! MonthlyClim, specified,calculated
       calc_month_mean = .false.      ! to calc monthly mean fields
@@ -334,8 +335,8 @@ subroutine read_namelist
       namelist /option_nml/ &
            Dynamic, Thermodyn,                                  &
            linearization, regularization, ini_guess,            &
-           adv_scheme, AirTemp, OcnTemp, Wind, Current,         &
-           Rheology, IMEX, BDF, visc_method, solver,            &
+           adv_scheme, AirTemp, OcnTemp, Wind, RampupWind,      &
+           Current, Rheology, IMEX, BDF, visc_method, solver,   &
            BasalStress
 
       namelist /numerical_param_nml/ &

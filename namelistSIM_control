@@ -7,7 +7,8 @@
     adv_scheme = 'upwind'
     Airtemp = 'MonthlyMean'
     OcnTemp = 'calculated'
-    Wind = '6hours' 	
+    Wind = '6hours'
+    RampupWind = .false. 	
     Current = 'YearlyMean'
     Rheology = 1
     IMEX = 0

@@ -35,7 +35,7 @@
       double precision uair2(0:nx+2,0:ny+2),vair2(0:nx+2,0:ny+2)
       double precision uuair(0:nx+2,0:ny+2),uvair(0:nx+2,0:ny+2)
  
-      logical :: verbose = .false., RampupWind
+      logical :: verbose = .false.
      
       delta =  int(deltax)/1000
 
@@ -108,7 +108,6 @@
          
          wspeed = 10.0d0
          Tramp=6d0*3600d0
-         RampupWind = .false.
 
          if (RampupWind) then
             rampfactor=1d0-exp(-1d0*tstep*Deltat/Tramp)
