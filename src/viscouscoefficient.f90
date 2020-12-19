@@ -211,15 +211,18 @@ subroutine ViscousCoeff_method1(utp,vtp)
                  if ( regularization .eq. 'tanh' ) then
 
                     deno = max( deno, 1d-20 )
-                     
                     zetaC(i,j) =  ( Pp(i,j)/denomin ) &
                          *( tanh(denomin*(1/deno)))
 
                  elseif ( regularization .eq. 'Kreyscher' ) then
                         
                     denoT = deno + denomin
-
                     zetaC(i,j) = Pp(i,j)/denoT 
+
+                 elseif ( regularization .eq. 'capping' ) then
+
+                    denoT = max(deno,denomin)
+                    zetaC(i,j) = Pp(i,j)/denoT
 
                  else
                         
@@ -229,7 +232,6 @@ subroutine ViscousCoeff_method1(utp,vtp)
                  endif
 
                  P(i,j) = zetaC(i,j)*deno ! replacement pressure 
-
                  etaC(i,j)  = zetaC(i,j) * ell_2
                      
               elseif ( rheo .eq. 2 ) then ! triangle, jfl p.1124
@@ -237,10 +239,8 @@ subroutine ViscousCoeff_method1(utp,vtp)
                  stop
                    
               endif
-
                   
            endif
-               
                
         enddo
      enddo
@@ -433,15 +433,18 @@ subroutine ViscousCoeff_method2(utp,vtp)
                  if ( regularization .eq. 'tanh' ) then
 
                     deno = max( deno, 1d-20 )
-                     
                     zetaC(i,j) =  ( Pp(i,j)/denomin ) &
                          *( tanh(denomin*(1/deno)))
 
                  elseif ( regularization .eq. 'Kreyscher' ) then
                         
                     denoT = deno + denomin
-
                     zetaC(i,j) = Pp(i,j)/denoT 
+
+                 elseif ( regularization .eq. 'capping' ) then
+
+                    denoT = max(deno,denomin)
+                    zetaC(i,j) = Pp(i,j)/denoT
 
                  else
                         
@@ -451,7 +454,6 @@ subroutine ViscousCoeff_method2(utp,vtp)
                  endif
 
                  P(i,j) = zetaC(i,j)*deno ! replacement pressure 
-
                  etaC(i,j)  = zetaC(i,j) * ell_2
                         
               elseif ( rheo .eq. 2 ) then ! triangle, jfl p.1124
@@ -459,10 +461,8 @@ subroutine ViscousCoeff_method2(utp,vtp)
                  stop
                    
               endif
-
                   
            endif
-               
                
         enddo
      enddo
@@ -675,7 +675,6 @@ subroutine ViscousCoeff_method2(utp,vtp)
 
               if ( rheo .eq. 1 ) then ! ellipse, jfl p.892
 
-
                  deno = sqrt(( dudx **2 + dvdy **2 )*(1.0d0 + ell_2) &
                       + 2.0d0 * dudx * dvdy * (1.0d0 - ell_2) &
                       + ell_2 * ( dvdx + dudy ) ** 2 )
@@ -683,14 +682,17 @@ subroutine ViscousCoeff_method2(utp,vtp)
                  if ( regularization .eq. 'tanh' ) then
 
                     deno = max( deno, 1d-20 )
-
                     etaB(i,j) = ell_2 * ( pnode/denomin ) &
                          *(tanh( denomin*(1/deno)) )
 
                  elseif ( regularization .eq. 'Kreysher' ) then
 
                     denoT = deno + denomin
+                    etaB(i,j) = ell_2 * ( pnode/denoT )
 
+                 elseif ( regularization .eq. 'capping' ) then
+                    
+                    denoT = max(deno,denomin)
                     etaB(i,j) = ell_2 * ( pnode/denoT )
 
                  else
@@ -705,7 +707,6 @@ subroutine ViscousCoeff_method2(utp,vtp)
                  stop
                    
               endif
-
               
            endif !summaskC .ge. 2 
            
@@ -800,7 +801,6 @@ subroutine ViscousCoeff_method3_and_4(utp,vtp)
 !     ep12 calculation at the grid node (see p.2-118 PDF notebook)
 !------------------------------------------------------------------------
 
-         
          ! for sig12B (defined at the node)
      do j = 1, ny+1 
         do i = 1, nx+1
@@ -946,16 +946,19 @@ subroutine ViscousCoeff_method3_and_4(utp,vtp)
 
                  if ( regularization .eq. 'tanh' ) then
                         
-                    deno = max( deno, 1d-20 )
-                     
+                    deno = max( deno, 1d-20 )                     
                     zetaC(i,j) =  ( Pp(i,j)/denomin ) &
                          *( tanh(denomin*(1/deno)))
 
                  elseif ( regularization .eq. 'Kreyscher' ) then
                         
                     denoT = deno + denomin
-
                     zetaC(i,j) = Pp(i,j)/denoT 
+
+                 elseif ( regularization .eq. 'capping' ) then
+
+                    denoT = max(deno,denomin)
+                    zetaC(i,j) = Pp(i,j)/denoT
 
                  else
                         
@@ -965,19 +968,15 @@ subroutine ViscousCoeff_method3_and_4(utp,vtp)
                  endif
 
                  P(i,j) = zetaC(i,j)*deno ! replacement pressure 
-
                  etaC(i,j)  = zetaC(i,j) * ell_2
-
                         
               elseif ( rheo .eq. 2 ) then ! triangle, jfl p.1124
 
                  stop
                    
               endif
-
               
            endif
-               
                
         enddo
      enddo
@@ -1018,7 +1017,6 @@ subroutine ViscousCoeff_method3_and_4(utp,vtp)
 !     Shear viscosity calculation at the grid node (see p.2-118 PDF notebook)
 !------------------------------------------------------------------------
 
-         
      ! for sig12B (defined at the node)
      do j = 1, ny+1 
         do i = 1, nx+1

@@ -87,7 +87,7 @@
       BndyCond   = 'noslip'          ! noslip
       Rheology   = 1                 ! ellipse = 1, triangle = 2
       linearization = 'Zhang'        ! Tremblay, Zhang
-      regularization = 'tanh'        ! tanh, Kreyscher
+      regularization = 'tanh'        ! tanh, Kreyscher, capping
       visc_method = 2                ! see viscousCoeff routine for details
       ini_guess  = 'previous time step' ! freedrift, previous time step
       adv_scheme = 'upwind'       ! upwind, upwindRK2 
