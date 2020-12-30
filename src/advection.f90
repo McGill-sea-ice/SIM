@@ -29,13 +29,21 @@
       include 'CB_options.h'
 
       integer i, j
+      integer isw, jsw, inw, jnw, ine, jne, ise, jse !SL SouthWest=sw, nw, ne, se corners
       double precision, intent(in)    :: upts(0:nx+2,0:ny+2), vpts(0:nx+2,0:ny+2)
       double precision, intent(in)    :: utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
       double precision, intent(inout) :: hin(0:nx+1,0:ny+1), Ain(0:nx+1,0:ny+1)
       double precision, intent(out)   :: hout(0:nx+1,0:ny+1), Aout(0:nx+1,0:ny+1)
       double precision                :: ustar(0:nx+2,0:ny+2), vstar(0:nx+2,0:ny+2)
       double precision                :: hstar(0:nx+1,0:ny+1), Astar(0:nx+1,0:ny+1)
-      double precision dFx(nx,ny), dFy(nx,ny)
+      double precision                :: dFx(nx,ny), dFy(nx,ny)
+      double precision                :: alphamx, alphamy
+      double precision                :: hsw, hnw, hne, hse
+      double precision                :: hxsw, hxnw, hxne, hxse, hysw, hynw, hyne, hyse
+      double precision                :: hxysw, hxynw, hxyne, hxyse
+      double precision                :: Asw, Anw, Ane, Ase
+      double precision                :: Axsw, Axnw, Axne, Axse, Aysw, Aynw, Ayne, Ayse
+      double precision                :: Axysw, Axynw, Axyne, Axyse
 
 !------------------------------------------------------------------------ 
 !     set dhin/dx, dAin/dx = 0 at the outside cell when there is an open bc 
@@ -301,7 +309,73 @@
             enddo
          enddo
 
+      elseif ( adv_scheme .eq. 'semilag' ) then
          
+!------------------------------------------------------------------------ 
+!     Semi-Lagrangian scheme for advection. 
+!     This is a 3 time level scheme (h is obtained from hn1 and hn2)
+!     
+!     Staniforth and Côté, Monthly Weather Review 1991.
+!     Pellerin et al, Monthly Weather Review 1995. 
+!
+!------------------------------------------------------------------------ 
+  
+!------------------------------------------------------------------------  
+! find velocity at x-alphamx, y-alphamy  and t=n1
+!------------------------------------------------------------------------
+         
+!------------------------------------------------------------------------
+! find hbef and Abef (initial position of particle at time level n-2=n2)
+!------------------------------------------------------------------------
+
+! 1) identify coordinates of 4 corners
+
+         if (alphamx .ge. 0) then  ! particle coming from the West (u .ge. 0)
+            if (alphamy .ge. 0) then ! particle coming from the South (v .ge. 0)
+               isw=i-1
+               jsw=j-1
+               inw=i-1
+               jnw=j
+               ine=i
+               jne=j
+               ise=i
+               jse=j-1
+            else                     ! particle coming from the North (v .lt. 0)
+               isw=i-1
+               jsw=j
+               inw=i-1
+               jnw=j+1
+               ine=i
+               jne=j+1
+               ise=i
+               jse=j
+            endif
+         else                      ! particle coming from the East (u .lt. 0) 
+            if (alphamy .ge. 0) then ! particle coming from the South (v .ge. 0)                             
+               isw=i
+               jsw=j-1
+               inw=i
+               jnw=j
+               ine=i+1
+               jne=j
+               ise=i+1
+               jse=j-1
+            else                     ! particle coming from the North (v .lt. 0) 
+               isw=i
+               jsw=j
+               inw=i
+               jnw=j+1
+               ine=i+1
+               jne=j+1
+               ise=i+1
+               jse=j
+            endif
+         endif         
+
+! 2) set 4 corners values and compute derivatives required for cubic interpolation
+         hsw=
+         
+
       endif
       
       return
@@ -382,3 +456,30 @@
       enddo
 
     end subroutine calc_dFy
+
+    function fx(fip1, fim1) result(fx)
+      
+      double precision, intent(in) :: fip1, fim1 ! ip1=i+1, im1=i-1                                
+      double precision             :: fx         ! output df/dx                                          
+
+      fx = ( fip1 - fim1 ) / 2d0
+      
+    end function fx
+
+    function fy(fjp1, fjm1) result(fy)
+
+      double precision, intent(in) :: fjp1, fjm1 ! jp1=j+1, jm1=j-1 
+      double precision             :: fy         ! output df/dx                     
+
+      fy = ( fjp1 - fjm1 ) / 2d0
+
+    end function fx
+
+    function fxy (fip1jp1, fim1jp1, fip1jm1, fim1jm1) result(fxy)
+
+      double precision, intent(in) :: fip1jp1, fim1jp1, fip1jm1, fim1jm1 ! input 
+      double precision             :: fxy    ! output                           
+                                                                                             
+      fxy = ( fip1jp1 - fim1jp1 - fip1jm1 + fim1jm1 ) / 4d0
+
+    end function fxy

@@ -90,7 +90,7 @@
       regularization = 'tanh'        ! tanh, Kreyscher, capping
       visc_method = 2                ! see viscousCoeff routine for details
       ini_guess  = 'previous time step' ! freedrift, previous time step
-      adv_scheme = 'upwind'       ! upwind, upwindRK2 
+      adv_scheme = 'upwind'          ! upwind, upwindRK2, semilag 
       IMEX       = 0                 ! 0:split in time, 1:Picard, 2:JFNK
       BDF         = 0                ! 0: back. Euler, 1: 2nd order back. diff. formula
       Dynamic    = .true.            ! ice model type
