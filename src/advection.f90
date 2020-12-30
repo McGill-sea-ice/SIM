@@ -38,12 +38,9 @@
       double precision                :: hstar(0:nx+1,0:ny+1), Astar(0:nx+1,0:ny+1)
       double precision                :: dFx(nx,ny), dFy(nx,ny)
       double precision                :: alphamx, alphamy
-      double precision                :: hsw, hnw, hne, hse
-      double precision                :: hxsw, hxnw, hxne, hxse, hysw, hynw, hyne, hyse
-      double precision                :: hxysw, hxynw, hxyne, hxyse
-      double precision                :: Asw, Anw, Ane, Ase
-      double precision                :: Axsw, Axnw, Axne, Axse, Aysw, Aynw, Ayne, Ayse
-      double precision                :: Axysw, Axynw, Axyne, Axyse
+      double precision                :: fsw, fnw, fne, fse
+      double precision                :: fxsw, fxnw, fxne, fxse, fysw, fynw, fyne, fyse
+      double precision                :: fxysw, fxynw, fxyne, fxyse
 
 !------------------------------------------------------------------------ 
 !     set dhin/dx, dAin/dx = 0 at the outside cell when there is an open bc 
@@ -372,9 +369,59 @@
             endif
          endif         
 
-! 2) set 4 corners values and compute derivatives required for cubic interpolation
-         hsw=
-         
+! 2a) find hbef using cubic interpolation 
+
+! PREPARATION: set 4 corners values and compute derivatives required for cubic interpolation
+
+         fsw=hn2in(isw,jsw)
+         fnw=hn2in(inw,jnw)
+         fne=hn2in(ine,jne)
+         fse=hn2in(ise,jse)
+         fxsw=fx(hn2in(isw+1,jsw), hn2in(isw-1,jsw))
+         fxnw=fx(hn2in(inw+1,jnw), hn2in(inw-1,jnw))
+         fxne=fx(hn2in(ine+1,jne), hn2in(ine-1,jne))
+         fxse=fx(hn2in(ise+1,jse), hn2in(ise-1,jse))
+         fysw=fy(hn2in(isw,jsw+1), hn2in(isw,jsw-1))
+         fynw=fy(hn2in(inw,jnw+1), hn2in(inw,jnw-1))
+         fyne=fy(hn2in(ine,jne+1), hn2in(ine,jne-1))
+         fyse=fy(hn2in(ise,jse+1), hn2in(ise,jse-1))
+         fxysw=fxy(hn2in(isw+1,jsw+1), hn2in(isw-1,jsw+1), hn2in(isw+1,jsw-1), hn2in(isw-1,jsw-1))
+         fxynw=fxy(hn2in(inw+1,jnw+1), hn2in(inw-1,jnw+1), hn2in(inw+1,jnw-1), hn2in(inw-1,jnw-1))
+         fxyne=fxy(hn2in(ine+1,jne+1), hn2in(ine-1,jne+1), hn2in(ine+1,jne-1), hn2in(ine-1,jne-1))
+         fxyse=fxy(hn2in(ise+1,jse+1), hn2in(ise-1,jse+1), hn2in(ise+1,jse-1), hn2in(ise-1,jse-1))
+      
+         hbef=cubic_interp( fsw,  fnw,  fne,  fse,   &
+                            fxsw, fxnw, fxne, fxse,  &
+                            fysw, fynw, fyne, fyse,  &
+                            fxysw,fxynw,fxyne,fxyse, &
+                            alphamx, alphamy )
+
+! 2b) find Abef using cubic interpolation                                                                    
+
+! PREPARATION: set 4 corners values and compute derivatives required for cubic interpolation 
+
+         fsw=An2in(isw,jsw)
+         fnw=An2in(inw,jnw)
+         fne=An2in(ine,jne)
+         fse=An2in(ise,jse)
+         fxsw=fx(An2in(isw+1,jsw), An2in(isw-1,jsw))
+         fxnw=fx(An2in(inw+1,jnw), An2in(inw-1,jnw))
+         fxne=fx(An2in(ine+1,jne), An2in(ine-1,jne))
+         fxse=fx(An2in(ise+1,jse), An2in(ise-1,jse))
+         fysw=fy(An2in(isw,jsw+1), An2in(isw,jsw-1))
+         fynw=fy(An2in(inw,jnw+1), An2in(inw,jnw-1))
+         fyne=fy(An2in(ine,jne+1), An2in(ine,jne-1))
+         fyse=fy(An2in(ise,jse+1), An2in(ise,jse-1))
+         fxysw=fxy(An2in(isw+1,jsw+1), An2in(isw-1,jsw+1), An2in(isw+1,jsw-1), An2in(isw-1,jsw-1))
+         fxynw=fxy(An2in(inw+1,jnw+1), An2in(inw-1,jnw+1), An2in(inw+1,jnw-1), An2in(inw-1,jnw-1))
+         fxyne=fxy(An2in(ine+1,jne+1), An2in(ine-1,jne+1), An2in(ine+1,jne-1), An2in(ine-1,jne-1))
+         fxyse=fxy(An2in(ise+1,jse+1), An2in(ise-1,jse+1), An2in(ise+1,jse-1), An2in(ise-1,jse-1))
+
+         Abef=cubic_interp( fsw,  fnw,  fne,  fse,   &
+                            fxsw, fxnw, fxne, fxse,  &
+                            fysw, fynw, fyne, fyse,  &
+                            fxysw,fxynw,fxyne,fxyse, &
+                            alphamx, alphamy )
 
       endif
       
@@ -483,3 +530,30 @@
       fxy = ( fip1jp1 - fim1jp1 - fip1jm1 + fim1jm1 ) / 4d0
 
     end function fxy
+
+    function cubic_interp ( fsw,  fnw,  fne,  fse,   &
+                            fxsw, fxnw, fxne, fxse,  &
+                            fysw, fynw, fyne, fyse,  &
+                            fxysw,fxynw,fxyne,fxyse, &
+                            alphamx, alphamy ) result(finterp)
+
+      double precision, intent(in) :: fsw, fnw, fne, fse         ! input
+      double precision, intent(in) :: fxsw, fxnw, fxne, fxse     ! input
+      double precision, intent(in) :: fysw, fynw, fyne, fyse     ! input
+      double precision, intent(in) :: fxysw, fxynw, fxyne, fxyse ! input  
+      double precision, intent(in) :: alpnamx, alphamy           ! input
+      double precision             :: finterp                    ! output    
+      
+      double precision a00, a10, a20, a30, a01, a11, a21, a31, a02, a12, a22, a32, a03, a13, a23, a33
+
+      a00 = fsw
+      a10 = fxsw
+      a20 = -3d0*fsw + 3d0*fse -2d0*fxsw -1d0*fxse
+      a30 = 2d0*fsw -2d0*fse + fxsw + fxse
+      a01 = fysw
+      a11 = 
+     
+      
+      
+
+    end function cubic_interp
