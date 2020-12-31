@@ -28,7 +28,7 @@
       include 'CB_mask.h'
       include 'CB_options.h'
 
-      integer i, j
+      integer i, j, k
       integer isw, jsw, inw, jnw, ine, jne, ise, jse !SL SouthWest=sw, nw, ne, se corners
       double precision, intent(in)    :: upts(0:nx+2,0:ny+2), vpts(0:nx+2,0:ny+2)
       double precision, intent(in)    :: utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
@@ -37,7 +37,7 @@
       double precision                :: ustar(0:nx+2,0:ny+2), vstar(0:nx+2,0:ny+2)
       double precision                :: hstar(0:nx+1,0:ny+1), Astar(0:nx+1,0:ny+1)
       double precision                :: dFx(nx,ny), dFy(nx,ny)
-      double precision                :: alphamx, alphamy
+      double precision                :: alphamx, alphamy, xd, yd
       double precision                :: fsw, fnw, fne, fse
       double precision                :: fxsw, fxnw, fxne, fxse, fysw, fynw, fyne, fyse
       double precision                :: fxysw, fxynw, fxyne, fxyse
@@ -320,14 +320,25 @@
 !------------------------------------------------------------------------  
 ! find velocity at x-alphamx, y-alphamy  and t=n1
 !------------------------------------------------------------------------
-         
+        alphamx=0.01d0 ! initial value
+        alphamy=0.01d0 ! initial value
+
+        do k = 1, 5
+           um = (un1(i+1)+un1(i))/2d0 - (un1(i+1)-un1(i))*alpham/Deltax
+           if (order .gt. 1 .and. i .gt. 1 .and. i .lt. nx) then ! O2...O3 not coded yet  
+              um=um + (alpham**2d0)*(un1(i+2)-un1(i+1)-un1(i)+un1(i-1))/(4d0*Deltax2)
+           endif
+           alpham=Deltat*um
+        enddo
 !------------------------------------------------------------------------
 ! find hbef and Abef (initial position of particle at time level n-2=n2)
 !------------------------------------------------------------------------
 
 ! 1) identify coordinates of 4 corners
+! xd and yd are distances in the interval [0,1]. They are calc from the sw corner 
 
          if (alphamx .ge. 0) then  ! particle coming from the West (u .ge. 0)
+            xd = 1d0 - 2d0*alphamx / Deltax
             if (alphamy .ge. 0) then ! particle coming from the South (v .ge. 0)
                isw=i-1
                jsw=j-1
@@ -337,6 +348,7 @@
                jne=j
                ise=i
                jse=j-1
+               yd = 1d0 - 2d0*alphamy / Deltax
             else                     ! particle coming from the North (v .lt. 0)
                isw=i-1
                jsw=j
@@ -346,8 +358,10 @@
                jne=j+1
                ise=i
                jse=j
+               yd = -2d0*alphamy / Deltax
             endif
          else                      ! particle coming from the East (u .lt. 0) 
+            xd = -2d0*alphamx / Deltax
             if (alphamy .ge. 0) then ! particle coming from the South (v .ge. 0)                             
                isw=i
                jsw=j-1
@@ -357,6 +371,7 @@
                jne=j
                ise=i+1
                jse=j-1
+               yd = 1d0 - 2d0*alphamy / Deltax
             else                     ! particle coming from the North (v .lt. 0) 
                isw=i
                jsw=j
@@ -366,6 +381,7 @@
                jne=j+1
                ise=i+1
                jse=j
+               yd = -2d0*alphamy / Deltax
             endif
          endif         
 
@@ -394,7 +410,7 @@
                             fxsw, fxnw, fxne, fxse,  &
                             fysw, fynw, fyne, fyse,  &
                             fxysw,fxynw,fxyne,fxyse, &
-                            alphamx, alphamy )
+                            xd, yd )
 
 ! 2b) find Abef using cubic interpolation                                                                    
 
@@ -421,7 +437,7 @@
                             fxsw, fxnw, fxne, fxse,  &
                             fysw, fynw, fyne, fyse,  &
                             fxysw,fxynw,fxyne,fxyse, &
-                            alphamx, alphamy )
+                            xd, yd )
 
       endif
       
@@ -535,25 +551,60 @@
                             fxsw, fxnw, fxne, fxse,  &
                             fysw, fynw, fyne, fyse,  &
                             fxysw,fxynw,fxyne,fxyse, &
-                            alphamx, alphamy ) result(finterp)
+                            xd, yd ) result(finterp)
+
+    !-------------------------------------------------------------
+    ! cubic interpolation in a square of size 1x1.
+    ! https://en.wikipedia.org/wiki/Bicubic_interpolation
+    !
+    !     (0,1)------(1,1)
+    !       |          |
+    !       |          |
+    !       |          |
+    !       |          |
+    !     (0,0)------(1,0)
+    !
+    ! (0,0) = SouthWest (sw)
+    ! (0,1) = NorthWest (nw)
+    ! (1,1) = NorthEast (ne)
+    ! (1,0) = SouthEast (se)
+    !
+    ! xd and yd are distances [0,1] from thea sw corner
+    !-------------------------------------------------------------
 
       double precision, intent(in) :: fsw, fnw, fne, fse         ! input
       double precision, intent(in) :: fxsw, fxnw, fxne, fxse     ! input
       double precision, intent(in) :: fysw, fynw, fyne, fyse     ! input
       double precision, intent(in) :: fxysw, fxynw, fxyne, fxyse ! input  
-      double precision, intent(in) :: alpnamx, alphamy           ! input
+      double precision, intent(in) :: xd, yd                     ! input
       double precision             :: finterp                    ! output    
       
       double precision a00, a10, a20, a30, a01, a11, a21, a31, a02, a12, a22, a32, a03, a13, a23, a33
 
       a00 = fsw
       a10 = fxsw
-      a20 = -3d0*fsw + 3d0*fse -2d0*fxsw -1d0*fxse
-      a30 = 2d0*fsw -2d0*fse + fxsw + fxse
+      a20 = -3d0*fsw + 3d0*fse - 2d0*fxsw - fxse
+      a30 = 2d0*fsw - 2d0*fse + fxsw + fxse
       a01 = fysw
-      a11 = 
-     
-      
-      
+      a11 = fxysw
+      a21 = -3d0*fysw + 3d0*fyse -2d0*fxysw - fxyse
+      a31 = 2d0*fysw - 2d0*fyse + fxysw + fxyse
+      a02 = -3d0*fsw + 3d0*fnw -2d0*fysw - fynw
+      a12 = -3d0*fxsw + 3d0*fxnw -2d0*fxysw - fxynw
+      a22 = 9d0*fsw - 9d0*fse - 9d0*fnw + 9d0*fne + 6d0*fxsw + 3d0*fxse - 6d0*fxnw - 3d0fxne + &
+            6d0*fysw - 6d0*fyse + 3d0*fynw - 3d0*fyne + 4d0*fxysw + 2d0*fxyse + 2d0*fxynw + fxyne
+      a32 = -6d0*fsw + 6d0*fse + 6d0*fnw - 6d0*fne - 3d0*fxsw - 3d0*fxse + 3d0*fxnw + 3d0fxne - &
+            4d0*fysw + 4d0*fyse - 2d0*fynw + 2d0*fyne - 2d0*fxysw - 2d0*fxyse - fxynw - fxyne
+      a03 = 2d0*fsw - 2d0*fnw + fysw + fxnw
+      a13 = 2d0*fxsw - 2d0*fxnw + fxysw + fxynw
+      a23 = -6d0*fsw + 6d0*fse + 6d0*fnw - 6d0*fne - 4d0*fxsw - 2d0*fxse + 4d0*fxnw + 2d0fxne - &
+            3d0*fysw + 3d0*fyse - 3d0*fynw + 3d0*fyne - 2d0*fxysw - fxyse - 2d0*fxynw - fxyne
+      a33 = 4d0*fsw - 4d0*fse - 4d0*fnw + 4d0*fne + 2d0*fxsw + 2d0*fxse - 2d0*fxnw - 2d0fxne + &
+            2d0*fysw - 2d0*fyse + 2d0*fynw - 2d0*fyne + fxysw + fxyse + fxynw + fxyne
+
+      finterp = a00 + a01*yd + a02*(yd**2) + a03*(yd**3) + &
+                a10*xd + a11*xd*yd + a12*xd*(yd**2) + a13*xd*(yd**3) + &
+                a20*(xd**2) + a21*(xd**2)*yd + a22*(xd**2)*(yd**2) + a23*(xd**2)*(yd**3) + &
+                a30*(xd**3) + a31*(xd**3)*yd + a32*(xd**3)*(yd**2) + a33*(xd**3)*(yd**3) + &
 
     end function cubic_interp
