@@ -19,7 +19,7 @@
 !
 !************************************************************************
 
-      subroutine advection ( upts, vpts, utp, vtp, hin, Ain, hout, Aout )
+      subroutine advection ( utpn1, vtpn1, utp, vtp, hin, Ain, hout, Aout )
 
       implicit none
 
@@ -28,16 +28,16 @@
       include 'CB_mask.h'
       include 'CB_options.h'
 
-      integer i, j, k
+      integer i, j, k, caseSL, summask, iloc, jloc
       integer isw, jsw, inw, jnw, ine, jne, ise, jse !SL SouthWest=sw, nw, ne, se corners
-      double precision, intent(in)    :: upts(0:nx+2,0:ny+2), vpts(0:nx+2,0:ny+2)
+      double precision, intent(in)    :: utpn1(0:nx+2,0:ny+2), vtpn1(0:nx+2,0:ny+2)
       double precision, intent(in)    :: utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
       double precision, intent(inout) :: hin(0:nx+1,0:ny+1), Ain(0:nx+1,0:ny+1)
       double precision, intent(out)   :: hout(0:nx+1,0:ny+1), Aout(0:nx+1,0:ny+1)
       double precision                :: ustar(0:nx+2,0:ny+2), vstar(0:nx+2,0:ny+2)
       double precision                :: hstar(0:nx+1,0:ny+1), Astar(0:nx+1,0:ny+1)
       double precision                :: dFx(nx,ny), dFy(nx,ny)
-      double precision                :: alphamx, alphamy, xd, yd
+      double precision                :: alphamx, alphamy, xd, yd, uinterp, vinterp, ftp
       double precision                :: fsw, fnw, fne, fse
       double precision                :: fxsw, fxnw, fxne, fxse, fysw, fynw, fyne, fyse
       double precision                :: fxysw, fxynw, fxyne, fxyse
@@ -153,8 +153,8 @@
 !     predictor: compute the difference of the flux for thickness 
 !------------------------------------------------------------------------
 
-         call calc_dFx (upts, hin, dFx)
-         call calc_dFy (vpts, hin, dFy)
+         call calc_dFx (utpn1, hin, dFx)
+         call calc_dFy (vtpn1, hin, dFy)
 
 !------------------------------------------------------------------------
 !     predictor: update the thickness values
@@ -178,8 +178,8 @@
 !     predictor: compute the difference of the flux for concentration   
 !------------------------------------------------------------------------                  
 
-         call calc_dFx (upts, Ain, dFx)
-         call calc_dFy (vpts, Ain, dFy)
+         call calc_dFx (utpn1, Ain, dFx)
+         call calc_dFy (vtpn1, Ain, dFy)
 
 !------------------------------------------------------------------------ 
 !     predictor: update the concentration values      
@@ -256,8 +256,8 @@
 !     corrector: compute the difference of the flux for thickness 
 !------------------------------------------------------------------------
   
-         ustar = ( upts + utp ) / 2d0
-         vstar = ( vpts + vtp ) / 2d0
+         ustar = ( utpn1 + utp ) / 2d0
+         vstar = ( vtpn1 + vtp ) / 2d0
 
          call calc_dFx (ustar, hstar, dFx)
          call calc_dFy (vstar, hstar, dFy)
@@ -316,20 +316,110 @@
 !     Pellerin et al, Monthly Weather Review 1995. 
 !
 !------------------------------------------------------------------------ 
-  
+
+! caseSL=3 : no advection (land)
+! caseSL=  : IMPROVE THIS
+         
+         do i = 1, nx
+            do j = 1, ny
+               caseSL=3
+               if (maskC(i,j) .eq. 1) then
+                  caseSL=1 ! SL
+                  if (i .lt. 3 .or. i .gt. nx-2 .or. j .lt. 3 .or. j .gt. ny-2) then
+                     caseSL=2 ! upwind
+                  else
+                     do jloc=j-2, j+2
+                        do iloc=i-2, i+2
+                           if (maskC(iloc,jloc) .eq. 0) caseSL=2 ! upwind
+                        enddo
+                     enddo
+                  endif
+               endif
+
+! METTRE LES ENDDOs
+
 !------------------------------------------------------------------------  
-! find velocity at x-alphamx, y-alphamy  and t=n1
+! find distances alphamx and alphamy of particle from tracer(i,j) at t=n-1
 !------------------------------------------------------------------------
         alphamx=0.01d0 ! initial value
         alphamy=0.01d0 ! initial value
 
-        do k = 1, 5
-           um = (un1(i+1)+un1(i))/2d0 - (un1(i+1)-un1(i))*alpham/Deltax
-           if (order .gt. 1 .and. i .gt. 1 .and. i .lt. nx) then ! O2...O3 not coded yet  
-              um=um + (alpham**2d0)*(un1(i+2)-un1(i+1)-un1(i)+un1(i-1))/(4d0*Deltax2)
-           endif
-           alpham=Deltat*um
-        enddo
+        do k = 1, 5 ! implicit loop to find alphamx and alphamy
+
+           xd = 0.5d0 - alphamx / Deltax ! same wether alphamx is + or -
+           yd = 0.5d0 - alphamy / Deltax
+
+!--- interpolate u at x-alphaxm, y-alphamy
+
+           fsw = ( utpn1(i,j) + utpn1(i,j-1) ) / 2d0 
+           fnw = ( utpn1(i,j+1) + utpn1(i,j) ) / 2d0
+           fne = ( utpn1(i+1,j+1) + utpn1(i+1,j) ) / 2d0
+           fse = ( utpn1(i+1,j) + utpn1(i+1,j-1) ) / 2d0
+
+           ftp= ( utpn1(i-1,j) + utpn1(i-1,j-1) ) / 2d0
+           fxsw=fx(fse, ftp, 2d0)
+           ftp= ( utpn1(i-1,j+1) + utpn1(i-1,j) ) / 2d0
+           fxnw=fx(fne, ftp, 2d0)
+           ftp= ( utpn1(i+2,j+1) + utpn1(i+2,j) ) / 2d0
+           fxne=fx(ftp, fnw, 2d0)
+           ftp= ( utpn1(i+2,j) + utpn1(i+2,j-1) ) / 2d0
+           fxse=fx(ftp, fsw, 2d0)
+
+           fysw=fy(utpn1(i,j), utpn1(i,j-1), 1d0)
+           fynw=fy(utpn1(i,j+1), utpn1(i,j), 1d0)
+           fyne=fy(utpn1(i+1,j+1), utpn1(i+1,j), 1d0)
+           fyse=fy(utpn1(i+1,j), utpn1(i+1,j-1), 1d0)
+
+           fxysw=fxy(utpn1(i+1,j), utpn1(i-1,j), utpn1(i+1,j-1), utpn1(i-1,j-1), 2d0)
+           fxynw=fxy(utpn1(i+1,j+1), utpn1(i-1,j+1), utpn1(i+1,j), utpn1(i-1,j), 2d0)
+           fxyne=fxy(utpn1(i+2,j+1), utpn1(i,j+1), utpn1(i+2,j), utpn1(i,j), 2d0)
+           fxyse=fxy(utpn1(i+2,j), utpn1(i,j), utpn1(i+2,j-1), utpn1(i,j-1), 2d0)
+
+           uinterp=cubic_interp( fsw,  fnw,  fne,  fse,   &
+                                 fxsw, fxnw, fxne, fxse,  &
+                                 fysw, fynw, fyne, fyse,  &
+                                 fxysw,fxynw,fxyne,fxyse, &
+                                 xd, yd )
+
+!--- interpolate v at x-alphaxm, y-alphamy                                                           
+
+           fsw = ( vtpn1(i,j) + vtpn1(i-1,j) ) / 2d0
+           fnw = ( vtpn1(i,j+1) + vtpn1(i-1,j+1) ) / 2d0
+           fne = ( vtpn1(i,j+1) + vtpn1(i+1,j+1) ) / 2d0
+           fse = ( vtpn1(i+1,j) + vtpn1(i,j) ) / 2d0
+
+           fxsw=fx(vtpn1(i,j), vtpn1(i-1,j), 1d0)
+           fxnw=fx(vtpn1(i,j+1), vtpn1(i-1,j+1), 1d0)
+           fxne=fx(vtpn1(i+1,j+1), vtpn1(i,j+1), 1d0)
+           fxse=fx(vtpn1(i+1,j), vtpn1(i,j), 1d0)
+
+           ftp= ( vtpn1(i,j-1) + vtpn1(i-1,j-1) ) / 2d0
+           fysw=fy(fnw, ftp, 2d0)
+           ftp= ( vtpn1(i,j+2) + vtpn1(i-1,j+2) ) / 2d0
+           fynw=fy(ftp, fsw, 2d0)
+           ftp= ( vtpn1(i+1,j+2) + vtpn1(i,j+2) ) / 2d0
+           fyne=fy(ftp, fse, 2d0)
+           ftp= ( vtpn1(i+1,j-1) + vtpn1(i,j-1) ) / 2d0
+           fyse=fy(fne, ftp, 2d0)
+
+           fxysw=fxy(vtpn1(i,j+1), vtpn1(i-1,j+1), vtpn1(i,j-1), vtpn1(i-1,j-1), 2d0)
+           fxynw=fxy(vtpn1(i,j+2), vtpn1(i-1,j+2), vtpn1(i,j), vtpn1(i-1,j), 2d0)
+           fxyne=fxy(vtpn1(i+1,j+2), vtpn1(i,j+2), vtpn1(i+1,j), vtpn1(i,j), 2d0)
+           fxyse=fxy(vtpn1(i+1,j+1), vtpn1(i,j+1), vtpn1(i+1,j-1), vtpn1(i,j-1), 2d0)
+
+           vinterp=cubic_interp( fsw,  fnw,  fne,  fse,   &
+                                 fxsw, fxnw, fxne, fxse,  &
+                                 fysw, fynw, fyne, fyse,  &
+                                 fxysw,fxynw,fxyne,fxyse, &
+                                 xd, yd )
+
+! Can I use the latest alphamx to get vinterp and then alphamy???                                 
+! (kind of Gauss-Seidel vs Jacobi) ...move it after uinterp
+
+           alphamx=Deltat*uinterp
+           alphamy=Deltat*vinterp
+
+      enddo
 !------------------------------------------------------------------------
 ! find hbef and Abef (initial position of particle at time level n-2=n2)
 !------------------------------------------------------------------------
@@ -393,18 +483,18 @@
          fnw=hn2in(inw,jnw)
          fne=hn2in(ine,jne)
          fse=hn2in(ise,jse)
-         fxsw=fx(hn2in(isw+1,jsw), hn2in(isw-1,jsw))
-         fxnw=fx(hn2in(inw+1,jnw), hn2in(inw-1,jnw))
-         fxne=fx(hn2in(ine+1,jne), hn2in(ine-1,jne))
-         fxse=fx(hn2in(ise+1,jse), hn2in(ise-1,jse))
-         fysw=fy(hn2in(isw,jsw+1), hn2in(isw,jsw-1))
-         fynw=fy(hn2in(inw,jnw+1), hn2in(inw,jnw-1))
-         fyne=fy(hn2in(ine,jne+1), hn2in(ine,jne-1))
-         fyse=fy(hn2in(ise,jse+1), hn2in(ise,jse-1))
-         fxysw=fxy(hn2in(isw+1,jsw+1), hn2in(isw-1,jsw+1), hn2in(isw+1,jsw-1), hn2in(isw-1,jsw-1))
-         fxynw=fxy(hn2in(inw+1,jnw+1), hn2in(inw-1,jnw+1), hn2in(inw+1,jnw-1), hn2in(inw-1,jnw-1))
-         fxyne=fxy(hn2in(ine+1,jne+1), hn2in(ine-1,jne+1), hn2in(ine+1,jne-1), hn2in(ine-1,jne-1))
-         fxyse=fxy(hn2in(ise+1,jse+1), hn2in(ise-1,jse+1), hn2in(ise+1,jse-1), hn2in(ise-1,jse-1))
+         fxsw=fx(hn2in(isw+1,jsw), hn2in(isw-1,jsw), 2d0)
+         fxnw=fx(hn2in(inw+1,jnw), hn2in(inw-1,jnw), 2d0)
+         fxne=fx(hn2in(ine+1,jne), hn2in(ine-1,jne), 2d0)
+         fxse=fx(hn2in(ise+1,jse), hn2in(ise-1,jse), 2d0)
+         fysw=fy(hn2in(isw,jsw+1), hn2in(isw,jsw-1), 2d0)
+         fynw=fy(hn2in(inw,jnw+1), hn2in(inw,jnw-1), 2d0)
+         fyne=fy(hn2in(ine,jne+1), hn2in(ine,jne-1), 2d0)
+         fyse=fy(hn2in(ise,jse+1), hn2in(ise,jse-1), 2d0)
+         fxysw=fxy(hn2in(isw+1,jsw+1), hn2in(isw-1,jsw+1), hn2in(isw+1,jsw-1), hn2in(isw-1,jsw-1), 4d0)
+         fxynw=fxy(hn2in(inw+1,jnw+1), hn2in(inw-1,jnw+1), hn2in(inw+1,jnw-1), hn2in(inw-1,jnw-1), 4d0)
+         fxyne=fxy(hn2in(ine+1,jne+1), hn2in(ine-1,jne+1), hn2in(ine+1,jne-1), hn2in(ine-1,jne-1), 4d0)
+         fxyse=fxy(hn2in(ise+1,jse+1), hn2in(ise-1,jse+1), hn2in(ise+1,jse-1), hn2in(ise-1,jse-1), 4d0)
       
          hbef=cubic_interp( fsw,  fnw,  fne,  fse,   &
                             fxsw, fxnw, fxne, fxse,  &
@@ -520,30 +610,35 @@
 
     end subroutine calc_dFy
 
-    function fx(fip1, fim1) result(fx)
+    function fx(fright, fleft, deno) result(fx)
       
-      double precision, intent(in) :: fip1, fim1 ! ip1=i+1, im1=i-1                                
+      double precision, intent(in) :: fright, fleft                                 
+      double precision, intent(in) :: deno
       double precision             :: fx         ! output df/dx                                          
 
-      fx = ( fip1 - fim1 ) / 2d0
+      fx = ( fright - fleft ) / deno
       
     end function fx
 
-    function fy(fjp1, fjm1) result(fy)
+    function fy(fup, fdown, deno) result(fy)
 
-      double precision, intent(in) :: fjp1, fjm1 ! jp1=j+1, jm1=j-1 
+      double precision, intent(in) :: fup, fdown 
+      double precision, intent(in) :: deno
       double precision             :: fy         ! output df/dx                     
 
-      fy = ( fjp1 - fjm1 ) / 2d0
+      fy = ( fup - fdown ) / deno
 
-    end function fx
+    end function fy
 
-    function fxy (fip1jp1, fim1jp1, fip1jm1, fim1jm1) result(fxy)
+    function fxy (fur, ful, fdr, fdl, deno) result(fxy)
 
-      double precision, intent(in) :: fip1jp1, fim1jp1, fip1jm1, fim1jm1 ! input 
+      double precision, intent(in) :: fur, ful, fdr, fdl
+      double precision, intent(in) :: deno
       double precision             :: fxy    ! output                           
-                                                                                             
-      fxy = ( fip1jp1 - fim1jp1 - fip1jm1 + fim1jm1 ) / 4d0
+                                                        
+    ! u:up, d:down, r:right, l:left
+                                     
+      fxy = ( fur - ful - fdr + fdl ) / deno
 
     end function fxy
 
