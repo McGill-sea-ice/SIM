@@ -686,15 +686,15 @@
       a31 = 2d0*fysw - 2d0*fyse + fxysw + fxyse
       a02 = -3d0*fsw + 3d0*fnw -2d0*fysw - fynw
       a12 = -3d0*fxsw + 3d0*fxnw -2d0*fxysw - fxynw
-      a22 = 9d0*fsw - 9d0*fse - 9d0*fnw + 9d0*fne + 6d0*fxsw + 3d0*fxse - 6d0*fxnw - 3d0fxne + &
+      a22 = 9d0*fsw - 9d0*fse - 9d0*fnw + 9d0*fne + 6d0*fxsw + 3d0*fxse - 6d0*fxnw - 3d0*fxne + &
             6d0*fysw - 6d0*fyse + 3d0*fynw - 3d0*fyne + 4d0*fxysw + 2d0*fxyse + 2d0*fxynw + fxyne
-      a32 = -6d0*fsw + 6d0*fse + 6d0*fnw - 6d0*fne - 3d0*fxsw - 3d0*fxse + 3d0*fxnw + 3d0fxne - &
+      a32 = -6d0*fsw + 6d0*fse + 6d0*fnw - 6d0*fne - 3d0*fxsw - 3d0*fxse + 3d0*fxnw + 3d0*fxne - &
             4d0*fysw + 4d0*fyse - 2d0*fynw + 2d0*fyne - 2d0*fxysw - 2d0*fxyse - fxynw - fxyne
-      a03 = 2d0*fsw - 2d0*fnw + fysw + fxnw
+      a03 = 2d0*fsw - 2d0*fnw + fysw + fynw
       a13 = 2d0*fxsw - 2d0*fxnw + fxysw + fxynw
-      a23 = -6d0*fsw + 6d0*fse + 6d0*fnw - 6d0*fne - 4d0*fxsw - 2d0*fxse + 4d0*fxnw + 2d0fxne - &
+      a23 = -6d0*fsw + 6d0*fse + 6d0*fnw - 6d0*fne - 4d0*fxsw - 2d0*fxse + 4d0*fxnw + 2d0*fxne - &
             3d0*fysw + 3d0*fyse - 3d0*fynw + 3d0*fyne - 2d0*fxysw - fxyse - 2d0*fxynw - fxyne
-      a33 = 4d0*fsw - 4d0*fse - 4d0*fnw + 4d0*fne + 2d0*fxsw + 2d0*fxse - 2d0*fxnw - 2d0fxne + &
+      a33 = 4d0*fsw - 4d0*fse - 4d0*fnw + 4d0*fne + 2d0*fxsw + 2d0*fxse - 2d0*fxnw - 2d0*fxne + &
             2d0*fysw - 2d0*fyse + 2d0*fynw - 2d0*fyne + fxysw + fxyse + fxynw + fxyne
 
       finterp = a00 + a01*yd + a02*(yd**2) + a03*(yd**3) + &
