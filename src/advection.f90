@@ -1,3 +1,4 @@
+
 !***********************************************************************
 !     subroutine advection (upwind scheme or upwind-RungeKutta2):
 !       calculates the tracer quantities at the next time step. 
@@ -41,6 +42,7 @@
       double precision                :: fsw, fnw, fne, fse
       double precision                :: fxsw, fxnw, fxne, fxse, fysw, fynw, fyne, fyse
       double precision                :: fxysw, fxynw, fxyne, fxyse
+      double precision                :: fluxx, fluxy
 
 !------------------------------------------------------------------------ 
 !     set dhin/dx, dAin/dx = 0 at the outside cell when there is an open bc 
@@ -335,91 +337,91 @@
                      enddo
                   endif
                endif
-
-! METTRE LES ENDDOs
+               
+               if (caseSL == 1) then ! SL advection
 
 !------------------------------------------------------------------------  
 ! find distances alphamx and alphamy of particle from tracer(i,j) at t=n-1
 !------------------------------------------------------------------------
-        alphamx=0.01d0 ! initial value
-        alphamy=0.01d0 ! initial value
+                  alphamx=0.01d0 ! initial value
+                  alphamy=0.01d0 ! initial value
 
-        do k = 1, 5 ! implicit loop to find alphamx and alphamy
+                  do k = 1, 5 ! implicit loop to find alphamx and alphamy
 
-           xd = 0.5d0 - alphamx / Deltax ! same wether alphamx is + or -
-           yd = 0.5d0 - alphamy / Deltax
+                     xd = 0.5d0 - alphamx / Deltax ! same wether alphamx is + or -
+                     yd = 0.5d0 - alphamy / Deltax
 
 !--- interpolate u at x-alphaxm, y-alphamy
 
-           fsw = ( utpn1(i,j) + utpn1(i,j-1) ) / 2d0 
-           fnw = ( utpn1(i,j+1) + utpn1(i,j) ) / 2d0
-           fne = ( utpn1(i+1,j+1) + utpn1(i+1,j) ) / 2d0
-           fse = ( utpn1(i+1,j) + utpn1(i+1,j-1) ) / 2d0
+                     fsw = ( utpn1(i,j) + utpn1(i,j-1) ) / 2d0 
+                     fnw = ( utpn1(i,j+1) + utpn1(i,j) ) / 2d0
+                     fne = ( utpn1(i+1,j+1) + utpn1(i+1,j) ) / 2d0
+                     fse = ( utpn1(i+1,j) + utpn1(i+1,j-1) ) / 2d0
 
-           ftp= ( utpn1(i-1,j) + utpn1(i-1,j-1) ) / 2d0
-           fxsw=fx(fse, ftp, 2d0)
-           ftp= ( utpn1(i-1,j+1) + utpn1(i-1,j) ) / 2d0
-           fxnw=fx(fne, ftp, 2d0)
-           ftp= ( utpn1(i+2,j+1) + utpn1(i+2,j) ) / 2d0
-           fxne=fx(ftp, fnw, 2d0)
-           ftp= ( utpn1(i+2,j) + utpn1(i+2,j-1) ) / 2d0
-           fxse=fx(ftp, fsw, 2d0)
+                     ftp= ( utpn1(i-1,j) + utpn1(i-1,j-1) ) / 2d0
+                     fxsw=fx(fse, ftp, 2d0)
+                     ftp= ( utpn1(i-1,j+1) + utpn1(i-1,j) ) / 2d0
+                     fxnw=fx(fne, ftp, 2d0)
+                     ftp= ( utpn1(i+2,j+1) + utpn1(i+2,j) ) / 2d0
+                     fxne=fx(ftp, fnw, 2d0)
+                     ftp= ( utpn1(i+2,j) + utpn1(i+2,j-1) ) / 2d0
+                     fxse=fx(ftp, fsw, 2d0)
 
-           fysw=fy(utpn1(i,j), utpn1(i,j-1), 1d0)
-           fynw=fy(utpn1(i,j+1), utpn1(i,j), 1d0)
-           fyne=fy(utpn1(i+1,j+1), utpn1(i+1,j), 1d0)
-           fyse=fy(utpn1(i+1,j), utpn1(i+1,j-1), 1d0)
+                     fysw=fy(utpn1(i,j), utpn1(i,j-1), 1d0)
+                     fynw=fy(utpn1(i,j+1), utpn1(i,j), 1d0)
+                     fyne=fy(utpn1(i+1,j+1), utpn1(i+1,j), 1d0)
+                     fyse=fy(utpn1(i+1,j), utpn1(i+1,j-1), 1d0)
 
-           fxysw=fxy(utpn1(i+1,j), utpn1(i-1,j), utpn1(i+1,j-1), utpn1(i-1,j-1), 2d0)
-           fxynw=fxy(utpn1(i+1,j+1), utpn1(i-1,j+1), utpn1(i+1,j), utpn1(i-1,j), 2d0)
-           fxyne=fxy(utpn1(i+2,j+1), utpn1(i,j+1), utpn1(i+2,j), utpn1(i,j), 2d0)
-           fxyse=fxy(utpn1(i+2,j), utpn1(i,j), utpn1(i+2,j-1), utpn1(i,j-1), 2d0)
+                     fxysw=fxy(utpn1(i+1,j), utpn1(i-1,j), utpn1(i+1,j-1), utpn1(i-1,j-1), 2d0)
+                     fxynw=fxy(utpn1(i+1,j+1), utpn1(i-1,j+1), utpn1(i+1,j), utpn1(i-1,j), 2d0)
+                     fxyne=fxy(utpn1(i+2,j+1), utpn1(i,j+1), utpn1(i+2,j), utpn1(i,j), 2d0)
+                     fxyse=fxy(utpn1(i+2,j), utpn1(i,j), utpn1(i+2,j-1), utpn1(i,j-1), 2d0)
 
-           uinterp=cubic_interp( fsw,  fnw,  fne,  fse,   &
-                                 fxsw, fxnw, fxne, fxse,  &
-                                 fysw, fynw, fyne, fyse,  &
-                                 fxysw,fxynw,fxyne,fxyse, &
-                                 xd, yd )
+                     uinterp=cubic_interp( fsw,  fnw,  fne,  fse,   &
+                          fxsw, fxnw, fxne, fxse,  &
+                          fysw, fynw, fyne, fyse,  &
+                          fxysw,fxynw,fxyne,fxyse, &
+                          xd, yd )
 
 !--- interpolate v at x-alphaxm, y-alphamy                                                           
 
-           fsw = ( vtpn1(i,j) + vtpn1(i-1,j) ) / 2d0
-           fnw = ( vtpn1(i,j+1) + vtpn1(i-1,j+1) ) / 2d0
-           fne = ( vtpn1(i,j+1) + vtpn1(i+1,j+1) ) / 2d0
-           fse = ( vtpn1(i+1,j) + vtpn1(i,j) ) / 2d0
+                     fsw = ( vtpn1(i,j) + vtpn1(i-1,j) ) / 2d0
+                     fnw = ( vtpn1(i,j+1) + vtpn1(i-1,j+1) ) / 2d0
+                     fne = ( vtpn1(i,j+1) + vtpn1(i+1,j+1) ) / 2d0
+                     fse = ( vtpn1(i+1,j) + vtpn1(i,j) ) / 2d0
 
-           fxsw=fx(vtpn1(i,j), vtpn1(i-1,j), 1d0)
-           fxnw=fx(vtpn1(i,j+1), vtpn1(i-1,j+1), 1d0)
-           fxne=fx(vtpn1(i+1,j+1), vtpn1(i,j+1), 1d0)
-           fxse=fx(vtpn1(i+1,j), vtpn1(i,j), 1d0)
+                     fxsw=fx(vtpn1(i,j), vtpn1(i-1,j), 1d0)
+                     fxnw=fx(vtpn1(i,j+1), vtpn1(i-1,j+1), 1d0)
+                     fxne=fx(vtpn1(i+1,j+1), vtpn1(i,j+1), 1d0)
+                     fxse=fx(vtpn1(i+1,j), vtpn1(i,j), 1d0)
 
-           ftp= ( vtpn1(i,j-1) + vtpn1(i-1,j-1) ) / 2d0
-           fysw=fy(fnw, ftp, 2d0)
-           ftp= ( vtpn1(i,j+2) + vtpn1(i-1,j+2) ) / 2d0
-           fynw=fy(ftp, fsw, 2d0)
-           ftp= ( vtpn1(i+1,j+2) + vtpn1(i,j+2) ) / 2d0
-           fyne=fy(ftp, fse, 2d0)
-           ftp= ( vtpn1(i+1,j-1) + vtpn1(i,j-1) ) / 2d0
-           fyse=fy(fne, ftp, 2d0)
+                     ftp= ( vtpn1(i,j-1) + vtpn1(i-1,j-1) ) / 2d0
+                     fysw=fy(fnw, ftp, 2d0)
+                     ftp= ( vtpn1(i,j+2) + vtpn1(i-1,j+2) ) / 2d0
+                     fynw=fy(ftp, fsw, 2d0)
+                     ftp= ( vtpn1(i+1,j+2) + vtpn1(i,j+2) ) / 2d0
+                     fyne=fy(ftp, fse, 2d0)
+                     ftp= ( vtpn1(i+1,j-1) + vtpn1(i,j-1) ) / 2d0
+                     fyse=fy(fne, ftp, 2d0)
 
-           fxysw=fxy(vtpn1(i,j+1), vtpn1(i-1,j+1), vtpn1(i,j-1), vtpn1(i-1,j-1), 2d0)
-           fxynw=fxy(vtpn1(i,j+2), vtpn1(i-1,j+2), vtpn1(i,j), vtpn1(i-1,j), 2d0)
-           fxyne=fxy(vtpn1(i+1,j+2), vtpn1(i,j+2), vtpn1(i+1,j), vtpn1(i,j), 2d0)
-           fxyse=fxy(vtpn1(i+1,j+1), vtpn1(i,j+1), vtpn1(i+1,j-1), vtpn1(i,j-1), 2d0)
+                     fxysw=fxy(vtpn1(i,j+1), vtpn1(i-1,j+1), vtpn1(i,j-1), vtpn1(i-1,j-1), 2d0)
+                     fxynw=fxy(vtpn1(i,j+2), vtpn1(i-1,j+2), vtpn1(i,j), vtpn1(i-1,j), 2d0)
+                     fxyne=fxy(vtpn1(i+1,j+2), vtpn1(i,j+2), vtpn1(i+1,j), vtpn1(i,j), 2d0)
+                     fxyse=fxy(vtpn1(i+1,j+1), vtpn1(i,j+1), vtpn1(i+1,j-1), vtpn1(i,j-1), 2d0)
 
-           vinterp=cubic_interp( fsw,  fnw,  fne,  fse,   &
-                                 fxsw, fxnw, fxne, fxse,  &
-                                 fysw, fynw, fyne, fyse,  &
-                                 fxysw,fxynw,fxyne,fxyse, &
-                                 xd, yd )
+                     vinterp=cubic_interp( fsw,  fnw,  fne,  fse,   &
+                          fxsw, fxnw, fxne, fxse,  &
+                          fysw, fynw, fyne, fyse,  &
+                          fxysw,fxynw,fxyne,fxyse, &
+                          xd, yd )
 
 ! Can I use the latest alphamx to get vinterp and then alphamy???                                 
 ! (kind of Gauss-Seidel vs Jacobi) ...move it after uinterp
 
-           alphamx=Deltat*uinterp
-           alphamy=Deltat*vinterp
+                     alphamx=Deltat*uinterp
+                     alphamy=Deltat*vinterp
 
-      enddo
+                  enddo
 !------------------------------------------------------------------------
 ! find hbef and Abef (initial position of particle at time level n-2=n2)
 !------------------------------------------------------------------------
@@ -427,109 +429,129 @@
 ! 1) identify coordinates of 4 corners
 ! xd and yd are distances in the interval [0,1]. They are calc from the sw corner 
 
-         if (alphamx .ge. 0) then  ! particle coming from the West (u .ge. 0)
-            xd = 1d0 - 2d0*alphamx / Deltax
-            if (alphamy .ge. 0) then ! particle coming from the South (v .ge. 0)
-               isw=i-1
-               jsw=j-1
-               inw=i-1
-               jnw=j
-               ine=i
-               jne=j
-               ise=i
-               jse=j-1
-               yd = 1d0 - 2d0*alphamy / Deltax
-            else                     ! particle coming from the North (v .lt. 0)
-               isw=i-1
-               jsw=j
-               inw=i-1
-               jnw=j+1
-               ine=i
-               jne=j+1
-               ise=i
-               jse=j
-               yd = -2d0*alphamy / Deltax
-            endif
-         else                      ! particle coming from the East (u .lt. 0) 
-            xd = -2d0*alphamx / Deltax
-            if (alphamy .ge. 0) then ! particle coming from the South (v .ge. 0)                             
-               isw=i
-               jsw=j-1
-               inw=i
-               jnw=j
-               ine=i+1
-               jne=j
-               ise=i+1
-               jse=j-1
-               yd = 1d0 - 2d0*alphamy / Deltax
-            else                     ! particle coming from the North (v .lt. 0) 
-               isw=i
-               jsw=j
-               inw=i
-               jnw=j+1
-               ine=i+1
-               jne=j+1
-               ise=i+1
-               jse=j
-               yd = -2d0*alphamy / Deltax
-            endif
-         endif         
+                  if (alphamx .ge. 0) then  ! particle coming from the West (u .ge. 0)
+                     xd = 1d0 - 2d0*alphamx / Deltax
+                     if (alphamy .ge. 0) then ! particle coming from the South (v .ge. 0)
+                        isw=i-1
+                        jsw=j-1
+                        inw=i-1
+                        jnw=j
+                        ine=i
+                        jne=j
+                        ise=i
+                        jse=j-1
+                        yd = 1d0 - 2d0*alphamy / Deltax
+                     else                     ! particle coming from the North (v .lt. 0)
+                        isw=i-1
+                        jsw=j
+                        inw=i-1
+                        jnw=j+1
+                        ine=i
+                        jne=j+1
+                        ise=i
+                        jse=j
+                        yd = -2d0*alphamy / Deltax
+                     endif
+                  else                      ! particle coming from the East (u .lt. 0) 
+                     xd = -2d0*alphamx / Deltax
+                     if (alphamy .ge. 0) then ! particle coming from the South (v .ge. 0)                             
+                        isw=i
+                        jsw=j-1
+                        inw=i
+                        jnw=j
+                        ine=i+1
+                        jne=j
+                        ise=i+1
+                        jse=j-1
+                        yd = 1d0 - 2d0*alphamy / Deltax
+                     else                     ! particle coming from the North (v .lt. 0) 
+                        isw=i
+                        jsw=j
+                        inw=i
+                        jnw=j+1
+                        ine=i+1
+                        jne=j+1
+                        ise=i+1
+                        jse=j
+                        yd = -2d0*alphamy / Deltax
+                     endif
+                  endif
 
 ! 2a) find hbef using cubic interpolation 
 
 ! PREPARATION: set 4 corners values and compute derivatives required for cubic interpolation
 
-         fsw=hn2in(isw,jsw)
-         fnw=hn2in(inw,jnw)
-         fne=hn2in(ine,jne)
-         fse=hn2in(ise,jse)
-         fxsw=fx(hn2in(isw+1,jsw), hn2in(isw-1,jsw), 2d0)
-         fxnw=fx(hn2in(inw+1,jnw), hn2in(inw-1,jnw), 2d0)
-         fxne=fx(hn2in(ine+1,jne), hn2in(ine-1,jne), 2d0)
-         fxse=fx(hn2in(ise+1,jse), hn2in(ise-1,jse), 2d0)
-         fysw=fy(hn2in(isw,jsw+1), hn2in(isw,jsw-1), 2d0)
-         fynw=fy(hn2in(inw,jnw+1), hn2in(inw,jnw-1), 2d0)
-         fyne=fy(hn2in(ine,jne+1), hn2in(ine,jne-1), 2d0)
-         fyse=fy(hn2in(ise,jse+1), hn2in(ise,jse-1), 2d0)
-         fxysw=fxy(hn2in(isw+1,jsw+1), hn2in(isw-1,jsw+1), hn2in(isw+1,jsw-1), hn2in(isw-1,jsw-1), 4d0)
-         fxynw=fxy(hn2in(inw+1,jnw+1), hn2in(inw-1,jnw+1), hn2in(inw+1,jnw-1), hn2in(inw-1,jnw-1), 4d0)
-         fxyne=fxy(hn2in(ine+1,jne+1), hn2in(ine-1,jne+1), hn2in(ine+1,jne-1), hn2in(ine-1,jne-1), 4d0)
-         fxyse=fxy(hn2in(ise+1,jse+1), hn2in(ise-1,jse+1), hn2in(ise+1,jse-1), hn2in(ise-1,jse-1), 4d0)
+                  fsw=hn2in(isw,jsw)
+                  fnw=hn2in(inw,jnw)
+                  fne=hn2in(ine,jne)
+                  fse=hn2in(ise,jse)
+                  fxsw=fx(hn2in(isw+1,jsw), hn2in(isw-1,jsw), 2d0)
+                  fxnw=fx(hn2in(inw+1,jnw), hn2in(inw-1,jnw), 2d0)
+                  fxne=fx(hn2in(ine+1,jne), hn2in(ine-1,jne), 2d0)
+                  fxse=fx(hn2in(ise+1,jse), hn2in(ise-1,jse), 2d0)
+                  fysw=fy(hn2in(isw,jsw+1), hn2in(isw,jsw-1), 2d0)
+                  fynw=fy(hn2in(inw,jnw+1), hn2in(inw,jnw-1), 2d0)
+                  fyne=fy(hn2in(ine,jne+1), hn2in(ine,jne-1), 2d0)
+                  fyse=fy(hn2in(ise,jse+1), hn2in(ise,jse-1), 2d0)
+                  fxysw=fxy(hn2in(isw+1,jsw+1),hn2in(isw-1,jsw+1),hn2in(isw+1,jsw-1),hn2in(isw-1,jsw-1),4d0)
+                  fxynw=fxy(hn2in(inw+1,jnw+1),hn2in(inw-1,jnw+1),hn2in(inw+1,jnw-1),hn2in(inw-1,jnw-1),4d0)
+                  fxyne=fxy(hn2in(ine+1,jne+1),hn2in(ine-1,jne+1),hn2in(ine+1,jne-1),hn2in(ine-1,jne-1),4d0)
+                  fxyse=fxy(hn2in(ise+1,jse+1),hn2in(ise-1,jse+1),hn2in(ise+1,jse-1),hn2in(ise-1,jse-1),4d0)
       
-         hbef=cubic_interp( fsw,  fnw,  fne,  fse,   &
-                            fxsw, fxnw, fxne, fxse,  &
-                            fysw, fynw, fyne, fyse,  &
-                            fxysw,fxynw,fxyne,fxyse, &
-                            xd, yd )
+                  hbef=cubic_interp( fsw,  fnw,  fne,  fse,   &
+                       fxsw, fxnw, fxne, fxse,  &
+                       fysw, fynw, fyne, fyse,  &
+                       fxysw,fxynw,fxyne,fxyse, &
+                       xd, yd )
 
 ! 2b) find Abef using cubic interpolation                                                                    
 
 ! PREPARATION: set 4 corners values and compute derivatives required for cubic interpolation 
 
-         fsw=An2in(isw,jsw)
-         fnw=An2in(inw,jnw)
-         fne=An2in(ine,jne)
-         fse=An2in(ise,jse)
-         fxsw=fx(An2in(isw+1,jsw), An2in(isw-1,jsw))
-         fxnw=fx(An2in(inw+1,jnw), An2in(inw-1,jnw))
-         fxne=fx(An2in(ine+1,jne), An2in(ine-1,jne))
-         fxse=fx(An2in(ise+1,jse), An2in(ise-1,jse))
-         fysw=fy(An2in(isw,jsw+1), An2in(isw,jsw-1))
-         fynw=fy(An2in(inw,jnw+1), An2in(inw,jnw-1))
-         fyne=fy(An2in(ine,jne+1), An2in(ine,jne-1))
-         fyse=fy(An2in(ise,jse+1), An2in(ise,jse-1))
-         fxysw=fxy(An2in(isw+1,jsw+1), An2in(isw-1,jsw+1), An2in(isw+1,jsw-1), An2in(isw-1,jsw-1))
-         fxynw=fxy(An2in(inw+1,jnw+1), An2in(inw-1,jnw+1), An2in(inw+1,jnw-1), An2in(inw-1,jnw-1))
-         fxyne=fxy(An2in(ine+1,jne+1), An2in(ine-1,jne+1), An2in(ine+1,jne-1), An2in(ine-1,jne-1))
-         fxyse=fxy(An2in(ise+1,jse+1), An2in(ise-1,jse+1), An2in(ise+1,jse-1), An2in(ise-1,jse-1))
+                  fsw=An2in(isw,jsw)
+                  fnw=An2in(inw,jnw)
+                  fne=An2in(ine,jne)
+                  fse=An2in(ise,jse)
+                  fxsw=fx(An2in(isw+1,jsw), An2in(isw-1,jsw), 2d0)
+                  fxnw=fx(An2in(inw+1,jnw), An2in(inw-1,jnw), 2d0)
+                  fxne=fx(An2in(ine+1,jne), An2in(ine-1,jne), 2d0)
+                  fxse=fx(An2in(ise+1,jse), An2in(ise-1,jse), 2d0)
+                  fysw=fy(An2in(isw,jsw+1), An2in(isw,jsw-1), 2d0)
+                  fynw=fy(An2in(inw,jnw+1), An2in(inw,jnw-1), 2d0)
+                  fyne=fy(An2in(ine,jne+1), An2in(ine,jne-1), 2d0)
+                  fyse=fy(An2in(ise,jse+1), An2in(ise,jse-1), 2d0)
+                  fxysw=fxy(An2in(isw+1,jsw+1),An2in(isw-1,jsw+1),An2in(isw+1,jsw-1),An2in(isw-1,jsw-1),4d0)
+                  fxynw=fxy(An2in(inw+1,jnw+1),An2in(inw-1,jnw+1),An2in(inw+1,jnw-1),An2in(inw-1,jnw-1),4d0)
+                  fxyne=fxy(An2in(ine+1,jne+1),An2in(ine-1,jne+1),An2in(ine+1,jne-1),An2in(ine-1,jne-1),4d0)
+                  fxyse=fxy(An2in(ise+1,jse+1),An2in(ise-1,jse+1),An2in(ise+1,jse-1),An2in(ise-1,jse-1),4d0)
 
-         Abef=cubic_interp( fsw,  fnw,  fne,  fse,   &
-                            fxsw, fxnw, fxne, fxse,  &
-                            fysw, fynw, fyne, fyse,  &
-                            fxysw,fxynw,fxyne,fxyse, &
-                            xd, yd )
+                  Abef=cubic_interp( fsw,  fnw,  fne,  fse,   &
+                       fxsw, fxnw, fxne, fxse,  &
+                       fysw, fynw, fyne, fyse,  &
+                       fxysw,fxynw,fxyne,fxyse, &
+                       xd, yd )
+
+      elseif (caseSL == 2) then ! upwind for special cases  
+         
+         fluxx = calc_fluxx (utpn1(i,j), utpn1(i+1,j), hin(i-1,j), hin(i,j), hin(i+1,j))
+         fluxy = calc_fluxy (vtpn1(i,j), vtpn1(i,j+1), hin(i,j-1), hin(i,j), hin(i,j+1))
+
+         hout(i,j) = hin(i,j) - DtoverDx * ( fluxx + fluxy )
+         hout(i,j) = max(hout(i,j), 0d0)
+
+         fluxx = calc_fluxx (utpn1(i,j), utpn1(i+1,j), Ain(i-1,j), Ain(i,j), Ain(i+1,j))
+         fluxy = calc_fluxy (vtpn1(i,j), vtpn1(i,j+1), Ain(i,j-1), Ain(i,j), Ain(i,j+1))
+
+         Aout(i,j) = Ain(i,j) - DtoverDx * ( fluxx + fluxy )
+         Aout(i,j) = max(Aout(i,j), 0d0) ! COULD BE MOVED BELOW FOR BOTH CASES SL
+         Aout(i,j) = min(Aout(i,j), 1d0)
 
       endif
+
+      enddo
+   enddo
+
+      endif ! choice of method
       
       return
     end subroutine advection
@@ -624,7 +646,7 @@
 
       double precision, intent(in) :: fup, fdown 
       double precision, intent(in) :: deno
-      double precision             :: fy         ! output df/dx                     
+      double precision             :: fy         ! output df/dy                     
 
       fy = ( fup - fdown ) / deno
 
@@ -634,7 +656,7 @@
 
       double precision, intent(in) :: fur, ful, fdr, fdl
       double precision, intent(in) :: deno
-      double precision             :: fxy    ! output                           
+      double precision             :: fxy    ! output d(dfdx)/dy                          
                                                         
     ! u:up, d:down, r:right, l:left
                                      
@@ -702,4 +724,47 @@
                 a20*(xd**2) + a21*(xd**2)*yd + a22*(xd**2)*(yd**2) + a23*(xd**2)*(yd**3) + &
                 a30*(xd**3) + a31*(xd**3)*yd + a32*(xd**3)*(yd**2) + a33*(xd**3)*(yd**3) + &
 
-    end function cubic_interp
+     end function cubic_interp
+
+      function calc_fluxx (uij, uip1j, Tim1j, Tij, Tip1j) result(fluxx)
+
+        double precision, intent(in) :: uij, uip1j, Tim1j, Tij, Tip1j ! T=tracer
+        double precision :: fluxx, F1, F2
+        
+        if ( uij .ge. 0d0 ) then
+           F1 = uij*Tim1j
+        else
+           F1 = uij*Tij
+        endif
+
+        if ( uip1j .ge. 0d0 ) then
+           F2 = uip1j*Tij
+        else
+           F2 = uip1j*Tip1j
+        endif
+
+        fluxx=F2-F1
+
+      end function calc_fluxx
+
+      function calc_fluxy (vij, vijp1, Tijm1, Tij, Tijp1) result(fluxy)
+
+        double precision, intent(in) :: vij, vijp1, Tijm1, Tij, Tijp1 ! T=tracer                                                    
+        double precision :: fluxy, F1, F2
+
+        if ( vij .ge. 0d0 ) then
+           F1 = vij*Tijm1
+        else
+           F1 = vij*Tij
+        endif
+
+        if ( vijp1 .ge. 0d0 ) then
+           F2 = vijp1*Tij
+        else
+           F2 = vijp1*Tijp1
+        endif
+
+        fluxy=F2-F1
+        
+      end function calc_fluxy
+
