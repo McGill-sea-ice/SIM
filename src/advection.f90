@@ -42,7 +42,8 @@
       double precision                :: fsw, fnw, fne, fse
       double precision                :: fxsw, fxnw, fxne, fxse, fysw, fynw, fyne, fyse
       double precision                :: fxysw, fxynw, fxyne, fxyse
-      double precision                :: fluxx, fluxy
+      double precision                :: fluxx, fluxy, upper, lower
+      logical                         :: SLlimiter
 
 !------------------------------------------------------------------------ 
 !     set dhin/dx, dAin/dx = 0 at the outside cell when there is an open bc 
@@ -321,6 +322,7 @@
 
 ! caseSL=3 : no advection (land)
 ! caseSL=  : IMPROVE THIS
+         SLlimiter=.true.
          
          do i = 1, nx
             do j = 1, ny
@@ -378,10 +380,10 @@
                      fxyse=fxy(utpn1(i+2,j), utpn1(i,j), utpn1(i+2,j-1), utpn1(i,j-1), 2d0)
 
                      uinterp=cubic_interp( fsw,  fnw,  fne,  fse,   &
-                          fxsw, fxnw, fxne, fxse,  &
-                          fysw, fynw, fyne, fyse,  &
-                          fxysw,fxynw,fxyne,fxyse, &
-                          xd, yd )
+                                           fxsw, fxnw, fxne, fxse,  &
+                                           fysw, fynw, fyne, fyse,  &
+                                           fxysw,fxynw,fxyne,fxyse, &
+                                           xd, yd )
 
 !--- interpolate v at x-alphaxm, y-alphamy                                                           
 
@@ -410,10 +412,10 @@
                      fxyse=fxy(vtpn1(i+1,j+1), vtpn1(i,j+1), vtpn1(i+1,j-1), vtpn1(i,j-1), 2d0)
 
                      vinterp=cubic_interp( fsw,  fnw,  fne,  fse,   &
-                          fxsw, fxnw, fxne, fxse,  &
-                          fysw, fynw, fyne, fyse,  &
-                          fxysw,fxynw,fxyne,fxyse, &
-                          xd, yd )
+                                           fxsw, fxnw, fxne, fxse,  &
+                                           fysw, fynw, fyne, fyse,  &
+                                           fxysw,fxynw,fxyne,fxyse, &
+                                           xd, yd )
 
 ! Can I use the latest alphamx to get vinterp and then alphamy???                                 
 ! (kind of Gauss-Seidel vs Jacobi) ...move it after uinterp
@@ -499,10 +501,16 @@
                   fxyse=fxy(hn2in(ise+1,jse+1),hn2in(ise-1,jse+1),hn2in(ise+1,jse-1),hn2in(ise-1,jse-1),4d0)
       
                   hbef=cubic_interp( fsw,  fnw,  fne,  fse,   &
-                       fxsw, fxnw, fxne, fxse,  &
-                       fysw, fynw, fyne, fyse,  &
-                       fxysw,fxynw,fxyne,fxyse, &
-                       xd, yd )
+                                     fxsw, fxnw, fxne, fxse,  &
+                                     fysw, fynw, fyne, fyse,  &
+                                     fxysw,fxynw,fxyne,fxyse, &
+                                     xd, yd )
+
+                  if (SLlimiter) then
+                     upper=max(fsw, fnw, fne, fse)
+                     lower=min(fsw, fnw, fne, fse)
+                     hbef=apply_lim2(hbef, upper, lower, xd, yd, fsw,  fnw,  fne,  fse)
+                  endif
 
 ! 2b) find Abef using cubic interpolation                                                                    
 
@@ -526,10 +534,16 @@
                   fxyse=fxy(An2in(ise+1,jse+1),An2in(ise-1,jse+1),An2in(ise+1,jse-1),An2in(ise-1,jse-1),4d0)
 
                   Abef=cubic_interp( fsw,  fnw,  fne,  fse,   &
-                       fxsw, fxnw, fxne, fxse,  &
-                       fysw, fynw, fyne, fyse,  &
-                       fxysw,fxynw,fxyne,fxyse, &
-                       xd, yd )
+                                     fxsw, fxnw, fxne, fxse,  &
+                                     fysw, fynw, fyne, fyse,  &
+                                     fxysw,fxynw,fxyne,fxyse, &
+                                     xd, yd )
+
+                  if (SLlimiter) then
+                     upper=max(fsw, fnw, fne, fse)
+                     lower=min(fsw, fnw, fne, fse)
+                     Abef=apply_lim2(Abef, upper, lower, xd, yd, fsw,  fnw,  fne,  fse)
+                  endif
 
       elseif (caseSL == 2) then ! upwind for special cases  
          
@@ -768,3 +782,18 @@
         
       end function calc_fluxy
 
+      function apply_lim2(var, upper, lower, xd, yd, fsw, fnw, fne, fse) result(var_lim)
+
+        double precision, intent(in) :: var, upper, lower, xd, yd, fsw, fnw, fne, fse ! input
+        double precision             :: var_lim ! output                                    
+        double precision             :: fs, fn ! interp value on southern and northern boundaries
+        
+        var_lim=var
+
+        if (var .gt. upper .or. var .lt. lower) then
+           fs = fsw + ( fse - fsw ) * xd ! linear interp x direction...deno=dx=1
+           fn = fnw + ( fne - fnw ) * xd ! linear interp x direction...deno=dx=1
+           var_lim = fs + ( fn - fs ) * yd ! linear interp y direction...deno=dy=1  
+        endif
+        
+      end function apply_lim2
