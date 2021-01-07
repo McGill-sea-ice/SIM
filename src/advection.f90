@@ -44,13 +44,13 @@
       double precision                :: hstar(0:nx+1,0:ny+1), Astar(0:nx+1,0:ny+1)
       double precision                :: dFx(nx,ny), dFy(nx,ny), div(nx,ny)
       double precision                :: alphamx, alphamy, xd, yd, uinterp, vinterp, ftp
-      double precision                :: fsw, fnw, fne, fse
+      double precision                :: hbef, abef, fsw, fnw, fne, fse
       double precision                :: fxsw, fxnw, fxne, fxse, fysw, fynw, fyne, fyse
       double precision                :: fxysw, fxynw, fxyne, fxyse
       double precision                :: upper, lower, rhsh, rhsA
       double precision                :: fluxx, fluxy
       double precision                :: fx, fy, fxy, cubic_interp         ! function
-      double precision                :: calc_fluxx, calc_fulxy, apply_lim ! functions
+      double precision                :: calc_fluxx, calc_fluxy, apply_lim ! functions
       logical                         :: SLlimiter
 
 !------------------------------------------------------------------------ 
@@ -65,7 +65,7 @@
             hn1(i,0) = max(hn1(i,0), 0d0)
             An1(i,0) = ( 4d0 * An1(i,1) - An1(i,2) )/3d0
             An1(i,0) = max(An1(i,0), 0d0)
-            An(i,0) = min(An1(i,0), 1d0)
+            An1(i,0) = min(An1(i,0), 1d0)
                   
          endif
 
@@ -597,23 +597,23 @@
                   fsw=An1(isw,jsw)*div(isw,jsw)
                   fnw=An1(inw,jnw)*div(inw,jnw)
                   fne=An1(ine,jne)*div(ine,jne)
-                  fse=hn1(ise,jse)*div(ise,jse)
-                  fxsw=fx(fse, hn1(isw-1,jsw)*div(isw-1,jsw), 2d0)
-                  fxnw=fx(fne, hn1(inw-1,jnw)*div(inw-1,jnw), 2d0)
-                  fxne=fx(hn1(ine+1,jne)*div(ine+1,jne), fnw, 2d0)
-                  fxse=fx(hn1(ise+1,jse)*div(ise+1,jse), fsw, 2d0)
-                  fysw=fy(fnw, hn1(isw,jsw-1)*div(isw,jsw-1), 2d0)
-                  fynw=fy(hn1(inw,jnw+1)*div(inw,jnw+1), fsw, 2d0)
-                  fyne=fy(hn1(ine,jne+1)*div(ine,jne+1), fse, 2d0)
-                  fyse=fy(fne, hn1(ise,jse-1)*div(ise,jse-1), 2d0)
-                  fxysw=fxy(fne, hn1(inw-1,jnw)*div(inw-1,jnw), &
-                        hn1(ise,jse-1)*div(ise,jse-1),hn1(isw-1,jsw-1)*div(isw-1,jsw-1),4d0)
-                  fxynw=fxy(hn1(ine,jne+1)*div(ine,jne+1), hn1(inw-1,jnw+1)*div(inw-1,jnw+1), &
-                        fse,hn1(isw-1,jsw)*div(isw-1,jsw), 4d0)
-                  fxyne=fxy(hn1(ine+1,jne+1)*div(ine+1,jne+1),hn1(inw,jnw+1)*div(inw,jnw+1), &
-                        hn1(ise+1,jse)*div(ise+1,jse), fsw, 4d0)
-                  fxyse=fxy(hn1(ine+1,jne)*div(ine+1,jne), fnw, &
-                        hn1(ise+1,jse-1)*div(ise+1,jse-1),hn1(isw,jsw-1)*div(isw,jsw-1),4d0)
+                  fse=An1(ise,jse)*div(ise,jse)
+                  fxsw=fx(fse, An1(isw-1,jsw)*div(isw-1,jsw), 2d0)
+                  fxnw=fx(fne, An1(inw-1,jnw)*div(inw-1,jnw), 2d0)
+                  fxne=fx(An1(ine+1,jne)*div(ine+1,jne), fnw, 2d0)
+                  fxse=fx(An1(ise+1,jse)*div(ise+1,jse), fsw, 2d0)
+                  fysw=fy(fnw, An1(isw,jsw-1)*div(isw,jsw-1), 2d0)
+                  fynw=fy(An1(inw,jnw+1)*div(inw,jnw+1), fsw, 2d0)
+                  fyne=fy(An1(ine,jne+1)*div(ine,jne+1), fse, 2d0)
+                  fyse=fy(fne, An1(ise,jse-1)*div(ise,jse-1), 2d0)
+                  fxysw=fxy(fne, An1(inw-1,jnw)*div(inw-1,jnw), &
+                        An1(ise,jse-1)*div(ise,jse-1),An1(isw-1,jsw-1)*div(isw-1,jsw-1),4d0)
+                  fxynw=fxy(An1(ine,jne+1)*div(ine,jne+1), An1(inw-1,jnw+1)*div(inw-1,jnw+1), &
+                        fse,An1(isw-1,jsw)*div(isw-1,jsw), 4d0)
+                  fxyne=fxy(An1(ine+1,jne+1)*div(ine+1,jne+1),An1(inw,jnw+1)*div(inw,jnw+1), &
+                        An1(ise+1,jse)*div(ise+1,jse), fsw, 4d0)
+                  fxyse=fxy(An1(ine+1,jne)*div(ine+1,jne), fnw, &
+                        An1(ise+1,jse-1)*div(ise+1,jse-1),An1(isw,jsw-1)*div(isw,jsw-1),4d0)
 
                   rhsA=cubic_interp( fsw,  fnw,  fne,  fse,   &
                                      fxsw, fxnw, fxne, fxse,  &
