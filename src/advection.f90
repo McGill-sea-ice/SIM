@@ -20,7 +20,7 @@
 !
 !************************************************************************
 
-      subroutine advection ( utpn1, vtpn1, utp, vtp, hin, Ain, hout, Aout )
+      subroutine advection ( utpn1, vtpn1, utp, vtp, hn1, An1, hout, Aout )
 
       implicit none
 
@@ -33,7 +33,7 @@
       integer isw, jsw, inw, jnw, ine, jne, ise, jse !SL SouthWest=sw, nw, ne, se corners
       double precision, intent(in)    :: utpn1(0:nx+2,0:ny+2), vtpn1(0:nx+2,0:ny+2)
       double precision, intent(in)    :: utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
-      double precision, intent(inout) :: hin(0:nx+1,0:ny+1), Ain(0:nx+1,0:ny+1)
+      double precision                :: hn1(0:nx+1,0:ny+1), An1(0:nx+1,0:ny+1)
       double precision, intent(out)   :: hout(0:nx+1,0:ny+1), Aout(0:nx+1,0:ny+1)
       double precision                :: ustar(0:nx+2,0:ny+2), vstar(0:nx+2,0:ny+2)
       double precision                :: hstar(0:nx+1,0:ny+1), Astar(0:nx+1,0:ny+1)
@@ -42,32 +42,35 @@
       double precision                :: fsw, fnw, fne, fse
       double precision                :: fxsw, fxnw, fxne, fxse, fysw, fynw, fyne, fyse
       double precision                :: fxysw, fxynw, fxyne, fxyse
-      double precision                :: fluxx, fluxy, upper, lower
+      double precision                :: upper, lower, rhsh, rhsA
+      double precision                :: fluxx, fluxy
+      double precision                :: fx, fy, fxy, cubic_interp         ! function
+      double precision                :: calc_fluxx, calc_fulxy, apply_lim ! functions
       logical                         :: SLlimiter
 
 !------------------------------------------------------------------------ 
-!     set dhin/dx, dAin/dx = 0 at the outside cell when there is an open bc 
+!     set dhn1/dx, dAn1/dx = 0 at the outside cell when there is an open bc 
 !------------------------------------------------------------------------ 
 
       do i = 0, nx+1
                
          if (maskC(i,0) .eq. 1) then
             
-            hin(i,0) = ( 4d0 * hin(i,1) - hin(i,2) )/3d0
-            hin(i,0) = max(hin(i,0), 0d0)
-            Ain(i,0) = ( 4d0 * Ain(i,1) - Ain(i,2) )/3d0
-            Ain(i,0) = max(Ain(i,0), 0d0)
-            Ain(i,0) = min(Ain(i,0), 1d0)
+            hn1(i,0) = ( 4d0 * hn1(i,1) - hn1(i,2) )/3d0
+            hn1(i,0) = max(hn1(i,0), 0d0)
+            An1(i,0) = ( 4d0 * An1(i,1) - An1(i,2) )/3d0
+            An1(i,0) = max(An1(i,0), 0d0)
+            An(i,0) = min(An1(i,0), 1d0)
                   
          endif
 
          if (maskC(i,ny+1) .eq. 1) then
             
-            hin(i,ny+1)= ( 4d0 * hin(i,ny) - hin(i,ny-1) ) / 3d0
-            hin(i,ny+1)= max(hin(i,ny+1), 0d0)
-            Ain(i,ny+1)= ( 4d0 * Ain(i,ny) - Ain(i,ny-1) ) / 3d0
-            Ain(i,ny+1)= max(Ain(i,ny+1), 0d0)
-            Ain(i,ny+1)= min(Ain(i,ny+1), 1d0)
+            hn1(i,ny+1)= ( 4d0 * hn1(i,ny) - hn1(i,ny-1) ) / 3d0
+            hn1(i,ny+1)= max(hn1(i,ny+1), 0d0)
+            An1(i,ny+1)= ( 4d0 * An1(i,ny) - An1(i,ny-1) ) / 3d0
+            An1(i,ny+1)= max(An1(i,ny+1), 0d0)
+            An1(i,ny+1)= min(An1(i,ny+1), 1d0)
 
          endif
  
@@ -77,21 +80,21 @@
 
          if (maskC(0,j) .eq. 1) then
                   
-            hin(0,j)  = ( 4d0 * hin(1,j) - hin(2,j) ) / 3d0
-            hin(0,j)  = max(hin(0,j), 0d0)
-            Ain(0,j)  = ( 4d0 * Ain(1,j) - Ain(2,j) ) / 3d0
-            Ain(0,j)  = max(Ain(0,j), 0d0)
-            Ain(0,j)  = min(Ain(0,j), 1d0)
+            hn1(0,j)  = ( 4d0 * hn1(1,j) - hn1(2,j) ) / 3d0
+            hn1(0,j)  = max(hn1(0,j), 0d0)
+            An1(0,j)  = ( 4d0 * An1(1,j) - An1(2,j) ) / 3d0
+            An1(0,j)  = max(An1(0,j), 0d0)
+            An1(0,j)  = min(An1(0,j), 1d0)
 
          endif
 
          if (maskC(nx+1,j) .eq. 1) then
                  
-            hin(nx+1,j) = ( 4d0 * hin(nx,j) - hin(nx-1,j) ) / 3d0
-            hin(nx+1,j) = max(hin(nx+1,j), 0d0)
-            Ain(nx+1,j) = ( 4d0 * Ain(nx,j) - Ain(nx-1,j) ) / 3d0
-            Ain(nx+1,j) = max(Ain(nx+1,j), 0d0)
-            Ain(nx+1,j) = min(Ain(nx+1,j), 1d0)
+            hn1(nx+1,j) = ( 4d0 * hn1(nx,j) - hn1(nx-1,j) ) / 3d0
+            hn1(nx+1,j) = max(hn1(nx+1,j), 0d0)
+            An1(nx+1,j) = ( 4d0 * An1(nx,j) - An1(nx-1,j) ) / 3d0
+            An1(nx+1,j) = max(An1(nx+1,j), 0d0)
+            An1(nx+1,j) = min(An1(nx+1,j), 1d0)
 
          endif
 
@@ -103,8 +106,8 @@
 !     compute the difference of the flux for thickness 
 !------------------------------------------------------------------------
 
-         call calc_dFx (utp, hin, dFx)
-         call calc_dFy (vtp, hin, dFy)
+         call calc_dFx (utp, hn1, dFx)
+         call calc_dFy (vtp, hn1, dFy)
 
 !------------------------------------------------------------------------
 !     update the thickness values
@@ -116,7 +119,7 @@
 
                if (maskC(i,j) .eq. 1) then
 
-                  hout(i,j) = hin(i,j) - DtoverDx * ( dFx(i,j) + dFy(i,j) )
+                  hout(i,j) = hn1(i,j) - DtoverDx * ( dFx(i,j) + dFy(i,j) )
                   hout(i,j) = max(hout(i,j), 0d0)
 
                endif
@@ -128,8 +131,8 @@
 !     compute the difference of the flux for concentration                                 
 !------------------------------------------------------------------------                  
 
-         call calc_dFx (utp, Ain, dFx)
-         call calc_dFy (vtp, Ain, dFy)
+         call calc_dFx (utp, An1, dFx)
+         call calc_dFy (vtp, An1, dFy)
 
 !------------------------------------------------------------------------ 
 !     update the concentration values      
@@ -141,7 +144,7 @@
 
                if (maskC(i,j) .eq. 1) then
 
-                  Aout(i,j) = Ain(i,j) - DtoverDx * ( dFx(i,j) + dFy(i,j) )
+                  Aout(i,j) = An1(i,j) - DtoverDx * ( dFx(i,j) + dFy(i,j) )
                   Aout(i,j) = max(Aout(i,j), 0d0)
                   Aout(i,j) = min(Aout(i,j), 1d0)
 
@@ -156,8 +159,8 @@
 !     predictor: compute the difference of the flux for thickness 
 !------------------------------------------------------------------------
 
-         call calc_dFx (utpn1, hin, dFx)
-         call calc_dFy (vtpn1, hin, dFy)
+         call calc_dFx (utpn1, hn1, dFx)
+         call calc_dFy (vtpn1, hn1, dFy)
 
 !------------------------------------------------------------------------
 !     predictor: update the thickness values
@@ -169,7 +172,7 @@
 
                if (maskC(i,j) .eq. 1) then
 
-                  hstar(i,j) = hin(i,j) - (DtoverDx / 2d0) * ( dFx(i,j) + dFy(i,j) )
+                  hstar(i,j) = hn1(i,j) - (DtoverDx / 2d0) * ( dFx(i,j) + dFy(i,j) )
                   hstar(i,j) = max(hstar(i,j), 0d0)
 
                endif
@@ -181,8 +184,8 @@
 !     predictor: compute the difference of the flux for concentration   
 !------------------------------------------------------------------------                  
 
-         call calc_dFx (utpn1, Ain, dFx)
-         call calc_dFy (vtpn1, Ain, dFy)
+         call calc_dFx (utpn1, An1, dFx)
+         call calc_dFy (vtpn1, An1, dFy)
 
 !------------------------------------------------------------------------ 
 !     predictor: update the concentration values      
@@ -194,7 +197,7 @@
 
                if (maskC(i,j) .eq. 1) then
 
-                  Astar(i,j) = Ain(i,j) - (DtoverDx / 2d0) * ( dFx(i,j) + dFy(i,j) )
+                  Astar(i,j) = An1(i,j) - (DtoverDx / 2d0) * ( dFx(i,j) + dFy(i,j) )
                   Astar(i,j) = max(Astar(i,j), 0d0)
                   Astar(i,j) = min(Astar(i,j), 1d0)
 
@@ -275,7 +278,7 @@
 
                if (maskC(i,j) .eq. 1) then
 
-                  hout(i,j) = hin(i,j) - DtoverDx * ( dFx(i,j) + dFy(i,j) )
+                  hout(i,j) = hn1(i,j) - DtoverDx * ( dFx(i,j) + dFy(i,j) )
                   hout(i,j) = max(hout(i,j), 0d0)
 
                endif
@@ -300,7 +303,7 @@
 
                if (maskC(i,j) .eq. 1) then
 
-                  Aout(i,j) = Ain(i,j) - DtoverDx * ( dFx(i,j) + dFy(i,j) )
+                  Aout(i,j) = An1(i,j) - DtoverDx * ( dFx(i,j) + dFy(i,j) )
                   Aout(i,j) = max(Aout(i,j), 0d0)
                   Aout(i,j) = min(Aout(i,j), 1d0)
 
@@ -509,7 +512,7 @@
                   if (SLlimiter) then
                      upper=max(fsw, fnw, fne, fse)
                      lower=min(fsw, fnw, fne, fse)
-                     hbef=apply_lim2(hbef, upper, lower, xd, yd, fsw,  fnw,  fne,  fse)
+                     hbef=apply_lim(hbef, upper, lower, xd, yd, fsw,  fnw,  fne,  fse)
                   endif
 
 ! 2b) find Abef using cubic interpolation                                                                    
@@ -542,28 +545,46 @@
                   if (SLlimiter) then
                      upper=max(fsw, fnw, fne, fse)
                      lower=min(fsw, fnw, fne, fse)
-                     Abef=apply_lim2(Abef, upper, lower, xd, yd, fsw,  fnw,  fne,  fse)
+                     Abef=apply_lim(Abef, upper, lower, xd, yd, fsw,  fnw,  fne,  fse)
                   endif
 
-      elseif (caseSL == 2) then ! upwind for special cases  
+!------------------------------------------------------------------------                                        
+! find right hand side terms rhsh and rhsA (time level n-1 = n1)
+!------------------------------------------------------------------------ 
+                  
+                  rhsh = 0d0
+                  rhsA = 0d0
+
+!------------------------------------------------------------------------
+! find output h and A at time level n  
+!------------------------------------------------------------------------
+
+                  hout(i,j) = hbef - 2d0*Deltat*rhsh
+                  Aout(i,j) = Abef - 2d0*Deltat*rhsA
+       
+                  hout(i,j) = max(hout(i,j), 0d0)
+                  Aout(i,j) = max(Aout(i,j), 0d0)
+                  Aout(i,j) = min(Aout(i,j), 1d0)
+
+               elseif (caseSL == 2) then ! upwind for special cases  
          
-         fluxx = calc_fluxx (utpn1(i,j), utpn1(i+1,j), hin(i-1,j), hin(i,j), hin(i+1,j))
-         fluxy = calc_fluxy (vtpn1(i,j), vtpn1(i,j+1), hin(i,j-1), hin(i,j), hin(i,j+1))
+                  fluxx=calc_fluxx(utpn1(i,j), utpn1(i+1,j), hn1(i-1,j), hn1(i,j), hn1(i+1,j))
+                  fluxy=calc_fluxy(vtpn1(i,j), vtpn1(i,j+1), hn1(i,j-1), hn1(i,j), hn1(i,j+1))
 
-         hout(i,j) = hin(i,j) - DtoverDx * ( fluxx + fluxy )
-         hout(i,j) = max(hout(i,j), 0d0)
+                  hout(i,j) = hn1(i,j) - DtoverDx * ( fluxx + fluxy )
+                  hout(i,j) = max(hout(i,j), 0d0)
 
-         fluxx = calc_fluxx (utpn1(i,j), utpn1(i+1,j), Ain(i-1,j), Ain(i,j), Ain(i+1,j))
-         fluxy = calc_fluxy (vtpn1(i,j), vtpn1(i,j+1), Ain(i,j-1), Ain(i,j), Ain(i,j+1))
+                  fluxx=calc_fluxx(utpn1(i,j), utpn1(i+1,j), An1(i-1,j), An1(i,j), An1(i+1,j))
+                  fluxy=calc_fluxy(vtpn1(i,j), vtpn1(i,j+1), An1(i,j-1), An1(i,j), An1(i,j+1))
 
-         Aout(i,j) = Ain(i,j) - DtoverDx * ( fluxx + fluxy )
-         Aout(i,j) = max(Aout(i,j), 0d0) ! COULD BE MOVED BELOW FOR BOTH CASES SL
-         Aout(i,j) = min(Aout(i,j), 1d0)
+                  Aout(i,j) = An1(i,j) - DtoverDx * ( fluxx + fluxy )
+                  Aout(i,j) = max(Aout(i,j), 0d0) ! COULD BE MOVED BELOW FOR BOTH CASES SL
+                  Aout(i,j) = min(Aout(i,j), 1d0)
 
-      endif
+               endif
 
-      enddo
-   enddo
+            enddo
+         enddo
 
       endif ! choice of method
       
@@ -782,7 +803,7 @@
         
       end function calc_fluxy
 
-      function apply_lim2(var, upper, lower, xd, yd, fsw, fnw, fne, fse) result(var_lim)
+      function apply_lim(var, upper, lower, xd, yd, fsw, fnw, fne, fse) result(var_lim)
 
         double precision, intent(in) :: var, upper, lower, xd, yd, fsw, fnw, fne, fse ! input
         double precision             :: var_lim ! output                                    
@@ -796,4 +817,4 @@
            var_lim = fs + ( fn - fs ) * yd ! linear interp y direction...deno=dy=1  
         endif
         
-      end function apply_lim2
+      end function apply_lim
