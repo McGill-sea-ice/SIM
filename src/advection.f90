@@ -111,8 +111,8 @@
 !     compute the difference of the flux for thickness 
 !------------------------------------------------------------------------
 
-         call calc_dFx (utp, hn1, dFx)
-         call calc_dFy (vtp, hn1, dFy)
+         call calc_dFx (un, hn1, dFx)
+         call calc_dFy (vn, hn1, dFy)
 
 !------------------------------------------------------------------------
 !     update the thickness values
@@ -136,8 +136,8 @@
 !     compute the difference of the flux for concentration                                 
 !------------------------------------------------------------------------                  
 
-         call calc_dFx (utp, An1, dFx)
-         call calc_dFy (vtp, An1, dFy)
+         call calc_dFx (un, An1, dFx)
+         call calc_dFy (vn, An1, dFy)
 
 !------------------------------------------------------------------------ 
 !     update the concentration values      
@@ -267,8 +267,8 @@
 !     corrector: compute the difference of the flux for thickness 
 !------------------------------------------------------------------------
   
-         ustar = ( un1 + utp ) / 2d0
-         vstar = ( vn1 + vtp ) / 2d0
+         ustar = ( un1 + un ) / 2d0
+         vstar = ( vn1 + vn ) / 2d0
 
          call calc_dFx (ustar, hstar, dFx)
          call calc_dFy (vstar, hstar, dFy)
