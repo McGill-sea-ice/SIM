@@ -24,7 +24,7 @@
 !
 !************************************************************************
 
-      subroutine advection (utpn1, vtpn1, utp, vtp, hn2, An2, hn1, An1, hout, Aout)
+      subroutine advection (un1, vn1, un, vn, hn2, An2, hn1, An1, hout, Aout)
 
       implicit none
 
@@ -35,8 +35,8 @@
 
       integer i, j, k, caseSL, summask, iloc, jloc
       integer isw, jsw, inw, jnw, ine, jne, ise, jse !SL SouthWest=sw, nw, ne, se corners
-      double precision, intent(in)    :: utpn1(0:nx+2,0:ny+2), vtpn1(0:nx+2,0:ny+2)
-      double precision, intent(in)    :: utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
+      double precision, intent(in)    :: un1(0:nx+2,0:ny+2), vn1(0:nx+2,0:ny+2)
+      double precision, intent(in)    :: un(0:nx+2,0:ny+2), vn(0:nx+2,0:ny+2)
       double precision                :: hn1(0:nx+1,0:ny+1), An1(0:nx+1,0:ny+1)
       double precision, intent(in)    :: hn2(0:nx+1,0:ny+1), An2(0:nx+1,0:ny+1)
       double precision, intent(out)   :: hout(0:nx+1,0:ny+1), Aout(0:nx+1,0:ny+1)
@@ -164,8 +164,8 @@
 !     predictor: compute the difference of the flux for thickness 
 !------------------------------------------------------------------------
 
-         call calc_dFx (utpn1, hn1, dFx)
-         call calc_dFy (vtpn1, hn1, dFy)
+         call calc_dFx (un1, hn1, dFx)
+         call calc_dFy (vn1, hn1, dFy)
 
 !------------------------------------------------------------------------
 !     predictor: update the thickness values
@@ -189,8 +189,8 @@
 !     predictor: compute the difference of the flux for concentration   
 !------------------------------------------------------------------------                  
 
-         call calc_dFx (utpn1, An1, dFx)
-         call calc_dFy (vtpn1, An1, dFy)
+         call calc_dFx (un1, An1, dFx)
+         call calc_dFy (vn1, An1, dFy)
 
 !------------------------------------------------------------------------ 
 !     predictor: update the concentration values      
@@ -267,8 +267,8 @@
 !     corrector: compute the difference of the flux for thickness 
 !------------------------------------------------------------------------
   
-         ustar = ( utpn1 + utp ) / 2d0
-         vstar = ( vtpn1 + vtp ) / 2d0
+         ustar = ( un1 + utp ) / 2d0
+         vstar = ( vn1 + vtp ) / 2d0
 
          call calc_dFx (ustar, hstar, dFx)
          call calc_dFy (vstar, hstar, dFy)
@@ -367,29 +367,29 @@
 
 !--- interpolate u at x-alphaxm, y-alphamy
 
-                     fsw = ( utpn1(i,j) + utpn1(i,j-1) ) / 2d0 
-                     fnw = ( utpn1(i,j+1) + utpn1(i,j) ) / 2d0
-                     fne = ( utpn1(i+1,j+1) + utpn1(i+1,j) ) / 2d0
-                     fse = ( utpn1(i+1,j) + utpn1(i+1,j-1) ) / 2d0
+                     fsw = ( un1(i,j) + un1(i,j-1) ) / 2d0 
+                     fnw = ( un1(i,j+1) + un1(i,j) ) / 2d0
+                     fne = ( un1(i+1,j+1) + un1(i+1,j) ) / 2d0
+                     fse = ( un1(i+1,j) + un1(i+1,j-1) ) / 2d0
 
-                     ftp= ( utpn1(i-1,j) + utpn1(i-1,j-1) ) / 2d0
+                     ftp= ( un1(i-1,j) + un1(i-1,j-1) ) / 2d0
                      fxsw=fx(fse, ftp, 2d0)
-                     ftp= ( utpn1(i-1,j+1) + utpn1(i-1,j) ) / 2d0
+                     ftp= ( un1(i-1,j+1) + un1(i-1,j) ) / 2d0
                      fxnw=fx(fne, ftp, 2d0)
-                     ftp= ( utpn1(i+2,j+1) + utpn1(i+2,j) ) / 2d0
+                     ftp= ( un1(i+2,j+1) + un1(i+2,j) ) / 2d0
                      fxne=fx(ftp, fnw, 2d0)
-                     ftp= ( utpn1(i+2,j) + utpn1(i+2,j-1) ) / 2d0
+                     ftp= ( un1(i+2,j) + un1(i+2,j-1) ) / 2d0
                      fxse=fx(ftp, fsw, 2d0)
 
-                     fysw=fy(utpn1(i,j), utpn1(i,j-1), 1d0)
-                     fynw=fy(utpn1(i,j+1), utpn1(i,j), 1d0)
-                     fyne=fy(utpn1(i+1,j+1), utpn1(i+1,j), 1d0)
-                     fyse=fy(utpn1(i+1,j), utpn1(i+1,j-1), 1d0)
+                     fysw=fy(un1(i,j), un1(i,j-1), 1d0)
+                     fynw=fy(un1(i,j+1), un1(i,j), 1d0)
+                     fyne=fy(un1(i+1,j+1), un1(i+1,j), 1d0)
+                     fyse=fy(un1(i+1,j), un1(i+1,j-1), 1d0)
 
-                     fxysw=fxy(utpn1(i+1,j), utpn1(i-1,j), utpn1(i+1,j-1), utpn1(i-1,j-1), 2d0)
-                     fxynw=fxy(utpn1(i+1,j+1), utpn1(i-1,j+1), utpn1(i+1,j), utpn1(i-1,j), 2d0)
-                     fxyne=fxy(utpn1(i+2,j+1), utpn1(i,j+1), utpn1(i+2,j), utpn1(i,j), 2d0)
-                     fxyse=fxy(utpn1(i+2,j), utpn1(i,j), utpn1(i+2,j-1), utpn1(i,j-1), 2d0)
+                     fxysw=fxy(un1(i+1,j), un1(i-1,j), un1(i+1,j-1), un1(i-1,j-1), 2d0)
+                     fxynw=fxy(un1(i+1,j+1), un1(i-1,j+1), un1(i+1,j), un1(i-1,j), 2d0)
+                     fxyne=fxy(un1(i+2,j+1), un1(i,j+1), un1(i+2,j), un1(i,j), 2d0)
+                     fxyse=fxy(un1(i+2,j), un1(i,j), un1(i+2,j-1), un1(i,j-1), 2d0)
 
                      uinterp=cubic_interp( fsw,  fnw,  fne,  fse,   &
                                            fxsw, fxnw, fxne, fxse,  &
@@ -399,29 +399,29 @@
 
 !--- interpolate v at x-alphaxm, y-alphamy                                                           
 
-                     fsw = ( vtpn1(i,j) + vtpn1(i-1,j) ) / 2d0
-                     fnw = ( vtpn1(i,j+1) + vtpn1(i-1,j+1) ) / 2d0
-                     fne = ( vtpn1(i,j+1) + vtpn1(i+1,j+1) ) / 2d0
-                     fse = ( vtpn1(i+1,j) + vtpn1(i,j) ) / 2d0
+                     fsw = ( vn1(i,j) + vn1(i-1,j) ) / 2d0
+                     fnw = ( vn1(i,j+1) + vn1(i-1,j+1) ) / 2d0
+                     fne = ( vn1(i,j+1) + vn1(i+1,j+1) ) / 2d0
+                     fse = ( vn1(i+1,j) + vn1(i,j) ) / 2d0
 
-                     fxsw=fx(vtpn1(i,j), vtpn1(i-1,j), 1d0)
-                     fxnw=fx(vtpn1(i,j+1), vtpn1(i-1,j+1), 1d0)
-                     fxne=fx(vtpn1(i+1,j+1), vtpn1(i,j+1), 1d0)
-                     fxse=fx(vtpn1(i+1,j), vtpn1(i,j), 1d0)
+                     fxsw=fx(vn1(i,j), vn1(i-1,j), 1d0)
+                     fxnw=fx(vn1(i,j+1), vn1(i-1,j+1), 1d0)
+                     fxne=fx(vn1(i+1,j+1), vn1(i,j+1), 1d0)
+                     fxse=fx(vn1(i+1,j), vn1(i,j), 1d0)
 
-                     ftp= ( vtpn1(i,j-1) + vtpn1(i-1,j-1) ) / 2d0
+                     ftp= ( vn1(i,j-1) + vn1(i-1,j-1) ) / 2d0
                      fysw=fy(fnw, ftp, 2d0)
-                     ftp= ( vtpn1(i,j+2) + vtpn1(i-1,j+2) ) / 2d0
+                     ftp= ( vn1(i,j+2) + vn1(i-1,j+2) ) / 2d0
                      fynw=fy(ftp, fsw, 2d0)
-                     ftp= ( vtpn1(i+1,j+2) + vtpn1(i,j+2) ) / 2d0
+                     ftp= ( vn1(i+1,j+2) + vn1(i,j+2) ) / 2d0
                      fyne=fy(ftp, fse, 2d0)
-                     ftp= ( vtpn1(i+1,j-1) + vtpn1(i,j-1) ) / 2d0
+                     ftp= ( vn1(i+1,j-1) + vn1(i,j-1) ) / 2d0
                      fyse=fy(fne, ftp, 2d0)
 
-                     fxysw=fxy(vtpn1(i,j+1), vtpn1(i-1,j+1), vtpn1(i,j-1), vtpn1(i-1,j-1), 2d0)
-                     fxynw=fxy(vtpn1(i,j+2), vtpn1(i-1,j+2), vtpn1(i,j), vtpn1(i-1,j), 2d0)
-                     fxyne=fxy(vtpn1(i+1,j+2), vtpn1(i,j+2), vtpn1(i+1,j), vtpn1(i,j), 2d0)
-                     fxyse=fxy(vtpn1(i+1,j+1), vtpn1(i,j+1), vtpn1(i+1,j-1), vtpn1(i,j-1), 2d0)
+                     fxysw=fxy(vn1(i,j+1), vn1(i-1,j+1), vn1(i,j-1), vn1(i-1,j-1), 2d0)
+                     fxynw=fxy(vn1(i,j+2), vn1(i-1,j+2), vn1(i,j), vn1(i-1,j), 2d0)
+                     fxyne=fxy(vn1(i+1,j+2), vn1(i,j+2), vn1(i+1,j), vn1(i,j), 2d0)
+                     fxyse=fxy(vn1(i+1,j+1), vn1(i,j+1), vn1(i+1,j-1), vn1(i,j-1), 2d0)
 
                      vinterp=cubic_interp( fsw,  fnw,  fne,  fse,   &
                                            fxsw, fxnw, fxne, fxse,  &
@@ -577,14 +577,14 @@
 
                elseif (caseSL == 2) then ! upwind for special cases  
          
-                  fluxx=calc_fluxx(utpn1(i,j), utpn1(i+1,j), hn1(i-1,j), hn1(i,j), hn1(i+1,j))
-                  fluxy=calc_fluxy(vtpn1(i,j), vtpn1(i,j+1), hn1(i,j-1), hn1(i,j), hn1(i,j+1))
+                  fluxx=calc_fluxx(un1(i,j), un1(i+1,j), hn1(i-1,j), hn1(i,j), hn1(i+1,j))
+                  fluxy=calc_fluxy(vn1(i,j), vn1(i,j+1), hn1(i,j-1), hn1(i,j), hn1(i,j+1))
 
                   hout(i,j) = hn1(i,j) - DtoverDx * ( fluxx + fluxy )
                   hout(i,j) = max(hout(i,j), 0d0)
 
-                  fluxx=calc_fluxx(utpn1(i,j), utpn1(i+1,j), An1(i-1,j), An1(i,j), An1(i+1,j))
-                  fluxy=calc_fluxy(vtpn1(i,j), vtpn1(i,j+1), An1(i,j-1), An1(i,j), An1(i,j+1))
+                  fluxx=calc_fluxx(un1(i,j), un1(i+1,j), An1(i-1,j), An1(i,j), An1(i+1,j))
+                  fluxy=calc_fluxy(vn1(i,j), vn1(i,j+1), An1(i,j-1), An1(i,j), An1(i,j+1))
 
                   Aout(i,j) = An1(i,j) - DtoverDx * ( fluxx + fluxy )
                   Aout(i,j) = max(Aout(i,j), 0d0) ! COULD BE MOVED BELOW FOR BOTH CASES SL
