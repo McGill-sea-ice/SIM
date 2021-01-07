@@ -334,7 +334,7 @@
 
          SLlimiter=.true.
          
-         
+         call calc_div(un1,div) ! calc divergence at n-1 for RHS [hdiv(u)]^{n-1}
 
          do i = 1, nx
             do j = 1, ny
@@ -561,8 +561,68 @@
 ! find right hand side terms rhsh and rhsA (time level n-1 = n1)
 !------------------------------------------------------------------------ 
                   
-                  rhsh = 0d0
-                  rhsA = 0d0
+! a) find rhsh using cubic interpolation                                                                    
+! PREPARATION: set 4 corners values and compute derivatives required for cubic interpolation
+
+                  fsw=hn1(isw,jsw)*div(isw,jsw)
+                  fnw=hn1(inw,jnw)*div(inw,jnw)
+                  fne=hn1(ine,jne)*div(ine,jne)
+                  fse=hn1(ise,jse)*div(ise,jse)
+                  fxsw=fx(fse, hn1(isw-1,jsw)*div(isw-1,jsw), 2d0)
+                  fxnw=fx(fne, hn1(inw-1,jnw)*div(inw-1,jnw), 2d0)
+                  fxne=fx(hn1(ine+1,jne)*div(ine+1,jne), fnw, 2d0)
+                  fxse=fx(hn1(ise+1,jse)*div(ise+1,jse), fsw, 2d0)
+                  fysw=fy(fnw, hn1(isw,jsw-1)*div(isw,jsw-1), 2d0)
+                  fynw=fy(hn1(inw,jnw+1)*div(inw,jnw+1), fsw, 2d0)
+                  fyne=fy(hn1(ine,jne+1)*div(ine,jne+1), fse, 2d0)
+                  fyse=fy(fne, hn1(ise,jse-1)*div(ise,jse-1), 2d0)
+                  fxysw=fxy(fne, hn1(inw-1,jnw)*div(inw-1,jnw), &
+                        hn1(ise,jse-1)*div(ise,jse-1),hn1(isw-1,jsw-1)*div(isw-1,jsw-1),4d0)
+                  fxynw=fxy(hn1(ine,jne+1)*div(ine,jne+1), hn1(inw-1,jnw+1)*div(inw-1,jnw+1), &
+                        fse,hn1(isw-1,jsw)*div(isw-1,jsw), 4d0)
+                  fxyne=fxy(hn1(ine+1,jne+1)*div(ine+1,jne+1),hn1(inw,jnw+1)*div(inw,jnw+1), &
+                        hn1(ise+1,jse)*div(ise+1,jse), fsw, 4d0)
+                  fxyse=fxy(hn1(ine+1,jne)*div(ine+1,jne), fnw, &
+                        hn1(ise+1,jse-1)*div(ise+1,jse-1),hn1(isw,jsw-1)*div(isw,jsw-1),4d0) 
+
+                  rhsh=cubic_interp( fsw,  fnw,  fne,  fse,   &
+                                     fxsw, fxnw, fxne, fxse,  &
+                                     fysw, fynw, fyne, fyse,  &
+                                     fxysw,fxynw,fxyne,fxyse, &
+                                     xdddddddhalf, ydhalf )
+
+! b) find rhsA using cubic interpolation                                                                                 
+! PREPARATION: set 4 corners values and compute derivatives required for cubic interpolation                           
+
+                  fsw=An1(isw,jsw)*div(isw,jsw)
+                  fnw=An1(inw,jnw)*div(inw,jnw)
+                  fne=An1(ine,jne)*div(ine,jne)
+                  fse=hn1(ise,jse)*div(ise,jse)
+                  fxsw=fx(fse, hn1(isw-1,jsw)*div(isw-1,jsw), 2d0)
+                  fxnw=fx(fne, hn1(inw-1,jnw)*div(inw-1,jnw), 2d0)
+                  fxne=fx(hn1(ine+1,jne)*div(ine+1,jne), fnw, 2d0)
+                  fxse=fx(hn1(ise+1,jse)*div(ise+1,jse), fsw, 2d0)
+                  fysw=fy(fnw, hn1(isw,jsw-1)*div(isw,jsw-1), 2d0)
+                  fynw=fy(hn1(inw,jnw+1)*div(inw,jnw+1), fsw, 2d0)
+                  fyne=fy(hn1(ine,jne+1)*div(ine,jne+1), fse, 2d0)
+                  fyse=fy(fne, hn1(ise,jse-1)*div(ise,jse-1), 2d0)
+                  fxysw=fxy(fne, hn1(inw-1,jnw)*div(inw-1,jnw), &
+                        hn1(ise,jse-1)*div(ise,jse-1),hn1(isw-1,jsw-1)*div(isw-1,jsw-1),4d0)
+                  fxynw=fxy(hn1(ine,jne+1)*div(ine,jne+1), hn1(inw-1,jnw+1)*div(inw-1,jnw+1), &
+                        fse,hn1(isw-1,jsw)*div(isw-1,jsw), 4d0)
+                  fxyne=fxy(hn1(ine+1,jne+1)*div(ine+1,jne+1),hn1(inw,jnw+1)*div(inw,jnw+1), &
+                        hn1(ise+1,jse)*div(ise+1,jse), fsw, 4d0)
+                  fxyse=fxy(hn1(ine+1,jne)*div(ine+1,jne), fnw, &
+                        hn1(ise+1,jse-1)*div(ise+1,jse-1),hn1(isw,jsw-1)*div(isw,jsw-1),4d0)
+
+                  rhsA=cubic_interp( fsw,  fnw,  fne,  fse,   &
+                                     fxsw, fxnw, fxne, fxse,  &
+                                     fysw, fynw, fyne, fyse,  &
+                                     fxysw,fxynw,fxyne,fxyse, &
+                                     xdddddddhalf, ydhalf )
+
+!                  rhsh = 0d0
+!                  rhsA = 0d0
 
 !------------------------------------------------------------------------
 ! find output h and A at time level n  
