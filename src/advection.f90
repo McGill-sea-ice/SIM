@@ -1,6 +1,6 @@
 
 !***********************************************************************
-!     subroutine advection (upwind scheme or upwind-RungeKutta2):
+!     subroutine advection (upwind scheme or upwind-RK2 or semilag):
 !       calculates the tracer quantities at the next time step. 
 !       Tracer #1 and #2 are ice thickness and concentration respectively.
 !
@@ -18,9 +18,13 @@
 !     -------   Montreal, Quebec, Canada
 !     Email   :  bruno.tremblay@mcgill.ca
 !
+!     Lemieux, J.-F., Knoll, D.A., Losch, M. and Girard, C., A second-order 
+!     accurate in time IMplicit–EXplicit (IMEX) integration scheme for 
+!     sea ice dynamics, Journal of Computational Physics, 2014.
+!
 !************************************************************************
 
-      subroutine advection ( utpn1, vtpn1, utp, vtp, hn1, An1, hout, Aout )
+      subroutine advection (utpn1, vtpn1, utp, vtp, hn2, An2, hn1, An1, hout, Aout)
 
       implicit none
 
@@ -34,10 +38,11 @@
       double precision, intent(in)    :: utpn1(0:nx+2,0:ny+2), vtpn1(0:nx+2,0:ny+2)
       double precision, intent(in)    :: utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
       double precision                :: hn1(0:nx+1,0:ny+1), An1(0:nx+1,0:ny+1)
+      double precision, intent(in)    :: hn2(0:nx+1,0:ny+1), An2(0:nx+1,0:ny+1)
       double precision, intent(out)   :: hout(0:nx+1,0:ny+1), Aout(0:nx+1,0:ny+1)
       double precision                :: ustar(0:nx+2,0:ny+2), vstar(0:nx+2,0:ny+2)
       double precision                :: hstar(0:nx+1,0:ny+1), Astar(0:nx+1,0:ny+1)
-      double precision                :: dFx(nx,ny), dFy(nx,ny)
+      double precision                :: dFx(nx,ny), dFy(nx,ny), div(nx,ny)
       double precision                :: alphamx, alphamy, xd, yd, uinterp, vinterp, ftp
       double precision                :: fsw, fnw, fne, fse
       double precision                :: fxsw, fxnw, fxne, fxse, fysw, fynw, fyne, fyse
@@ -325,8 +330,12 @@
 
 ! caseSL=3 : no advection (land)
 ! caseSL=  : IMPROVE THIS
+! TO DO : restart with semilag...need hn2, An2
+
          SLlimiter=.true.
          
+         
+
          do i = 1, nx
             do j = 1, ny
                caseSL=3
@@ -486,22 +495,22 @@
 
 ! PREPARATION: set 4 corners values and compute derivatives required for cubic interpolation
 
-                  fsw=hn2in(isw,jsw)
-                  fnw=hn2in(inw,jnw)
-                  fne=hn2in(ine,jne)
-                  fse=hn2in(ise,jse)
-                  fxsw=fx(hn2in(isw+1,jsw), hn2in(isw-1,jsw), 2d0)
-                  fxnw=fx(hn2in(inw+1,jnw), hn2in(inw-1,jnw), 2d0)
-                  fxne=fx(hn2in(ine+1,jne), hn2in(ine-1,jne), 2d0)
-                  fxse=fx(hn2in(ise+1,jse), hn2in(ise-1,jse), 2d0)
-                  fysw=fy(hn2in(isw,jsw+1), hn2in(isw,jsw-1), 2d0)
-                  fynw=fy(hn2in(inw,jnw+1), hn2in(inw,jnw-1), 2d0)
-                  fyne=fy(hn2in(ine,jne+1), hn2in(ine,jne-1), 2d0)
-                  fyse=fy(hn2in(ise,jse+1), hn2in(ise,jse-1), 2d0)
-                  fxysw=fxy(hn2in(isw+1,jsw+1),hn2in(isw-1,jsw+1),hn2in(isw+1,jsw-1),hn2in(isw-1,jsw-1),4d0)
-                  fxynw=fxy(hn2in(inw+1,jnw+1),hn2in(inw-1,jnw+1),hn2in(inw+1,jnw-1),hn2in(inw-1,jnw-1),4d0)
-                  fxyne=fxy(hn2in(ine+1,jne+1),hn2in(ine-1,jne+1),hn2in(ine+1,jne-1),hn2in(ine-1,jne-1),4d0)
-                  fxyse=fxy(hn2in(ise+1,jse+1),hn2in(ise-1,jse+1),hn2in(ise+1,jse-1),hn2in(ise-1,jse-1),4d0)
+                  fsw=hn2(isw,jsw)
+                  fnw=hn2(inw,jnw)
+                  fne=hn2(ine,jne)
+                  fse=hn2(ise,jse)
+                  fxsw=fx(hn2(isw+1,jsw), hn2(isw-1,jsw), 2d0)
+                  fxnw=fx(hn2(inw+1,jnw), hn2(inw-1,jnw), 2d0)
+                  fxne=fx(hn2(ine+1,jne), hn2(ine-1,jne), 2d0)
+                  fxse=fx(hn2(ise+1,jse), hn2(ise-1,jse), 2d0)
+                  fysw=fy(hn2(isw,jsw+1), hn2(isw,jsw-1), 2d0)
+                  fynw=fy(hn2(inw,jnw+1), hn2(inw,jnw-1), 2d0)
+                  fyne=fy(hn2(ine,jne+1), hn2(ine,jne-1), 2d0)
+                  fyse=fy(hn2(ise,jse+1), hn2(ise,jse-1), 2d0)
+                  fxysw=fxy(hn2(isw+1,jsw+1),hn2(isw-1,jsw+1),hn2(isw+1,jsw-1),hn2(isw-1,jsw-1),4d0)
+                  fxynw=fxy(hn2(inw+1,jnw+1),hn2(inw-1,jnw+1),hn2(inw+1,jnw-1),hn2(inw-1,jnw-1),4d0)
+                  fxyne=fxy(hn2(ine+1,jne+1),hn2(ine-1,jne+1),hn2(ine+1,jne-1),hn2(ine-1,jne-1),4d0)
+                  fxyse=fxy(hn2(ise+1,jse+1),hn2(ise-1,jse+1),hn2(ise+1,jse-1),hn2(ise-1,jse-1),4d0)
       
                   hbef=cubic_interp( fsw,  fnw,  fne,  fse,   &
                                      fxsw, fxnw, fxne, fxse,  &
@@ -519,22 +528,22 @@
 
 ! PREPARATION: set 4 corners values and compute derivatives required for cubic interpolation 
 
-                  fsw=An2in(isw,jsw)
-                  fnw=An2in(inw,jnw)
-                  fne=An2in(ine,jne)
-                  fse=An2in(ise,jse)
-                  fxsw=fx(An2in(isw+1,jsw), An2in(isw-1,jsw), 2d0)
-                  fxnw=fx(An2in(inw+1,jnw), An2in(inw-1,jnw), 2d0)
-                  fxne=fx(An2in(ine+1,jne), An2in(ine-1,jne), 2d0)
-                  fxse=fx(An2in(ise+1,jse), An2in(ise-1,jse), 2d0)
-                  fysw=fy(An2in(isw,jsw+1), An2in(isw,jsw-1), 2d0)
-                  fynw=fy(An2in(inw,jnw+1), An2in(inw,jnw-1), 2d0)
-                  fyne=fy(An2in(ine,jne+1), An2in(ine,jne-1), 2d0)
-                  fyse=fy(An2in(ise,jse+1), An2in(ise,jse-1), 2d0)
-                  fxysw=fxy(An2in(isw+1,jsw+1),An2in(isw-1,jsw+1),An2in(isw+1,jsw-1),An2in(isw-1,jsw-1),4d0)
-                  fxynw=fxy(An2in(inw+1,jnw+1),An2in(inw-1,jnw+1),An2in(inw+1,jnw-1),An2in(inw-1,jnw-1),4d0)
-                  fxyne=fxy(An2in(ine+1,jne+1),An2in(ine-1,jne+1),An2in(ine+1,jne-1),An2in(ine-1,jne-1),4d0)
-                  fxyse=fxy(An2in(ise+1,jse+1),An2in(ise-1,jse+1),An2in(ise+1,jse-1),An2in(ise-1,jse-1),4d0)
+                  fsw=An2(isw,jsw)
+                  fnw=An2(inw,jnw)
+                  fne=An2(ine,jne)
+                  fse=An2(ise,jse)
+                  fxsw=fx(An2(isw+1,jsw), An2(isw-1,jsw), 2d0)
+                  fxnw=fx(An2(inw+1,jnw), An2(inw-1,jnw), 2d0)
+                  fxne=fx(An2(ine+1,jne), An2(ine-1,jne), 2d0)
+                  fxse=fx(An2(ise+1,jse), An2(ise-1,jse), 2d0)
+                  fysw=fy(An2(isw,jsw+1), An2(isw,jsw-1), 2d0)
+                  fynw=fy(An2(inw,jnw+1), An2(inw,jnw-1), 2d0)
+                  fyne=fy(An2(ine,jne+1), An2(ine,jne-1), 2d0)
+                  fyse=fy(An2(ise,jse+1), An2(ise,jse-1), 2d0)
+                  fxysw=fxy(An2(isw+1,jsw+1),An2(isw-1,jsw+1),An2(isw+1,jsw-1),An2(isw-1,jsw-1),4d0)
+                  fxynw=fxy(An2(inw+1,jnw+1),An2(inw-1,jnw+1),An2(inw+1,jnw-1),An2(inw-1,jnw-1),4d0)
+                  fxyne=fxy(An2(ine+1,jne+1),An2(ine-1,jne+1),An2(ine+1,jne-1),An2(ine-1,jne-1),4d0)
+                  fxyse=fxy(An2(ise+1,jse+1),An2(ise-1,jse+1),An2(ise+1,jse-1),An2(ise-1,jse-1),4d0)
 
                   Abef=cubic_interp( fsw,  fnw,  fne,  fse,   &
                                      fxsw, fxnw, fxne, fxse,  &
@@ -666,6 +675,31 @@
       enddo
 
     end subroutine calc_dFy
+
+    subroutine calc_div (utp, div)
+
+      implicit none
+
+      include 'parameter.h'
+      include 'CB_mask.h'
+
+      integer i, j
+      double precision, intent(in) :: utp(0:nx+2,0:ny+2)
+      double precision, intent(out):: div(nx,ny)
+
+      do i = 1, nx
+         do j = 1, ny
+
+            if (maskC(i,j) .eq. 1) then
+
+               div(i,j)=(utp(i+1,j)-utp(i,j) + vtp(i,j+1)-vtp(i,j))/Deltax 
+
+            endif
+
+         enddo
+      enddo
+
+    end subroutine calc_div
 
     function fx(fright, fleft, deno) result(fx)
       
