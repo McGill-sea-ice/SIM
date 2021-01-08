@@ -33,7 +33,7 @@
       include 'CB_mask.h'
       include 'CB_options.h'
 
-      integer i, j, k, caseSL, summask, iloc, jloc
+      integer i, j, k, caseSL, iloc, jloc
       integer isw, jsw, inw, jnw, ine, jne, ise, jse !SL SouthWest=sw, nw, ne, se corners
       double precision, intent(in)    :: un1(0:nx+2,0:ny+2), vn1(0:nx+2,0:ny+2)
       double precision, intent(in)    :: un(0:nx+2,0:ny+2), vn(0:nx+2,0:ny+2)
@@ -43,8 +43,9 @@
       double precision                :: ustar(0:nx+2,0:ny+2), vstar(0:nx+2,0:ny+2)
       double precision                :: hstar(0:nx+1,0:ny+1), Astar(0:nx+1,0:ny+1)
       double precision                :: dFx(nx,ny), dFy(nx,ny), div(nx,ny)
-      double precision                :: alphamx, alphamy, xd, yd, uinterp, vinterp, ftp
-      double precision                :: hbef, abef, fsw, fnw, fne, fse
+      double precision                :: alphamx, alphamy, uinterp, vinterp, ftp
+      double precision                :: hbef, Abef, xd, yd, xdn1, ydn1, xdn2, ydn2 
+      double precision                :: fsw, fnw, fne, fse
       double precision                :: fxsw, fxnw, fxne, fxse, fysw, fynw, fyne, fyse
       double precision                :: fxysw, fxynw, fxyne, fxyse
       double precision                :: upper, lower, rhsh, rhsA
@@ -334,7 +335,7 @@
 
          SLlimiter=.true.
          
-         call calc_div(un1,div) ! calc divergence at n-1 for RHS [hdiv(u)]^{n-1}
+         call calc_div(un1,vn1,div) ! calc divergence at n-1 for RHS [hdiv(u)]^{n-1}
 
          do i = 1, nx
             do j = 1, ny
@@ -444,7 +445,8 @@
 ! xd and yd are distances in the interval [0,1]. They are calc from the sw corner 
 
                   if (alphamx .ge. 0) then  ! particle coming from the West (u .ge. 0)
-                     xd = 1d0 - 2d0*alphamx / Deltax
+                     xdn2 = 1d0 - 2d0*alphamx / Deltax
+                     xdn1 = 1d0 - alphamx / Deltax
                      if (alphamy .ge. 0) then ! particle coming from the South (v .ge. 0)
                         isw=i-1
                         jsw=j-1
@@ -454,7 +456,8 @@
                         jne=j
                         ise=i
                         jse=j-1
-                        yd = 1d0 - 2d0*alphamy / Deltax
+                        ydn2 = 1d0 - 2d0*alphamy / Deltax
+                        ydn1 = 1d0 - alphamy / Deltax
                      else                     ! particle coming from the North (v .lt. 0)
                         isw=i-1
                         jsw=j
@@ -464,10 +467,12 @@
                         jne=j+1
                         ise=i
                         jse=j
-                        yd = -2d0*alphamy / Deltax
+                        ydn2 = -2d0*alphamy / Deltax
+                        ydn1 = -1d0*alphamy / Deltax
                      endif
                   else                      ! particle coming from the East (u .lt. 0) 
-                     xd = -2d0*alphamx / Deltax
+                     xdn2 = -2d0*alphamx / Deltax
+                     xdn1 = -1d0*alphamx / Deltax
                      if (alphamy .ge. 0) then ! particle coming from the South (v .ge. 0)                             
                         isw=i
                         jsw=j-1
@@ -477,7 +482,7 @@
                         jne=j
                         ise=i+1
                         jse=j-1
-                        yd = 1d0 - 2d0*alphamy / Deltax
+                        ydn2 = 1d0 - 2d0*alphamy / Deltax
                      else                     ! particle coming from the North (v .lt. 0) 
                         isw=i
                         jsw=j
@@ -487,7 +492,8 @@
                         jne=j+1
                         ise=i+1
                         jse=j
-                        yd = -2d0*alphamy / Deltax
+                        ydn2 = -2d0*alphamy / Deltax
+                        ydn1 = -1d0*alphamy / Deltax
                      endif
                   endif
 
@@ -516,12 +522,12 @@
                                      fxsw, fxnw, fxne, fxse,  &
                                      fysw, fynw, fyne, fyse,  &
                                      fxysw,fxynw,fxyne,fxyse, &
-                                     xd, yd )
+                                     xdn2, ydn2 )
 
                   if (SLlimiter) then
                      upper=max(fsw, fnw, fne, fse)
                      lower=min(fsw, fnw, fne, fse)
-                     hbef=apply_lim(hbef, upper, lower, xd, yd, fsw,  fnw,  fne,  fse)
+                     hbef=apply_lim(hbef, upper, lower, xdn2, ydn2, fsw,  fnw,  fne,  fse)
                   endif
 
 ! 2b) find Abef using cubic interpolation                                                                    
@@ -549,12 +555,12 @@
                                      fxsw, fxnw, fxne, fxse,  &
                                      fysw, fynw, fyne, fyse,  &
                                      fxysw,fxynw,fxyne,fxyse, &
-                                     xd, yd )
+                                     xdn2, ydn2 )
 
                   if (SLlimiter) then
                      upper=max(fsw, fnw, fne, fse)
                      lower=min(fsw, fnw, fne, fse)
-                     Abef=apply_lim(Abef, upper, lower, xd, yd, fsw,  fnw,  fne,  fse)
+                     Abef=apply_lim(Abef, upper, lower, xdn2, ydn2, fsw,  fnw,  fne,  fse)
                   endif
 
 !------------------------------------------------------------------------                                        
@@ -589,7 +595,7 @@
                                      fxsw, fxnw, fxne, fxse,  &
                                      fysw, fynw, fyne, fyse,  &
                                      fxysw,fxynw,fxyne,fxyse, &
-                                     xdddddddhalf, ydhalf )
+                                     xdn1, ydn1 )
 
 ! b) find rhsA using cubic interpolation                                                                                 
 ! PREPARATION: set 4 corners values and compute derivatives required for cubic interpolation                           
@@ -619,7 +625,7 @@
                                      fxsw, fxnw, fxne, fxse,  &
                                      fysw, fynw, fyne, fyse,  &
                                      fxysw,fxynw,fxyne,fxyse, &
-                                     xdddddddhalf, ydhalf )
+                                     xdn1, ydn1 )
 
 !                  rhsh = 0d0
 !                  rhsA = 0d0
@@ -736,15 +742,16 @@
 
     end subroutine calc_dFy
 
-    subroutine calc_div (utp, div)
+    subroutine calc_div (utp, vtp, div)
 
       implicit none
 
       include 'parameter.h'
       include 'CB_mask.h'
+      include 'CB_const.h'
 
       integer i, j
-      double precision, intent(in) :: utp(0:nx+2,0:ny+2)
+      double precision, intent(in) :: utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
       double precision, intent(out):: div(nx,ny)
 
       do i = 1, nx
@@ -761,35 +768,35 @@
 
     end subroutine calc_div
 
-    function fx(fright, fleft, deno) result(fx)
+    function fx(fright, fleft, deno) result(dfdx)
       
       double precision, intent(in) :: fright, fleft                                 
       double precision, intent(in) :: deno
-      double precision             :: fx         ! output df/dx                                          
+      double precision             :: dfdx ! output df/dx                                          
 
-      fx = ( fright - fleft ) / deno
+      dfdx = ( fright - fleft ) / deno
       
     end function fx
 
-    function fy(fup, fdown, deno) result(fy)
+    function fy(fup, fdown, deno) result(dfdy)
 
       double precision, intent(in) :: fup, fdown 
       double precision, intent(in) :: deno
-      double precision             :: fy         ! output df/dy                     
+      double precision             :: dfdy ! output df/dy                     
 
-      fy = ( fup - fdown ) / deno
+      dfdy = ( fup - fdown ) / deno
 
     end function fy
 
-    function fxy (fur, ful, fdr, fdl, deno) result(fxy)
+    function fxy (fur, ful, fdr, fdl, deno) result(dfdxdy)
 
       double precision, intent(in) :: fur, ful, fdr, fdl
       double precision, intent(in) :: deno
-      double precision             :: fxy    ! output d(dfdx)/dy                          
+      double precision             :: dfdxdy ! output d(dfdx)/dy                          
                                                         
     ! u:up, d:down, r:right, l:left
                                      
-      fxy = ( fur - ful - fdr + fdl ) / deno
+      dfdxdy = ( fur - ful - fdr + fdl ) / deno
 
     end function fxy
 
@@ -851,9 +858,9 @@
       finterp = a00 + a01*yd + a02*(yd**2) + a03*(yd**3) + &
                 a10*xd + a11*xd*yd + a12*xd*(yd**2) + a13*xd*(yd**3) + &
                 a20*(xd**2) + a21*(xd**2)*yd + a22*(xd**2)*(yd**2) + a23*(xd**2)*(yd**3) + &
-                a30*(xd**3) + a31*(xd**3)*yd + a32*(xd**3)*(yd**2) + a33*(xd**3)*(yd**3) + &
+                a30*(xd**3) + a31*(xd**3)*yd + a32*(xd**3)*(yd**2) + a33*(xd**3)*(yd**3) 
 
-     end function cubic_interp
+    end function cubic_interp
 
       function calc_fluxx (uij, uip1j, Tim1j, Tij, Tip1j) result(fluxx)
 
@@ -878,7 +885,7 @@
 
       function calc_fluxy (vij, vijp1, Tijm1, Tij, Tijp1) result(fluxy)
 
-        double precision, intent(in) :: vij, vijp1, Tijm1, Tij, Tijp1 ! T=tracer                                                    
+        double precision, intent(in) :: vij, vijp1, Tijm1, Tij, Tijp1 ! T=tracer
         double precision :: fluxy, F1, F2
 
         if ( vij .ge. 0d0 ) then
