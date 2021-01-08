@@ -357,6 +357,8 @@
 
 !------------------------------------------------------------------------  
 ! find distances alphamx and alphamy of particle from tracer(i,j) at t=n-1
+! xd, yd are calculated from sw corner of T-cell (h, A at center). 
+! The four corners are the four corners of the T-cell.  
 !------------------------------------------------------------------------
                   alphamx=0.01d0 ! initial value
                   alphamy=0.01d0 ! initial value
@@ -441,8 +443,10 @@
 ! find hbef and Abef (initial position of particle at time level n-2=n2)
 !------------------------------------------------------------------------
 
-! 1) identify coordinates of 4 corners
+! 1) identify coordinates of 4 corners. These corners at at tracer points.
 ! xd and yd are distances in the interval [0,1]. They are calc from the sw corner 
+! xdn2, ydn2 is the position of the particle at n-2 (with respect to the sw corner)
+! xdn1, ydn1 is the position of the particle at n-1 (with respect to the sw corner)
 
                   if (alphamx .ge. 0) then  ! particle coming from the West (u .ge. 0)
                      xdn2 = 1d0 - 2d0*alphamx / Deltax
@@ -483,6 +487,7 @@
                         ise=i+1
                         jse=j-1
                         ydn2 = 1d0 - 2d0*alphamy / Deltax
+                        ydn1 = 1d0 - alphamy / Deltax
                      else                     ! particle coming from the North (v .lt. 0) 
                         isw=i
                         jsw=j
@@ -523,7 +528,7 @@
                                      fysw, fynw, fyne, fyse,  &
                                      fxysw,fxynw,fxyne,fxyse, &
                                      xdn2, ydn2 )
-
+NEED TO CHECK LIMITER
                   if (SLlimiter) then
                      upper=max(fsw, fnw, fne, fse)
                      lower=min(fsw, fnw, fne, fse)
@@ -566,7 +571,7 @@
 !------------------------------------------------------------------------                                        
 ! find right hand side terms rhsh and rhsA (time level n-1 = n1)
 !------------------------------------------------------------------------ 
-                  
+CHECK DONE ABOVE                  
 ! a) find rhsh using cubic interpolation                                                                    
 ! PREPARATION: set 4 corners values and compute derivatives required for cubic interpolation
 
