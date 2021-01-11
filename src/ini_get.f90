@@ -131,6 +131,8 @@ subroutine ini_get (restart, expno_r, restart_date)
             
           un1 = uice
           vn1 = vice
+          hn1 = h
+          An1 = A
 
        endif
          
