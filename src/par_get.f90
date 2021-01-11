@@ -426,6 +426,13 @@ subroutine read_namelist
          stop
       endif
 
+      if ( adv_scheme .ne. 'upwind' .and.                              &
+           adv_scheme .ne. 'upwindRK2' .and.                           &
+           adv_scheme .ne. 'semilag') then
+         print *, 'adv_scheme should be upwind or upwindRK2 or semilag'
+         stop
+      endif
+
       if ( ini_guess .ne. 'freedrift' .and.                            &
            ini_guess .ne. 'previous time step' ) then
          print *, 'Wrong initial guess chosen by user'
