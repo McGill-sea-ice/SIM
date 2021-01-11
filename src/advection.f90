@@ -357,8 +357,15 @@
 
 !------------------------------------------------------------------------  
 ! find distances alphamx and alphamy of particle from tracer(i,j) at t=n-1
-! xd, yd are calculated from sw corner of T-cell (h, A at center). 
-! The four corners are the four corners of the T-cell.  
+! xd, yd are calculated from sw corner of the T(i,j) cell (h, A at center). 
+! The four corners are the four corners of the T-cell.
+!
+! nw--------ne
+! |         |
+!uij  Tij   | 
+! |         |
+! sw--vij---se
+!  
 !------------------------------------------------------------------------
                   alphamx=0.01d0 ! initial value
                   alphamy=0.01d0 ! initial value
@@ -443,7 +450,14 @@
 ! find hbef and Abef (initial position of particle at time level n-2=n2)
 !------------------------------------------------------------------------
 
-! 1) identify coordinates of 4 corners. These corners at at tracer points.
+! identify coordinates of 4 corners. These corners are 4 tracer points.
+
+! Tnw--------Tne
+!  |         |
+!  |         | 
+!  |         | 
+! Tsw--------Tse 
+
 ! xd and yd are distances in the interval [0,1]. They are calc from the sw corner 
 ! xdn2, ydn2 is the position of the particle at n-2 (with respect to the sw corner)
 ! xdn1, ydn1 is the position of the particle at n-1 (with respect to the sw corner)
@@ -502,8 +516,7 @@
                      endif
                   endif
 
-! 2a) find hbef using cubic interpolation 
-
+! find hbef using cubic interpolation 
 ! PREPARATION: set 4 corners values and compute derivatives required for cubic interpolation
 
                   fsw=hn2(isw,jsw)
@@ -528,15 +541,14 @@
                                      fysw, fynw, fyne, fyse,  &
                                      fxysw,fxynw,fxyne,fxyse, &
                                      xdn2, ydn2 )
-NEED TO CHECK LIMITER
+
                   if (SLlimiter) then
                      upper=max(fsw, fnw, fne, fse)
                      lower=min(fsw, fnw, fne, fse)
                      hbef=apply_lim(hbef, upper, lower, xdn2, ydn2, fsw,  fnw,  fne,  fse)
                   endif
 
-! 2b) find Abef using cubic interpolation                                                                    
-
+! find Abef using cubic interpolation                                                                    
 ! PREPARATION: set 4 corners values and compute derivatives required for cubic interpolation 
 
                   fsw=An2(isw,jsw)
@@ -570,9 +582,10 @@ NEED TO CHECK LIMITER
 
 !------------------------------------------------------------------------                                        
 ! find right hand side terms rhsh and rhsA (time level n-1 = n1)
+! minus sign added later in final calc of hout, Aout
 !------------------------------------------------------------------------ 
-CHECK DONE ABOVE                  
-! a) find rhsh using cubic interpolation                                                                    
+
+! find rhsh using cubic interpolation                                                                    
 ! PREPARATION: set 4 corners values and compute derivatives required for cubic interpolation
 
                   fsw=hn1(isw,jsw)*div(isw,jsw)
@@ -602,7 +615,7 @@ CHECK DONE ABOVE
                                      fxysw,fxynw,fxyne,fxyse, &
                                      xdn1, ydn1 )
 
-! b) find rhsA using cubic interpolation                                                                                 
+! find rhsA using cubic interpolation                                                                                 
 ! PREPARATION: set 4 corners values and compute derivatives required for cubic interpolation                           
 
                   fsw=An1(isw,jsw)*div(isw,jsw)
