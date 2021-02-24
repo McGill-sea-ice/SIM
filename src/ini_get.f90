@@ -72,7 +72,9 @@ subroutine ini_get (restart, expno_r, restart_date)
        vice = 0d0
        un1  = 0d0  ! u-velocity pts 
        vn1  = 0d0  ! v-velocity pts 
-         
+       hn1  = h
+       An1  = A
+
     endif
 
 !------------------------------------------------------------------------
@@ -129,6 +131,8 @@ subroutine ini_get (restart, expno_r, restart_date)
             
           un1 = uice
           vn1 = vice
+          hn1 = h
+          An1 = A
 
        endif
          

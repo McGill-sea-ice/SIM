@@ -90,7 +90,7 @@
       regularization = 'tanh'        ! tanh, Kreyscher, capping
       visc_method = 2                ! see viscousCoeff routine for details
       ini_guess  = 'previous time step' ! freedrift, previous time step
-      adv_scheme = 'upwind'       ! upwind, upwindRK2 
+      adv_scheme = 'upwind'          ! upwind, upwindRK2, semilag 
       IMEX       = 0                 ! 0:split in time, 1:Picard, 2:JFNK
       BDF         = 0                ! 0: back. Euler, 1: 2nd order back. diff. formula
       Dynamic    = .true.            ! ice model type
@@ -423,6 +423,13 @@ subroutine read_namelist
 
       if ( solver .eq. 3 .and. IMEX .gt. 0) then
          print *, 'IMEX does not work with EVP solver'
+         stop
+      endif
+
+      if ( adv_scheme .ne. 'upwind' .and.                              &
+           adv_scheme .ne. 'upwindRK2' .and.                           &
+           adv_scheme .ne. 'semilag') then
+         print *, 'adv_scheme should be upwind or upwindRK2 or semilag'
          stop
       endif
 

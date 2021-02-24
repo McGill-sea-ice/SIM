@@ -8,6 +8,8 @@
                 A        (0:nx+1,0:ny+1),    &
                 hn1      (0:nx+1,0:ny+1),    &
                 An1      (0:nx+1,0:ny+1),    &
+                hn2      (0:nx+1,0:ny+1),    &
+                An2      (0:nx+1,0:ny+1),    &
                 tracer   (0:nx+1,0:ny+1,2), &
                 uice     (0:nx+2,0:ny+2), &
                 vice     (0:nx+2,0:ny+2), &
@@ -30,6 +32,8 @@
                 A,              & ! ice concentration ( = tracer(i,j,2) )
                 hn1,            & ! previous time step ice thickness
                 An1,            & ! previous time step ice concentration
+                hn2,            & ! ice thickness at time level n-2
+                An2,            & ! ice concentration at time level n-2
                 tracer,         & ! passive tracer 
                 uice,           & ! x-comp ice velocity 
                 vice,           & ! y-comp ice velocity

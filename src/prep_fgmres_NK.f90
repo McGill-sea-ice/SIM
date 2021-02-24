@@ -224,7 +224,7 @@
          x = xini + aLS*sol
          call transformer (utp,vtp,x,0)
          if ( IMEX .gt. 0 ) then ! IMEX method 1 or 2   
-            call advection ( un1, vn1, utp, vtp, hn1, An1, h, A )
+            call advection ( un1, vn1, utp, vtp, hn2, An2, hn1, An1, h, A )
             call Ice_strength()
             call bvect_ind
          endif

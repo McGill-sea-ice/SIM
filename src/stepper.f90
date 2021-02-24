@@ -77,6 +77,11 @@
             vn2 = vn1
          endif
 
+         if ( adv_scheme .eq. 'semilag') then ! semilag is 3 time level scheme                     
+            hn2 = hn1
+            An2 = An1
+         endif
+
          un1 = uice ! previous time step solution
          vn1 = vice ! previous time step solution
          hn1 = h
@@ -126,7 +131,7 @@
                call transformer (uice,vice,xtp,1)
 
                if ( IMEX .eq. 1 ) then ! IMEX 1 (2 doesn't work with Picard) 
-                  call advection ( un1, vn1, uice, vice, hn1, An1, h, A )
+                  call advection ( un1, vn1, uice, vice, hn2, An2, hn1, An1, h, A )
                   call Ice_strength()
                   call bvect_ind
                endif
@@ -173,7 +178,7 @@
                call transformer (uice,vice,xtp,1)
 
                if ( IMEX .gt. 0 ) then ! IMEX method 1 or 2                     
-                  call advection ( un1, vn1, uice, vice, hn1, An1, h, A )
+                  call advection ( un1, vn1, uice, vice, hn2, An2, hn1, An1, h, A )
                   call Ice_strength()
                   call bvect_ind
                endif
@@ -236,7 +241,7 @@
       if ( Dynamic ) then
 
          if (IMEX .eq. 0) then ! already done with IMEX 1 and 2
-            call advection ( un1, vn1, uice, vice, hn1, An1, h, A )
+            call advection ( un1, vn1, uice, vice, hn2, An2, hn1, An1, h, A )
          endif
          tracer(:,:,1) = h
          tracer(:,:,2) = A
