@@ -14,6 +14,8 @@
                 Qia      (0:nx+1,0:ny+1), &
                 Qsh_io   (0:nx+1,0:ny+1), &
                 Qadvdiff (0:nx+1,0:ny+1), &
+                Sh       (1:nx,1:ny)    , &
+                SA       (1:nx,1:ny)    , &
                 Pvap     (0:nx+1,0:ny+1)
 
 
@@ -28,7 +30,9 @@
                 Qia,            & ! conductive heat flux through ice
                 Qsh_io,         & ! sensible heat flux (ocn/ice)
                 Qadvdiff,       & ! Advection-Diffusion heat transfer
-                Pvap           ! atmospheric vapour pressure
+                Sh,             & ! thermo source term (h, continuity equation)
+                SA,             & ! thermo source term (A, continuity equation) 
+                Pvap              ! atmospheric vapour pressure
 
 
 

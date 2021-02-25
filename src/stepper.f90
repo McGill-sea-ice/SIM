@@ -262,7 +262,7 @@
             Ta = 263.15d0
          end select
          
-         call thermodynamic (date, h, A)
+         call thermo_source_terms (date, h, A)
          
          call update_tracer
       

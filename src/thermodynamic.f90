@@ -18,7 +18,7 @@
 !************************************************************************
 
 
-      subroutine thermodynamic (date, htp, Atp)
+      subroutine thermo_source_terms (date, htp, Atp)
         USE datetime, ONLY: datetime_type, datetime_str, datetime_str_6
       implicit none
 
@@ -123,13 +123,69 @@
 
             tracer(i,j,2)  = max( min( tracer(i,j,2), 1d0 ), 0d0 ) * &
                              maskC(i,j)
+
+            if ( maskC(i,j) == 1 ) then
+
+               Sh(i,j)=Source_h
+               SA(i,j)=Source_A
+               
+            else
+
+               Sh(i,j)=0d0
+               SA(i,j)=0d0
+
+            endif
             
          enddo
       enddo
 
-
       return
-    end subroutine thermodynamic
+    end subroutine thermo_source_terms
 
+    subroutine  dh_dA_thermo (htp, Atp)
 
+      implicit none
 
+      include 'parameter.h'
+      include 'CB_const.h'
+      include 'CB_mask.h'
+      include 'CB_ThermoVariables.h'
+      include 'CB_options.h'
+
+      integer i, j
+
+      double precision, intent(inout) :: htp(0:nx+1,0:ny+1), Atp(0:nx+1,0:ny+1)
+
+      do i = 1, nx
+         do j = 1, ny
+
+            if ( maskC(i,j) == 1 ) then
+
+               if ( adv_scheme == 'upwind' .or. adv_scheme == 'upwindRK2' ) then
+
+                  htp(i,j) = htp(i,j) + Deltat * Sh(i,j)
+
+                  Atp(i,j) = Atp(i,j) + Deltat * SA(i,j)
+                  
+               elseif ( adv_scheme == 'semilag' ) then
+
+                  print *, 'NOT CODED YET'
+                  stop
+
+               endif
+
+               htp(i,j) = max(htp(i,j), 0d0)
+               Atp(i,j) = max(Atp(i,j), 0d0)
+               Atp(i,j) = min(Atp(i,j), 1d0)
+               
+            else
+               
+               Sh(i,j)=0d0
+               SA(i,j)=0d0
+
+            endif
+
+         enddo
+      enddo
+
+    end subroutine dh_dA_thermo

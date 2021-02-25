@@ -48,7 +48,7 @@
       double precision                :: fsw, fnw, fne, fse
       double precision                :: fxsw, fxnw, fxne, fxse, fysw, fynw, fyne, fyse
       double precision                :: fxysw, fxynw, fxyne, fxyse
-      double precision                :: upper, lower, rhsh, rhsA
+      double precision                :: upper, lower, rhsdynh, rhsdynA
       double precision                :: fluxx, fluxy
       double precision                :: fx, fy, fxy, cubic_interp         ! function
       double precision                :: calc_fluxx, calc_fluxy, apply_lim ! functions
@@ -580,12 +580,12 @@
                      Abef=apply_lim(Abef, upper, lower, xdn2, ydn2, fsw,  fnw,  fne,  fse)
                   endif
 
-!------------------------------------------------------------------------                                        
-! find right hand side terms rhsh and rhsA (time level n-1 = n1)
+!------------------------------------------------------------------------
+! find right hand side terms rhsdynh and rhsdynA (time level n-1 = n1)
 ! minus sign added later in final calc of hout, Aout
 !------------------------------------------------------------------------ 
 
-! find rhsh using cubic interpolation                                                                    
+! find rhsdynh using cubic interpolation                                                 
 ! PREPARATION: set 4 corners values and compute derivatives required for cubic interpolation
 
                   fsw=hn1(isw,jsw)*div(isw,jsw)
@@ -609,13 +609,13 @@
                   fxyse=fxy(hn1(ine+1,jne)*div(ine+1,jne), fnw, &
                         hn1(ise+1,jse-1)*div(ise+1,jse-1),hn1(isw,jsw-1)*div(isw,jsw-1),4d0) 
 
-                  rhsh=cubic_interp( fsw,  fnw,  fne,  fse,   &
-                                     fxsw, fxnw, fxne, fxse,  &
-                                     fysw, fynw, fyne, fyse,  &
-                                     fxysw,fxynw,fxyne,fxyse, &
-                                     xdn1, ydn1 )
+                  rhsdynh=cubic_interp( fsw,  fnw,  fne,  fse,   &
+                                        fxsw, fxnw, fxne, fxse,  &
+                                        fysw, fynw, fyne, fyse,  &
+                                        fxysw,fxynw,fxyne,fxyse, &
+                                        xdn1, ydn1 )
 
-! find rhsA using cubic interpolation                                                                                 
+! find rhsdynA using cubic interpolation                                                                                 
 ! PREPARATION: set 4 corners values and compute derivatives required for cubic interpolation                           
 
                   fsw=An1(isw,jsw)*div(isw,jsw)
@@ -639,21 +639,21 @@
                   fxyse=fxy(An1(ine+1,jne)*div(ine+1,jne), fnw, &
                         An1(ise+1,jse-1)*div(ise+1,jse-1),An1(isw,jsw-1)*div(isw,jsw-1),4d0)
 
-                  rhsA=cubic_interp( fsw,  fnw,  fne,  fse,   &
-                                     fxsw, fxnw, fxne, fxse,  &
-                                     fysw, fynw, fyne, fyse,  &
-                                     fxysw,fxynw,fxyne,fxyse, &
-                                     xdn1, ydn1 )
+                  rhsdynA=cubic_interp( fsw,  fnw,  fne,  fse,   &
+                                        fxsw, fxnw, fxne, fxse,  &
+                                        fysw, fynw, fyne, fyse,  &
+                                        fxysw,fxynw,fxyne,fxyse, &
+                                        xdn1, ydn1 )
 
-!                  rhsh = 0d0
-!                  rhsA = 0d0
+!                  rhsdynh = 0d0
+!                  rhsdynA = 0d0
 
 !------------------------------------------------------------------------
 ! find output h and A at time level n  
 !------------------------------------------------------------------------
 
-                  hout(i,j) = hbef - 2d0*Deltat*rhsh
-                  Aout(i,j) = Abef - 2d0*Deltat*rhsA
+                  hout(i,j) = hbef - 2d0*Deltat*rhsdynh
+                  Aout(i,j) = Abef - 2d0*Deltat*rhsdynA
        
                   hout(i,j) = max(hout(i,j), 0d0)
                   Aout(i,j) = max(Aout(i,j), 0d0)
