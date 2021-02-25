@@ -15,8 +15,8 @@
             do i = 0, nx+1
                do j = 0, ny+1
                
-                  if ( k .eq. 1 ) h(i,j) = tracer(i,j,k) 
-                  if ( k .eq. 2 ) A(i,j) = tracer(i,j,k)
+!                  if ( k .eq. 1 ) h(i,j) = tracer(i,j,k) 
+!                  if ( k .eq. 2 ) A(i,j) = tracer(i,j,k)
                   
                enddo
             enddo

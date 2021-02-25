@@ -2,8 +2,6 @@
 !     Common block const: program constants
 !========================================================================
 
-      integer ntracer
-
       double precision                 &
                 sinlat(0:nx+1,0:ny+1), &
                 coslat(0:nx+1,0:ny+1)
@@ -46,6 +44,4 @@
                 rhoice,         & ! ice density
                 Lfusion           ! Latent heat of fusion [J/kg]
 
-      common/const/  &
-                ntracer           ! number of tracer ( max = 10 )
 

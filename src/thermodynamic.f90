@@ -114,16 +114,6 @@
 !     Update ice thickness and ice concentration ( after SA(h_t-1) )
 !------------------------------------------------------------------------
 
-
-            tracer(i,j,1)  = tracer(i,j,1) + Deltat * Source_h 
-
-            tracer(i,j,1)  = max( tracer(i,j,1), 0d0 ) * maskC(i,j)
-
-            tracer(i,j,2)  = tracer(i,j,2) + Deltat * Source_A
-
-            tracer(i,j,2)  = max( min( tracer(i,j,2), 1d0 ), 0d0 ) * &
-                             maskC(i,j)
-
             if ( maskC(i,j) == 1 ) then
 
                Sh(i,j)=Source_h
@@ -164,9 +154,8 @@
                if ( adv_scheme == 'upwind' .or. adv_scheme == 'upwindRK2' ) then
 
                   htp(i,j) = htp(i,j) + Deltat * Sh(i,j)
-
                   Atp(i,j) = Atp(i,j) + Deltat * SA(i,j)
-                  
+
                elseif ( adv_scheme == 'semilag' ) then
 
                   print *, 'NOT CODED YET'

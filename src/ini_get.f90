@@ -49,9 +49,6 @@ subroutine ini_get (restart, expno_r, restart_date)
              if (i.eq.0 .or. i.eq.nx+1 .or. j.eq.0 .or. j.eq.ny+1) &
                   A(i,j) = 0d0
 
-             tracer(i,j,1) = h(i,j)
-             tracer(i,j,2) = A(i,j)
-
              Pp(i,j) = 0d0 
              P(i,j)  = 0d0
 
@@ -117,11 +114,6 @@ subroutine ini_get (restart, expno_r, restart_date)
                
              read (16,*) ( h(i,j),    i = 0, nx+1)
              read (17,*) ( A(i,j),    i = 0, nx+1)
-               
-             do i = 0, nx+1
-                tracer(i,j,1) = h(i,j)
-                tracer(i,j,2) = A(i,j)
-             enddo
                
           enddo
             

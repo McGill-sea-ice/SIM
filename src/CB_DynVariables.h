@@ -10,7 +10,6 @@
                 An1      (0:nx+1,0:ny+1),    &
                 hn2      (0:nx+1,0:ny+1),    &
                 An2      (0:nx+1,0:ny+1),    &
-                tracer   (0:nx+1,0:ny+1,2), &
                 uice     (0:nx+2,0:ny+2), &
                 vice     (0:nx+2,0:ny+2), &
                 un1      (0:nx+2,0:ny+2), &
@@ -28,13 +27,12 @@
                 zetaCf   (0:nx+1,0:ny+1)
 
       common/DynVariables/      &
-                h,              & ! ice thickness ( = tracer(i,j,1) )
-                A,              & ! ice concentration ( = tracer(i,j,2) )
+                h,              & ! ice thickness
+                A,              & ! ice concentration
                 hn1,            & ! previous time step ice thickness
                 An1,            & ! previous time step ice concentration
                 hn2,            & ! ice thickness at time level n-2
                 An2,            & ! ice concentration at time level n-2
-                tracer,         & ! passive tracer 
                 uice,           & ! x-comp ice velocity 
                 vice,           & ! y-comp ice velocity
                 un1,            & ! previous time level solution 
