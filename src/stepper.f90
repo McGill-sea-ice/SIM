@@ -262,7 +262,7 @@
             Ta = 263.15d0
          end select
          
-         call thermodynamic (date)
+         call thermodynamic (date, h, A)
          
          call update_tracer
       
@@ -275,7 +275,6 @@
 !------------------------------------------------------------------------
 !    Advect buoys using uice & vice to the position at the next time step
 !------------------------------------------------------------------------
-
 
       if ( BuoyTrack ) then
 

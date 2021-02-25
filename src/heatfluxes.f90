@@ -17,9 +17,7 @@
 !
 !************************************************************************
 
-
-      subroutine HeatFluxes ()
-
+      subroutine HeatFluxes (htp, Atp)
 
       use ICE_ALBEDO
       implicit none
@@ -28,12 +26,12 @@
       include 'CB_ThermoVariables.h'
       include 'CB_Thermodim.h'
       include 'CB_DynForcing.h'
-      include 'CB_DynVariables.h'
       include 'CB_const.h'
       include 'CB_mask.h'
 
-
       integer i, j
+
+      double precision, intent(in) :: htp(0:nx+1,0:ny+1), Atp(0:nx+1,0:ny+1)
 
       double precision tiny, tiny2, absorpatm1, absorpatm2, absorpatm
       double precision qsi, qso, qa, Bi, Bi1, Ai1
@@ -62,11 +60,11 @@
 
             if ( maskC(i,j) .eq. 0 ) goto 10
 
-            absorpatm= -(absorpatm2 - absorpatm1) * A(i,j) + absorpatm2
+            absorpatm= -(absorpatm2 - absorpatm1) * Atp(i,j) + absorpatm2
 
             qsi      = esat (Ti(i,j), 1d0) 
             qso      = esat (To(i,j), 0d0)
-            qa       = esat (Ta(i,j), A(i,j)) * relhum
+            qa       = esat (Ta(i,j), Atp(i,j)) * relhum
 
 !------------------------------------------------------------------------
 !     Coefficients of the linearized total heat flux between the ice and
@@ -78,7 +76,7 @@
                        + max(Klat_ia * speeda(i,j)                      &
                             * ( qsi - qa ), 0d0 )                       &
                        - Qsw(i,j) * (1d0 - absorpatm) *                 &
-                       (1d0 - albedo_manabe(Ti(i,j), h(i,j)))
+                       (1d0 - albedo_manabe(Ti(i,j), htp(i,j)))
             
 ! jfl: Ti is the old value and we are solving for delta T         
 
@@ -101,7 +99,7 @@
 !------------------------------------------------------------------------
 
 
-            hmax = max(h(i,j) / max(A(i,j), tiny), tiny)
+            hmax = max(htp(i,j) / max(Atp(i,j), tiny), tiny)
 
             delT=(-Bi1 - Kice * (Ti(i,j)-Tof) / hmax )/(Kice/hmax + Ai1)
 
@@ -110,7 +108,7 @@
 ! net upward flux over ice
 
             Qia(i,j) = ( Ksens_ai * speeda(i,j) * Ti(i,j)               &
-                         + Kemis_i * Ti(i,j) ** 4 + Bi ) * A(i,j)
+                         + Kemis_i * Ti(i,j) ** 4 + Bi ) * Atp(i,j)
 
 !------------------------------------------------------------------------
 !     Ocean-atmosphere heat flux, leads to ice formation if To = Tof(S)
@@ -126,7 +124,7 @@
                                  * ( qso - qa ), 0d0)                   &
                           - Ksens_ao * speeda(i,j)                      &
                                  * ( Ta(i,j) - To(i,j) ) )              &
-                          * (1d0 - A(i,j))
+                          * (1d0 - Atp(i,j))
 
             Qoa_f(i,j) = 0d0
 
@@ -165,7 +163,7 @@
             relvelocity  = max(speediw(i,j), 0.005d0)
 
             Qsh_io(i,j)  = max (Ksens_io * relvelocity *                &
-                      (To(i,j) - Tof), 0d0) * A(i,j)
+                      (To(i,j) - Tof), 0d0) * Atp(i,j)
 
 !------------------------------------------------------------------------
 !     Define various heat fluxes for plotting purposes
@@ -198,9 +196,7 @@
 
 
       return
-      end
-
-
+    end subroutine HeatFluxes
 
 !************************************************************************
 !     function Tofreeze:

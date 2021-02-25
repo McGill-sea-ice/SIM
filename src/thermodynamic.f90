@@ -18,7 +18,7 @@
 !************************************************************************
 
 
-      subroutine thermodynamic (date)
+      subroutine thermodynamic (date, htp, Atp)
         USE datetime, ONLY: datetime_type, datetime_str, datetime_str_6
       implicit none
 
@@ -35,20 +35,18 @@
       
       character(LEN=6) datestr
 
+      double precision, intent(in) :: htp(0:nx+1,0:ny+1), Atp(0:nx+1,0:ny+1)
       double precision tiny, Qtot, Source_h, Source_A
 
       tiny = 1d-07   !jfl to be consistent with the nodim model
 
       datestr = datetime_str_6(date)
       day = date%day
-      month = date%month
-
-      
+      month = date%month      
       
       ! The interpolation of the ocean temperature in bc_get has daily accuracy, 
       ! but this only affects boundary conditions. 
       call bc_get (date)
-
       
       call atmosphere (date)
 
@@ -56,13 +54,11 @@
      
       call oceanTthermo
 
-      call HeatFluxes
+      call HeatFluxes (htp, Atp)
       
-
       do i = 1, nx
          do j = 1, ny
                      
-
 !------------------------------------------------------------------------
 !     Thermodynamic source term of ice thickness
 !------------------------------------------------------------------------
@@ -110,8 +106,8 @@
 
 
             if ( Source_h .lt. 0d0 )                                 &
-               Source_A = Source_A + tracer(i,j,2) * Source_h  /     &
-                          ( 2d0 * max( tracer(i,j,1), tiny ) )
+               Source_A = Source_A + Atp(i,j) * Source_h  /     &
+                          ( 2d0 * max( htp(i,j), tiny ) )
 
 
 !------------------------------------------------------------------------
@@ -133,7 +129,7 @@
 
 
       return
-      end
+    end subroutine thermodynamic
 
 
 
