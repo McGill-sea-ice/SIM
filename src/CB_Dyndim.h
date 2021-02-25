@@ -3,7 +3,7 @@
 !========================================================================
 
       double precision                    &
-                Ktracer(10), Cdw, Cda
+                Cdw, Cda
 
       double precision                    &
                 CdwC1    (0:nx+2,0:ny+2), &
@@ -21,6 +21,5 @@
                 Cbasal1,        & ! basal stress coefficient (u)
                 Cbasal2,        & ! basal stress coefficient (v)
                 CdwC1f,         & ! water drag coefficient (C-grid)
-                CdwC2f,         & ! water drag coefficient (C-grid)
-                Ktracer           ! diffusion coefficient for the tracers
+                CdwC2f            ! water drag coefficient (C-grid)
 

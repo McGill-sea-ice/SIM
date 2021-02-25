@@ -65,8 +65,6 @@
       !Cohe       =  0d0 !4d03        ! cohesion (tensile strght) [N/m2]
       !etamax     =  1.0d12           ! max shear viscosity
       e_ratio    = 2.0d0             ! ellipse aspect ratio 
-      Ktracer(1) =  0d0!5d03         ! diff coeff for h [m2/s] 
-      Ktracer(2) =  0d0!5d03         ! diff coeff for A [m2/s]
  
       Clat_ia    =  1d-03            ! LH transfer coeff (ice/atm) []
       Clat_oa    =  1d-03            ! LH transfer coeff (ocn/atm) []
@@ -81,8 +79,6 @@
       Kocn       =  1d11             ! ocean  diffusion coeff [m2/s]
 
       relhum     =  0.8d0            ! atmosphere relative humidity
-
-      ntracer    =  2                ! total number of ice tracer
 
       BndyCond   = 'noslip'          ! noslip
       Rheology   = 1                 ! ellipse = 1, triangle = 2

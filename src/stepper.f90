@@ -234,8 +234,8 @@
       endif
 
 !------------------------------------------------------------------------
-!     Integrate the continuity equations to get  h,A^t (and other tracers) 
-!     from h,A^t-1. We use uice and vice (u^t and v&t) to advect the tracers.
+!     Integrate the continuity equations to get h,A^n
+!     This is done in 2 steps: transport (dyn) and thermo  
 !------------------------------------------------------------------------
 
       if ( Dynamic ) then
@@ -243,12 +243,8 @@
          if (IMEX .eq. 0) then ! already done with IMEX 1 and 2
             call advection ( un1, vn1, uice, vice, hn2, An2, hn1, An1, h, A )
          endif
-         tracer(:,:,1) = h
-         tracer(:,:,2) = A
             
       endif
-
-!         call diffusion ( tracer )   ! not modified yet
 
 ! we should have monthly winds fr thermo forcing...modify load_forcing.f
          
@@ -262,9 +258,9 @@
             Ta = 263.15d0
          end select
          
-         call thermodynamic (date)
+         call thermo_source_terms (date, h, A)
          
-         call update_tracer
+         call dh_dA_thermo (h, A)
       
       endif
 
@@ -275,7 +271,6 @@
 !------------------------------------------------------------------------
 !    Advect buoys using uice & vice to the position at the next time step
 !------------------------------------------------------------------------
-
 
       if ( BuoyTrack ) then
 
