@@ -1,0 +1,12 @@
+refcode=/aos/home/lemieux/TESTS/REF
+newcode=/aos/home/lemieux/TESTS/NEW
+
+cmp ${refcode}/TEST/OUTPUT/h2002_01_01_02_00.41 ${newcode}/TEST/OUTPUT/h2002_01_01_02_00.41
+
+cmp ${refcode}/TEST/OUTPUT/h2002_01_01_02_00.42 ${newcode}/TEST/OUTPUT/h2002_01_01_02_00.42
+
+cmp ${refcode}/TEST/OUTPUT/h2002_01_01_02_00.43 ${newcode}/TEST/OUTPUT/h2002_01_01_02_00.43
+
+cmp ${refcode}/TEST/OUTPUT/h2002_01_01_02_00.44 ${newcode}/TEST/OUTPUT/h2002_01_01_02_00.44
+
+cmp ${refcode}/TEST/OUTPUT/h1990_01_01_01_00.45 ${newcode}/TEST/OUTPUT/h1990_01_01_01_00.45

@@ -1,0 +1,41 @@
+&option_nml
+    Dynamic  = .true.
+    ThermoDyn  = .false.
+    linearization = 'Zhang'
+    regularization = 'tanh'
+    ini_guess = 'previous time step'
+    adv_scheme = 'upwind'
+    Airtemp = 'MonthlyMean'
+    OcnTemp = 'calculated'
+    Wind = '6hours'
+    RampupWind = .false. 	
+    Current = 'YearlyMean'
+    Rheology = 1
+    IMEX = 0
+    BDF = 0
+    visc_method = 2
+    solver = 2
+    BasalStress = .false.
+/
+
+&numerical_param_nml
+    Deltat  = 1200.0
+    gamma_nl = 1d-03
+    NLmax = 200     
+    OLmax = 500
+    Nsub  = 120  
+/
+
+&phys_param_nml
+    Pstar  = 27.5d03
+    C = 20.0
+    e_ratio = 2.0
+    k1 = 8.0
+    k2 = 15d0
+    rhoair   =  1.3d0      
+    rhoice   =  9d02               
+    rhowater =  1026d0 
+    Cdair = 1.2d-03
+    Cdwater = 5.5d-03
+    f = 1.46d-04
+/

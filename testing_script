@@ -1,0 +1,43 @@
+ln -s /storage/common/forcing forcing
+cp /storage/common/restarts/40/*.40 output
+scons
+export HDF5_DISABLE_VERSION_CHECK=2
+
+rm -rf TEST/OUTPUT
+mkdir TEST/OUTPUT
+
+
+cp TEST/NAMELISTS/namelistSIM1 namelistSIM
+
+./zoupa < TEST/INPUTFILES/input_restart41
+
+mv output/h2002_01_01_02_00.41 TEST/OUTPUT
+rm -f output/*.41
+
+cp TEST/NAMELISTS/namelistSIM2 namelistSIM
+
+./zoupa < TEST/INPUTFILES/input_restart42
+
+mv output/h2002_01_01_02_00.42 TEST/OUTPUT
+rm -f output/*.42
+
+cp TEST/NAMELISTS/namelistSIM3 namelistSIM
+
+./zoupa < TEST/INPUTFILES/input_restart43
+
+mv output/h2002_01_01_02_00.43 TEST/OUTPUT
+rm -f output/*.43
+
+cp TEST/NAMELISTS/namelistSIM4 namelistSIM
+
+./zoupa < TEST/INPUTFILES/input_restart44
+
+mv output/h2002_01_01_02_00.44 TEST/OUTPUT
+rm -f output/*.44
+
+cp TEST/NAMELISTS/namelistSIM5 namelistSIM
+
+./zoupa < TEST/INPUTFILES/input_norestart45
+
+mv output/h1990_01_01_01_00.45 TEST/OUTPUT
+rm -f output/*.45
