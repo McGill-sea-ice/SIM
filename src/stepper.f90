@@ -258,7 +258,7 @@
             Ta = 263.15d0
          end select
          
-         call thermo_source_terms (date, h, A)
+         call thermo_source_terms (date, hn1, An1)
          
          call dh_dA_thermo (h, A)
       
