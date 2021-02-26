@@ -32,6 +32,7 @@
       include 'CB_const.h'
       include 'CB_mask.h'
       include 'CB_options.h'
+      include 'CB_semilag.h'
 
       integer i, j, k, caseSL, iloc, jloc
       integer isw, jsw, inw, jnw, ine, jne, ise, jse !SL SouthWest=sw, nw, ne, se corners
