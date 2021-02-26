@@ -25,7 +25,7 @@
 !************************************************************************
 
       subroutine advection (un1, vn1, un, vn, hn2, An2, hn1, An1, hout, Aout)
-
+      
       implicit none
 
       include 'parameter.h'
