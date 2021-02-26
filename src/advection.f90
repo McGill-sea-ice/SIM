@@ -25,13 +25,14 @@
 !************************************************************************
 
       subroutine advection (un1, vn1, un, vn, hn2, An2, hn1, An1, hout, Aout)
-
+      
       implicit none
 
       include 'parameter.h'
       include 'CB_const.h'
       include 'CB_mask.h'
       include 'CB_options.h'
+      include 'CB_semilag.h'
 
       integer i, j, k, caseSL, iloc, jloc
       integer isw, jsw, inw, jnw, ine, jne, ise, jse !SL SouthWest=sw, nw, ne, se corners
@@ -446,6 +447,18 @@
                      alphamy=Deltat*vinterp
 
                   enddo
+
+!------------------------------------------------------------------------                                                  
+! Store alphamx and alphamy for dh, dA update due to thermo                                                   
+!------------------------------------------------------------------------       
+
+                  if ( Thermodyn ) then
+
+                     alpmx(i,j)=alphamx
+                     alpmy(i,j)=alphamy
+
+                  endif
+
 !------------------------------------------------------------------------
 ! find hbef and Abef (initial position of particle at time level n-2=n2)
 !------------------------------------------------------------------------
