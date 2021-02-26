@@ -1,0 +1,4 @@
+refcode=/aos/home/lemieux/REF
+newcode=/aos/home/lemieux/NEW
+
+cmp -s ${refcode}/TEST/OUTPUT/h2002_01_01_02_00.41 ${newcode}/TEST/OUTPUT/h2002_01_01_02_00.41
