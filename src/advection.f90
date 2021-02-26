@@ -447,6 +447,18 @@
                      alphamy=Deltat*vinterp
 
                   enddo
+
+!------------------------------------------------------------------------                                                  
+! Store alphamx and alphamy for dh, dA update due to thermo                                                   
+!------------------------------------------------------------------------       
+
+                  if ( Thermodyn ) then
+
+                     alpmx(i,j)=alphamx
+                     alpmy(i,j)=alphamy
+
+                  endif
+
 !------------------------------------------------------------------------
 ! find hbef and Abef (initial position of particle at time level n-2=n2)
 !------------------------------------------------------------------------
