@@ -1,6 +1,6 @@
 
-      subroutine var_analysis
-
+      subroutine var_analysis(date, expno)
+        use datetime, only: datetime_type, datetime_str
       implicit none
       
       include 'parameter.h'
@@ -11,10 +11,14 @@
       include 'CB_DynForcing.h'
       include 'CB_options.h'
 
-      integer i, j, ncell
+      type(datetime_type), intent(in) :: date
+      integer, intent(in) :: expno
+      integer i, j, ncell, hour, year, month, day
       integer ihmax, jhmax, iumax, jumax, ivmax, jvmax
-      
-      double precision umax,vmax,hmax, havg
+
+      character filename*30
+
+      double precision umax,vmax,hmax, havg, VOL
 
       umax = 0d0
       vmax = 0d0
@@ -62,6 +66,24 @@
       print *, 'hmax (m)   = ', hmax, ihmax, jhmax
       print *, 'umax (m/s) = ', umax, iumax, jumax
       print *, 'vmax (m/s) = ', vmax, ivmax, jvmax
+
+!-------------------------------------------------------
+!     Calc and output total volume in km^3
+!------------------------------------------------------- 
+      hour = date%hour
+
+      if (hour == 0) then
+         VOL=havg*Deltax2*1d-09
+         print *, 'Volume [km^3]=', VOL
+         year = date%year
+         month = date%month
+         day = date%day
+         write (filename, '("output/sea_ice_volume.",i2.2)') expno
+         open (10, file = filename, status = 'unknown')
+         write(10,10) year, month, day, VOL
+      endif
+
+10 format (i4.4, i2.2, i2.2, f20.10)
 
       return
     end subroutine var_analysis
