@@ -266,7 +266,7 @@
 
 !------- Get some statistics for h, A, u and v --------------------------
 
-      call var_analysis(tstep, expno)
+      call var_analysis(date, expno)
       print *, ''
 !------------------------------------------------------------------------
 !    Advect buoys using uice & vice to the position at the next time step
