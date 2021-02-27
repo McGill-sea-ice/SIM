@@ -1,5 +1,5 @@
 
-      subroutine var_analysis
+      subroutine var_analysis(tstep, expno)
 
       implicit none
       
@@ -11,10 +11,11 @@
       include 'CB_DynForcing.h'
       include 'CB_options.h'
 
+      integer, intent(in) :: tstep, expno
       integer i, j, ncell
       integer ihmax, jhmax, iumax, jumax, ivmax, jvmax
       
-      double precision umax,vmax,hmax, havg
+      double precision umax,vmax,hmax, havg, Amod, Pmod, VOL
 
       umax = 0d0
       vmax = 0d0
@@ -62,6 +63,15 @@
       print *, 'hmax (m)   = ', hmax, ihmax, jhmax
       print *, 'umax (m/s) = ', umax, iumax, jumax
       print *, 'vmax (m/s) = ', vmax, ivmax, jvmax
+
+      Amod=tstep*Deltat
+      Pmod=86400d0 ! s/day
+      if (MOD(Amod, Pmod) < 1d-12) then
+
+         VOL=havg*Deltax2*1d-09
+         print *, 'Volume [km3]=', VOL
+
+      endif
 
       return
     end subroutine var_analysis
