@@ -73,8 +73,8 @@
       hour = date%hour
 
       if (hour == 0) then
-         VOL=havg*Deltax2*1d-09
-         print *, 'Volume [km^3]=', VOL
+         VOL=havg*Deltax2*1d-12
+         print *, 'Volume [10^3 km^3]=', VOL
          year = date%year
          month = date%month
          day = date%day
@@ -83,7 +83,7 @@
          write(10,10) year, month, day, VOL
       endif
 
-10 format (i4.4, i2.2, i2.2, f20.10)
+10 format (i4.4, i2.2, i2.2, f8.4)
 
       return
     end subroutine var_analysis
