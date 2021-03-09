@@ -8,7 +8,7 @@ git clone git@github.com:McGill-sea-ice/SIM.git<br/>
 cd SIM<br/>
 git branch -a (list branches)<br/>
 git checkout choose your branch<br/>
-./setup_script (to compile and create link for forcing)<br/>
+. setup_script (to compile and create link for forcing)<br/>
 export HDF5_DISABLE_VERSION_CHECK=2<br/>
 ./zoupa < input_file > outputfile &<br/>
 output files for fields are in the output directory<br/>
@@ -16,9 +16,19 @@ output files for fields are in the output directory<br/>
 
 ******* PULL REQUESTS *******<br/>
 
--Run 1 day exp with new code and 1 day exp with reference code.<br/>
--Run check_BFB.py routine to verify if it is bit for bit (BFB).<br/>
--Click on pull request.<br/>
--Enter text to describe code modifications and mention if it is BFB or not.<br/>
+-mkdir TESTS<br/>
+-cd TESTS<br/>
+-git clone git@github.com:McGill-sea-ice/SIM.git REF <br/>
+-cd REF<br/>
+-. testing_script<br/>
+-cd..<br/>
+-git clone git@github.com:McGill-sea-ice/SIM.git NEW <br/>
+-cd NEW<br/>
+-git checkout choose your branch<br/>
+-. testing_script<br/>
+-./test_results<br/>
+-copy result of tests (should get 5 PASS).<br/>
+-Click on pull request on github.<br/>
+-Enter text to describe code modifications and paste result of tests.<br/>
 -Assign someone for reviewing the code.<br/>
 -Assign JFLemieux73 for approving the pull request.<br/>
