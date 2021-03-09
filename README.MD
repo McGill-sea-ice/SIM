@@ -16,19 +16,19 @@ output files for fields are in the output directory<br/>
 
 ******* PULL REQUESTS *******<br/>
 
--mkdir TESTS<br/>
--cd TESTS<br/>
--git clone git@github.com:McGill-sea-ice/SIM.git REF <br/>
--cd REF<br/>
--. testing_script<br/>
--cd..<br/>
--git clone git@github.com:McGill-sea-ice/SIM.git NEW <br/>
--cd NEW<br/>
--git checkout choose your branch<br/>
--. testing_script<br/>
--./test_results<br/>
--copy result of tests (should get 5 PASS).<br/>
--Click on pull request on github.<br/>
--Enter text to describe code modifications and paste result of tests.<br/>
--Assign someone for reviewing the code.<br/>
--Assign JFLemieux73 for approving the pull request.<br/>
+mkdir TESTS<br/>
+cd TESTS<br/>
+git clone git@github.com:McGill-sea-ice/SIM.git REF <br/>
+cd REF<br/>
+. testing_script<br/>
+cd ..<br/>
+git clone git@github.com:McGill-sea-ice/SIM.git NEW <br/>
+cd NEW<br/>
+git checkout choose your branch<br/>
+. testing_script<br/>
+./test_results<br/>
+copy result of tests (should get 5 PASS).<br/>
+Click on pull request on github.<br/>
+Enter text to describe code modifications and paste result of tests.<br/>
+Assign someone for reviewing the code.<br/>
+Assign JFLemieux73 for approving the pull request.<br/>
