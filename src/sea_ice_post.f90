@@ -52,6 +52,10 @@
       write (filename,'("output/A",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,".",i2.2)') &
            year, month, day, hour, minute, expno
       open (11, file = filename, status = 'unknown')
+         
+      write (filename,'("output/dam",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,".",i2.2)') &
+           year, month, day, hour, minute, expno
+      open (40, file = filename, status = 'unknown')
 
       if ( Dynamic ) then
 
@@ -118,6 +122,9 @@
          write(11,10) ( A(i,j),       i = 0, nx+1 )
       enddo
 
+      do j = 0, ny + 1
+         write(40,10) ( dam(i,j), i = 0, nx+1 )
+      enddo
 
       if ( Dynamic ) then
 
@@ -175,7 +182,7 @@
       endif
 
 
-      do k = 9, 37
+      do k = 9, 40
          close(k)
       enddo
 
@@ -225,6 +232,8 @@ subroutine info_file (expno)
   write(10,10) (Deltax)
   write(10,*) ('Deltat (s) =')
   write(10,10) (Deltat)
+  write(10,*) ('Damage = ')
+  write(10,*) (Damage)
   write(10,*) ('Dynamic =')
   write(10,*) (Dynamic)
   write(10,*) ('Thermodynamic =')

@@ -24,7 +24,8 @@
                 zetaC    (0:nx+1,0:ny+1), &
                 etaCf    (0:nx+1,0:ny+1), &
                 etaBf    (0:nx+2,0:ny+2), &
-                zetaCf   (0:nx+1,0:ny+1)
+                zetaCf   (0:nx+1,0:ny+1), &
+                dam      (0:nx+1,0:ny+1)
 
       common/DynVariables/      &
                 h,              & ! ice thickness
@@ -47,7 +48,8 @@
                 zetaC,          & ! coefficient of bulk viscosity (C-grid)
                 etaCf,          & ! coefficient of shear viscosity (C-grid)
                 etaBf,          & ! coefficient of shear viscosity (B-grid)
-                zetaCf           ! coefficient of bulk viscosity (C-grid)
+                zetaCf,         & ! coefficient of bulk viscosity (C-grid)
+                dam               ! damage parameter
 
 
 

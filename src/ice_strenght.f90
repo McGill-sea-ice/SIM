@@ -3,7 +3,9 @@
 !
 !     calculates the ice strenght using:
 !       
-!       P = Pstar * h * exp(-C (1 - A))
+!       P = Pstar * h * exp(-C (1 - A)) * (1 - dam)
+!
+!     using damage (added by Antoine Savard in 08/2021)
 !
 !************************************************************************
 
@@ -23,14 +25,28 @@
 
       if ( Rheology .eq. 1 ) then
 
-         do i = 1, nx
-            do j = 1, ny
-               if (maskC(i,j) .eq. 1) then
-                  Pp(i,j) = Pstar * h(i,j) * dexp(-C * ( 1d0 - A(i,j) ) )
-                  Pp(i,j) = Pp(i,j) / 2d0
-               endif
+         if ( Damage .eq. 0 ) then
+         
+            do i = 1, nx
+               do j = 1, ny
+                  if (maskC(i,j) .eq. 1) then
+                     Pp(i,j) = Pstar * h(i,j) * dexp(-C * ( 1d0 - A(i,j) ) )
+                     Pp(i,j) = Pp(i,j) / 2d0
+                  endif
+               enddo
             enddo
-         enddo
+
+         elseif ( Damage .eq. 1 ) then    ! if you want damage or not the model simply change the parameter
+
+            do i = 1, nx
+               do j = 1, ny
+                  if (maskC(i,j) .eq. 1) then
+                     Pp(i,j) = Pstar * h(i,j) * dexp(-C * ( 1d0 - A(i,j) ) ) * ( 1d0 - dam(i,j) )
+                     Pp(i,j) = Pp(i,j) / 2d0
+                  endif
+               enddo
+            enddo
+         endif
 
 !------- set P = 0 at open boundaries for proper care of open bc --------------
 !                    see p.1241-1242 for details              
@@ -76,7 +92,7 @@
       endif
 
       return
-    end subroutine Ice_strength
+      end subroutine Ice_strength
       
 
 

@@ -49,10 +49,11 @@ subroutine ini_get (restart, expno_r, restart_date)
              if (i.eq.0 .or. i.eq.nx+1 .or. j.eq.0 .or. j.eq.ny+1) &
                   A(i,j) = 0d0
 
-             Pp(i,j) = 0d0 
-             P(i,j)  = 0d0
+             Pp(i,j)  = 0d0 
+             P(i,j)   = 0d0
+             dam(i,j) = 0d0                    ! initial damage
 
-             etaC(i,j)= 0d0
+             etaC(i,j)  = 0d0
              zetaC(i,j) = 0d0
              etaB(i,j)  = 0d0
 
@@ -127,7 +128,17 @@ subroutine ini_get (restart, expno_r, restart_date)
           An1 = A
 
        endif
-         
+
+       write (filename, '("output/dam",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,".",i2.2)') &
+            year, month, day, hour, minute, expno_r
+       open (40, file = filename, status = 'old')
+
+       do j = 0, ny+1
+          read (40,*) ( dam(i,j),    i = 0, nx+1 )
+       enddo
+
+       close(40)
+       
        Cbasal1 = 0d0
        Cbasal2 = 0d0
          

@@ -82,6 +82,7 @@
 
       BndyCond   = 'noslip'          ! noslip
       Rheology   = 1                 ! ellipse = 1, triangle = 2
+      Damage     = 0                 ! damage parameter 0: no, 1: yes
       linearization = 'Zhang'        ! Tremblay, Zhang
       regularization = 'tanh'        ! tanh, Kreyscher, capping
       visc_method = 2                ! see viscousCoeff routine for details
@@ -332,8 +333,8 @@ subroutine read_namelist
            Dynamic, Thermodyn,                                  &
            linearization, regularization, ini_guess,            &
            adv_scheme, AirTemp, OcnTemp, Wind, RampupWind,      &
-           Current, Rheology, IMEX, BDF, visc_method, solver,   &
-           BasalStress
+           Current, Rheology, Damage, IMEX, BDF, visc_method,   &
+           solver, BasalStress
 
       namelist /numerical_param_nml/ &
            Deltat, gamma_nl, NLmax, OLmax, Nsub
@@ -405,7 +406,12 @@ subroutine read_namelist
          print *, 'Wrong Rheology chosen by user'
          stop
       endif
-
+      
+      if ( Damage .ne. 0 .and. Damage .ne. 1 ) then
+         print *, 'Given input for damage is neither 0 or 1'
+         stop
+      endif
+      
       if ( linearization .ne. 'Zhang' .and.                            &
            linearization .ne. 'Tremblay' ) then
          print *, 'Wrong linearization chosen by user'
@@ -469,6 +475,7 @@ subroutine read_namelist
  
       print *,
       print *, 'Rheology      =   ', Rheology
+      print *, 'Damage        =   ', Damage
       print *, 'Pstar         =   ', Pstar
       print *, 'linearization =   ', linearization
       print *, 'regularization=   ', regularization

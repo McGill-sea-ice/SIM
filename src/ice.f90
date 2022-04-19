@@ -227,8 +227,9 @@ PROGRAM ice
 
          if (tstep .eq. 1) call info_file (expno)
          if (now_date .eq. post_date(k)) then
-            write(*,*) k, ' -- Calling sea-ice_post'
+            write(*,*) k, ' -- Calling sea_ice_post and stress_strain'
             call sea_ice_post (now_date, expno)
+            call stress_strain (uice, vice, now_date, 0, expno)
             k = k + 1
          endif
 
