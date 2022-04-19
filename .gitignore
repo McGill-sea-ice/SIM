@@ -1,7 +1,7 @@
 ### Fortran ###
 # Prerequisites
 *.d
-/output/
+/output/*
 
 # Compiled Object files
 *.slo
