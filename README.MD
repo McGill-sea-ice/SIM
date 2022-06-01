@@ -31,4 +31,4 @@ copy result of tests (should get 5 PASS).<br/>
 Click on pull request on github.<br/>
 Enter text to describe code modifications and paste result of tests.<br/>
 Assign someone for reviewing the code.<br/>
-Assign JFLemieux73 for approving the pull request.<br/>
+Assign lbtremblay (and JFLemieux73 for a little bit) for approving the pull request.<br/>
