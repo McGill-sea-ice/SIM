@@ -29,7 +29,7 @@ subroutine ini_get (restart, expno_r, restart_date)
     minute = restart_date%minute
 
 !------------------------------------------------------------------------
-!     Set initial conditions for h,A,u,v,Ta,Ti,Tl
+!     Set initial conditions for h,A,u,v,Ta,Ti,Tl,dam
 !------------------------------------------------------------------------
 
     if ( restart .eq. 0 ) then
@@ -72,6 +72,7 @@ subroutine ini_get (restart, expno_r, restart_date)
        vn1  = 0d0  ! v-velocity pts 
        hn1  = h
        An1  = A
+       damn1= dam
 
     endif
 
@@ -102,7 +103,11 @@ subroutine ini_get (restart, expno_r, restart_date)
           write (filename,'("output/v",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,".",i2.2)') &
                year, month, day, hour, minute, expno_r
           open (19, file = filename, status = 'unknown')
-            
+
+          write (filename, '("output/dam",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,".",i2.2)') &
+            year, month, day, hour, minute, expno_r
+          open (15, file = filename, status = 'old')
+
           do j = 1, ny
              read (18,*) ( uice(i,j), i = 1, nx+1 )
           enddo
@@ -115,10 +120,11 @@ subroutine ini_get (restart, expno_r, restart_date)
                
              read (16,*) ( h(i,j),    i = 0, nx+1)
              read (17,*) ( A(i,j),    i = 0, nx+1)
+             read (15,*) ( dam(i,j),  i = 0, nx+1)
                
           enddo
             
-          do k = 16, 19
+          do k = 15, 19
              close(k)
           enddo
             
@@ -126,18 +132,9 @@ subroutine ini_get (restart, expno_r, restart_date)
           vn1 = vice
           hn1 = h
           An1 = A
+          damn1 = dam
 
        endif
-
-       write (filename, '("output/dam",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,".",i2.2)') &
-            year, month, day, hour, minute, expno_r
-       open (40, file = filename, status = 'old')
-
-       do j = 0, ny+1
-          read (40,*) ( dam(i,j),    i = 0, nx+1 )
-       enddo
-
-       close(40)
        
        Cbasal1 = 0d0
        Cbasal2 = 0d0

@@ -78,14 +78,16 @@
          endif
 
          if ( adv_scheme .eq. 'semilag') then ! semilag is 3 time level scheme                     
-            hn2 = hn1
-            An2 = An1
+            hn2   = hn1
+            An2   = An1
+            damn2 = damn1
          endif
 
-         un1 = uice ! previous time step solution
-         vn1 = vice ! previous time step solution
-         hn1 = h
-         An1 = A
+         un1   = uice ! previous time step solution
+         vn1   = vice ! previous time step solution
+         hn1   = h
+         An1   = A
+         damn1 = dam
 
 !------- Set initial guess to freedrift if required (if not, PTS is used)-
       
@@ -131,7 +133,7 @@
                call transformer (uice,vice,xtp,1)
 
                if ( IMEX .eq. 1 ) then ! IMEX 1 (2 doesn't work with Picard) 
-                  call advection ( un1, vn1, uice, vice, hn2, An2, hn1, An1, h, A )
+                  call advection ( un1, vn1, uice, vice, hn2, An2, damn2, hn1, An1, damn1, h, A, dam )
                   call Ice_strength()
                   call bvect_ind
                endif
@@ -178,7 +180,7 @@
                call transformer (uice,vice,xtp,1)
 
                if ( IMEX .gt. 0 ) then ! IMEX method 1 or 2                     
-                  call advection ( un1, vn1, uice, vice, hn2, An2, hn1, An1, h, A )
+                  call advection ( un1, vn1, uice, vice, hn2, An2, damn2, hn1, An1, damn1, h, A, dam )
                   call Ice_strength()
                   call bvect_ind
                endif
@@ -241,7 +243,7 @@
       if ( Dynamic ) then
 
          if (IMEX .eq. 0) then ! already done with IMEX 1 and 2
-            call advection ( un1, vn1, uice, vice, hn2, An2, hn1, An1, h, A )
+            call advection ( un1, vn1, uice, vice, hn2, An2, damn2, hn1, An1, damn1, h, A, dam )
          endif
             
       endif
@@ -262,6 +264,14 @@
          
          call dh_dA_thermo (h, A)
       
+      endif
+
+      if ( Damage ) then
+
+         call dam_source_terms (damn1)
+
+         call ddam_damage (dam)
+
       endif
 
 !------- Get some statistics for h, A, u and v --------------------------

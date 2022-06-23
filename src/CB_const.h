@@ -11,6 +11,7 @@
       double precision Deltat, DtoverDx, rhof, Tif, Tof
       double precision emisice, emisatml,emisocn
       double precision AMR, hmin, Cpwater, rhowater, rhoice, Lfusion
+      double precision td, th
 
 
       common/const/             &
@@ -29,7 +30,9 @@
                 costheta_w,     & ! cos (theta_w)
                 rhof,           & ! rhoice * Coriolis parameter
                 Tif,            & ! ice freezing point temperature
-                Tof               ! ocn freezing point temperature
+                Tof,            & ! ocn freezing point temperature
+                td,             & ! damage time scale
+                th                ! healing time scale
 
 
 

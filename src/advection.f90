@@ -2,7 +2,7 @@
 !***********************************************************************
 !     subroutine advection (upwind scheme or upwind-RK2 or semilag):
 !       calculates the tracer quantities at the next time step. 
-!       Tracer #1 and #2 are ice thickness and concentration respectively.
+!       Tracer #1 and #2 #3 are ice thickness and concentration respectively and damage.
 !
 !     Revision History
 !     ----------------
@@ -24,7 +24,7 @@
 !
 !************************************************************************
 
-      subroutine advection (un1, vn1, un, vn, hn2, An2, hn1, An1, hout, Aout)
+      subroutine advection (un1, vn1, un, vn, hn2, An2, damn2, hn1, An1, damn1, hout, Aout, damout)
       
       implicit none
 
@@ -38,18 +38,18 @@
       integer isw, jsw, inw, jnw, ine, jne, ise, jse !SL SouthWest=sw, nw, ne, se corners
       double precision, intent(in)    :: un1(0:nx+2,0:ny+2), vn1(0:nx+2,0:ny+2)
       double precision, intent(in)    :: un(0:nx+2,0:ny+2), vn(0:nx+2,0:ny+2)
-      double precision                :: hn1(0:nx+1,0:ny+1), An1(0:nx+1,0:ny+1)
-      double precision, intent(in)    :: hn2(0:nx+1,0:ny+1), An2(0:nx+1,0:ny+1)
-      double precision, intent(out)   :: hout(0:nx+1,0:ny+1), Aout(0:nx+1,0:ny+1)
+      double precision                :: hn1(0:nx+1,0:ny+1), An1(0:nx+1,0:ny+1), damn1(0:nx+1,0:ny+1)
+      double precision, intent(in)    :: hn2(0:nx+1,0:ny+1), An2(0:nx+1,0:ny+1), damn2(0:nx+1,0:ny+1)
+      double precision, intent(out)   :: hout(0:nx+1,0:ny+1), Aout(0:nx+1,0:ny+1), damout(0:nx+1,0:ny+1)
       double precision                :: ustar(0:nx+2,0:ny+2), vstar(0:nx+2,0:ny+2)
-      double precision                :: hstar(0:nx+1,0:ny+1), Astar(0:nx+1,0:ny+1)
+      double precision                :: hstar(0:nx+1,0:ny+1), Astar(0:nx+1,0:ny+1), damstar(0:nx+1,0:ny+1)
       double precision                :: dFx(nx,ny), dFy(nx,ny), div(nx,ny)
       double precision                :: alphamx, alphamy, uinterp, vinterp, ftp
-      double precision                :: hbef, Abef, xd, yd, xdn1, ydn1, xdn2, ydn2 
+      double precision                :: hbef, Abef, dambef, xd, yd, xdn1, ydn1, xdn2, ydn2 
       double precision                :: fsw, fnw, fne, fse
       double precision                :: fxsw, fxnw, fxne, fxse, fysw, fynw, fyne, fyse
       double precision                :: fxysw, fxynw, fxyne, fxyse
-      double precision                :: upper, lower, rhsdynh, rhsdynA
+      double precision                :: upper, lower, rhsdynh, rhsdynA, rhsdyndam
       double precision                :: fluxx, fluxy
       double precision                :: fx, fy, fxy, cubic_interp         ! function
       double precision                :: calc_fluxx, calc_fluxy, apply_lim ! functions
@@ -68,6 +68,9 @@
             An1(i,0) = ( 4d0 * An1(i,1) - An1(i,2) )/3d0
             An1(i,0) = max(An1(i,0), 0d0)
             An1(i,0) = min(An1(i,0), 1d0)
+            damn1(i,0) = ( 4d0 * damn1(i,1) - damn1(i,2) )/3d0
+            damn1(i,0) = max(damn1(i,0), 0d0)
+            damn1(i,0) = min(damn1(i,0), 1d0)
                   
          endif
 
@@ -78,6 +81,9 @@
             An1(i,ny+1)= ( 4d0 * An1(i,ny) - An1(i,ny-1) ) / 3d0
             An1(i,ny+1)= max(An1(i,ny+1), 0d0)
             An1(i,ny+1)= min(An1(i,ny+1), 1d0)
+            damn1(i,ny+1) = ( 4d0 * damn1(i,ny) - damn1(i,ny-1) ) / 3d0
+            damn1(i,ny+1) = max(damn1(i,ny+1), 0d0)
+            damn1(i,ny+1) = min(damn1(i,ny+1), 1d0)
 
          endif
  
@@ -92,6 +98,9 @@
             An1(0,j)  = ( 4d0 * An1(1,j) - An1(2,j) ) / 3d0
             An1(0,j)  = max(An1(0,j), 0d0)
             An1(0,j)  = min(An1(0,j), 1d0)
+            damn1(0,j) = ( 4d0 * damn1(1,j) - damn1(2,j) ) / 3d0
+            damn1(0,j) = max(damn1(0,j), 0d0)
+            damn1(0,j) = min(damn1(0,j), 1d0)
 
          endif
 
@@ -102,6 +111,9 @@
             An1(nx+1,j) = ( 4d0 * An1(nx,j) - An1(nx-1,j) ) / 3d0
             An1(nx+1,j) = max(An1(nx+1,j), 0d0)
             An1(nx+1,j) = min(An1(nx+1,j), 1d0)
+            damn1(nx+1,j) = ( 4d0 * damn1(nx,j) - damn1(nx-1,j) ) / 3d0
+            damn1(nx+1,j) = max(damn1(nx+1,j), 0d0)
+            damn1(nx+1,j) = min(damn1(nx+1,j), 1d0)
 
          endif
 
@@ -160,6 +172,36 @@
             enddo
          enddo
 
+!------------------------------------------------------------------------
+!     compute the difference of the flux for damage 
+!------------------------------------------------------------------------
+         if ( Damage ) then
+
+            call calc_dFx (un, damn1, dFx)
+            call calc_dFy (vn, damn1, dFy)
+
+!------------------------------------------------------------------------
+!     update the damage values
+!     (in a separate do-loop)
+!------------------------------------------------------------------------
+            
+            do i = 1, nx
+               do j = 1, ny
+
+                  if (maskC(i,j) .eq. 1) then
+
+                     damout(i,j) = damn1(i,j) - DtoverDx * ( dFx(i,j) + dFy(i,j) )
+                     damout(i,j) = max(damout(i,j), 0d0)
+                     damout(i,j) = min(damout(i,j), 1d0)
+
+                  endif
+                        
+               enddo
+            enddo
+
+         endif
+
+
       elseif ( adv_scheme .eq. 'upwindRK2' ) then
                
 !------------------------------------------------------------------------
@@ -213,8 +255,38 @@
             enddo
          enddo
 
+
+!------------------------------------------------------------------------  
+!     predictor: compute the difference of the flux for damage   
+!------------------------------------------------------------------------                  
+         if ( Damage ) then
+
+            call calc_dFx (un1, damn1, dFx)
+            call calc_dFy (vn1, damn1, dFy)
+
 !------------------------------------------------------------------------ 
-!     set dhstar/dx, dAstar/dx = 0 at the outside cell when there is an open bc 
+!     predictor: update the damage values      
+!     (in a separate do-loop to conserve mass)                                             
+!------------------------------------------------------------------------   
+
+            do i = 1, nx
+               do j = 1, ny
+
+                  if (maskC(i,j) .eq. 1) then
+
+                     damstar(i,j) = damn1(i,j) - (DtoverDx / 2d0) * ( dFx(i,j) + dFy(i,j) )
+                     damstar(i,j) = max(damstar(i,j), 0d0)
+                     damstar(i,j) = min(damstar(i,j), 1d0)
+
+                  endif
+
+               enddo
+            enddo
+
+         endif
+
+!------------------------------------------------------------------------ 
+!     set dhstar/dx, dAstar/dx = 0, ddamstar/dx = 0 at the outside cell when there is an open bc 
 !------------------------------------------------------------------------ 
 
          do i = 0, nx+1
@@ -226,6 +298,9 @@
                Astar(i,0) = ( 4d0 * Astar(i,1) - Astar(i,2) )/3d0
                Astar(i,0) = max(Astar(i,0), 0d0)
                Astar(i,0) = min(Astar(i,0), 1d0)
+               damstar(i,0) = ( 4d0 * damstar(i,1) - damstar(i,2) )/3d0
+               damstar(i,0) = max(damstar(i,0), 0d0)
+               damstar(i,0) = min(damstar(i,0), 1d0)
                   
             endif
 
@@ -236,6 +311,9 @@
                Astar(i,ny+1)= ( 4d0 * Astar(i,ny) - Astar(i,ny-1) ) / 3d0
                Astar(i,ny+1)= max(Astar(i,ny+1), 0d0)
                Astar(i,ny+1)= min(Astar(i,ny+1), 1d0)
+               damstar(i,ny+1)= ( 4d0 * damstar(i,ny) - damstar(i,ny-1) ) / 3d0
+               damstar(i,ny+1)= max(damstar(i,ny+1), 0d0)
+               damstar(i,ny+1)= min(damstar(i,ny+1), 1d0)
 
             endif
  
@@ -250,6 +328,9 @@
                Astar(0,j)  = ( 4d0 * Astar(1,j) - Astar(2,j) ) / 3d0
                Astar(0,j)  = max(Astar(0,j), 0d0)
                Astar(0,j)  = min(Astar(0,j), 1d0)
+               damstar(0,j)  = ( 4d0 * damstar(1,j) - damstar(2,j) ) / 3d0
+               damstar(0,j)  = max(damstar(0,j), 0d0)
+               damstar(0,j)  = min(damstar(0,j), 1d0)
 
             endif
 
@@ -260,6 +341,9 @@
                Astar(nx+1,j) = ( 4d0 * Astar(nx,j) - Astar(nx-1,j) ) / 3d0
                Astar(nx+1,j) = max(Astar(nx+1,j), 0d0)
                Astar(nx+1,j) = min(Astar(nx+1,j), 1d0)
+               damstar(nx+1,j) = ( 4d0 * damstar(nx,j) - damstar(nx-1,j) ) / 3d0
+               damstar(nx+1,j) = max(damstar(nx+1,j), 0d0)
+               damstar(nx+1,j) = min(damstar(nx+1,j), 1d0)
 
             endif
 
@@ -318,6 +402,35 @@
 
             enddo
          enddo
+
+!------------------------------------------------------------------------  
+!     corrector: compute the difference of the flux for damage                                 
+!------------------------------------------------------------------------                  
+         if ( Damage ) then
+
+            call calc_dFx (ustar, damstar, dFx)
+            call calc_dFy (vstar, damstar, dFy)
+
+!------------------------------------------------------------------------ 
+!     corrector: update the concentration values      
+!     (in a separate do-loop to conserve mass)                                             
+!------------------------------------------------------------------------   
+
+            do i = 1, nx
+               do j = 1, ny
+
+                  if (maskC(i,j) .eq. 1) then
+
+                     damout(i,j) = damn1(i,j) - DtoverDx * ( dFx(i,j) + dFy(i,j) )
+                     damout(i,j) = max(damout(i,j), 0d0)
+                     damout(i,j) = min(damout(i,j), 1d0)
+
+                  endif
+
+               enddo
+            enddo
+
+         endif
 
       elseif ( adv_scheme .eq. 'semilag' ) then
          
@@ -593,6 +706,42 @@
                      Abef=apply_lim(Abef, upper, lower, xdn2, ydn2, fsw,  fnw,  fne,  fse)
                   endif
 
+! find dambef using cubic interpolation                                                                    
+! PREPARATION: set 4 corners values and compute derivatives required for cubic interpolation 
+
+                  if ( Damage ) then
+
+                     fsw=damn2(isw,jsw)
+                     fnw=damn2(inw,jnw)
+                     fne=damn2(ine,jne)
+                     fse=damn2(ise,jse)
+                     fxsw=fx(damn2(isw+1,jsw), damn2(isw-1,jsw), 2d0)
+                     fxnw=fx(damn2(inw+1,jnw), damn2(inw-1,jnw), 2d0)
+                     fxne=fx(damn2(ine+1,jne), damn2(ine-1,jne), 2d0)
+                     fxse=fx(damn2(ise+1,jse), damn2(ise-1,jse), 2d0)
+                     fysw=fy(damn2(isw,jsw+1), damn2(isw,jsw-1), 2d0)
+                     fynw=fy(damn2(inw,jnw+1), damn2(inw,jnw-1), 2d0)
+                     fyne=fy(damn2(ine,jne+1), damn2(ine,jne-1), 2d0)
+                     fyse=fy(damn2(ise,jse+1), damn2(ise,jse-1), 2d0)
+                     fxysw=fxy(damn2(isw+1,jsw+1),damn2(isw-1,jsw+1),damn2(isw+1,jsw-1),damn2(isw-1,jsw-1),4d0)
+                     fxynw=fxy(damn2(inw+1,jnw+1),damn2(inw-1,jnw+1),damn2(inw+1,jnw-1),damn2(inw-1,jnw-1),4d0)
+                     fxyne=fxy(damn2(ine+1,jne+1),damn2(ine-1,jne+1),damn2(ine+1,jne-1),damn2(ine-1,jne-1),4d0)
+                     fxyse=fxy(damn2(ise+1,jse+1),damn2(ise-1,jse+1),damn2(ise+1,jse-1),damn2(ise-1,jse-1),4d0)
+
+                     dambef=cubic_interp( fsw,  fnw,  fne,  fse,   &
+                                       fxsw, fxnw, fxne, fxse,  &
+                                       fysw, fynw, fyne, fyse,  &
+                                       fxysw,fxynw,fxyne,fxyse, &
+                                       xdn2, ydn2 )
+
+                     if (SLlimiter) then
+                        upper=max(fsw, fnw, fne, fse)
+                        lower=min(fsw, fnw, fne, fse)
+                        dambef=apply_lim(dambef, upper, lower, xdn2, ydn2, fsw,  fnw,  fne,  fse)
+                     endif
+
+                  endif
+
 !------------------------------------------------------------------------
 ! find right hand side terms rhsdynh and rhsdynA (time level n-1 = n1)
 ! minus sign added later in final calc of hout, Aout
@@ -658,6 +807,39 @@
                                         fxysw,fxynw,fxyne,fxyse, &
                                         xdn1, ydn1 )
 
+! find rhsdyndam using cubic interpolation                                                                                 
+! PREPARATION: set 4 corners values and compute derivatives required for cubic interpolation                           
+
+                  if ( Damage ) then
+
+                     fsw=damn1(isw,jsw)*div(isw,jsw)
+                     fnw=damn1(inw,jnw)*div(inw,jnw)
+                     fne=damn1(ine,jne)*div(ine,jne)
+                     fse=damn1(ise,jse)*div(ise,jse)
+                     fxsw=fx(fse, damn1(isw-1,jsw)*div(isw-1,jsw), 2d0)
+                     fxnw=fx(fne, damn1(inw-1,jnw)*div(inw-1,jnw), 2d0)
+                     fxne=fx(damn1(ine+1,jne)*div(ine+1,jne), fnw, 2d0)
+                     fxse=fx(damn1(ise+1,jse)*div(ise+1,jse), fsw, 2d0)
+                     fysw=fy(fnw, damn1(isw,jsw-1)*div(isw,jsw-1), 2d0)
+                     fynw=fy(damn1(inw,jnw+1)*div(inw,jnw+1), fsw, 2d0)
+                     fyne=fy(damn1(ine,jne+1)*div(ine,jne+1), fse, 2d0)
+                     fyse=fy(fne, damn1(ise,jse-1)*div(ise,jse-1), 2d0)
+                     fxysw=fxy(fne, damn1(inw-1,jnw)*div(inw-1,jnw), &
+                           damn1(ise,jse-1)*div(ise,jse-1),damn1(isw-1,jsw-1)*div(isw-1,jsw-1),4d0)
+                     fxynw=fxy(damn1(ine,jne+1)*div(ine,jne+1), damn1(inw-1,jnw+1)*div(inw-1,jnw+1), &
+                           fse,damn1(isw-1,jsw)*div(isw-1,jsw), 4d0)
+                     fxyne=fxy(damn1(ine+1,jne+1)*div(ine+1,jne+1),damn1(inw,jnw+1)*div(inw,jnw+1), &
+                           damn1(ise+1,jse)*div(ise+1,jse), fsw, 4d0)
+                     fxyse=fxy(damn1(ine+1,jne)*div(ine+1,jne), fnw, &
+                           damn1(ise+1,jse-1)*div(ise+1,jse-1),damn1(isw,jsw-1)*div(isw,jsw-1),4d0)
+
+                     rhsdyndam=cubic_interp( fsw,  fnw,  fne,  fse,   &
+                                          fxsw, fxnw, fxne, fxse,  &
+                                          fysw, fynw, fyne, fyse,  &
+                                          fxysw,fxynw,fxyne,fxyse, &
+                                          xdn1, ydn1 )                                        
+                  endif
+
 !                  rhsdynh = 0d0
 !                  rhsdynA = 0d0
 
@@ -665,12 +847,15 @@
 ! find output h and A at time level n  
 !------------------------------------------------------------------------
 
-                  hout(i,j) = hbef - 2d0*Deltat*rhsdynh
-                  Aout(i,j) = Abef - 2d0*Deltat*rhsdynA
+                  hout(i,j)   = hbef - 2d0*Deltat*rhsdynh
+                  Aout(i,j)   = Abef - 2d0*Deltat*rhsdynA
+                  damout(i,j) = dambef - 2d0*Deltat*rhsdyndam
        
-                  hout(i,j) = max(hout(i,j), 0d0)
-                  Aout(i,j) = max(Aout(i,j), 0d0)
-                  Aout(i,j) = min(Aout(i,j), 1d0)
+                  hout(i,j)   = max(hout(i,j), 0d0)
+                  Aout(i,j)   = max(Aout(i,j), 0d0)
+                  Aout(i,j)   = min(Aout(i,j), 1d0)
+                  damout(i,j) = max(damout(i,j), 0d0)
+                  damout(i,j) = min(damout(i,j), 1d0)
 
                elseif (caseSL == 2) then ! upwind for special cases  
          
@@ -686,6 +871,17 @@
                   Aout(i,j) = An1(i,j) - DtoverDx * ( fluxx + fluxy )
                   Aout(i,j) = max(Aout(i,j), 0d0) ! COULD BE MOVED BELOW FOR BOTH CASES SL
                   Aout(i,j) = min(Aout(i,j), 1d0)
+
+                  if ( Damage ) then
+
+                     fluxx=calc_fluxx(un1(i,j), un1(i+1,j), damn1(i-1,j), damn1(i,j), damn1(i+1,j))
+                     fluxy=calc_fluxy(vn1(i,j), vn1(i,j+1), damn1(i,j-1), damn1(i,j), damn1(i,j+1))
+
+                     damout(i,j) = damn1(i,j) - DtoverDx * ( fluxx + fluxy )
+                     damout(i,j) = max(damout(i,j), 0d0) ! COULD BE MOVED BELOW FOR BOTH CASES SL
+                     damout(i,j) = min(damout(i,j), 1d0)
+
+                  endif
 
                endif
 

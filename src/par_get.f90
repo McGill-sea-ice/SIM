@@ -58,13 +58,16 @@
       Cdwater    =  5.5d-03          ! water-ice drag coeffient[]5.5e-03
       theta_a    =  25d0             ! wind turning angle [degree] 
       theta_w    =  25d0             ! water turning angle [degree]
-      Pstar      =  27.5d03            ! ice yield stress [N/m2] 
+      Pstar      =  27.5d03          ! ice yield stress [N/m2] 
       C          =  20d0             ! ice concentration parameter  
       !phi        =  30d0             ! internal angle of friction
       !delta      =  10d0             ! angle of dilatancy
       !Cohe       =  0d0 !4d03        ! cohesion (tensile strght) [N/m2]
       !etamax     =  1.0d12           ! max shear viscosity
-      e_ratio    = 2.0d0             ! ellipse aspect ratio 
+      e_ratio    = 2.0d0             ! ellipse aspect ratio
+
+      td         =  1d0 * 24*60*60   ! damage time scale [s] 
+      th         =  30d0 * 24*60*60  ! healing time scale [s]
  
       Clat_ia    =  1d-03            ! LH transfer coeff (ice/atm) []
       Clat_oa    =  1d-03            ! LH transfer coeff (ocn/atm) []
@@ -82,21 +85,21 @@
 
       BndyCond   = 'noslip'          ! noslip
       Rheology   = 1                 ! ellipse = 1, triangle = 2
-      Damage     = 0                 ! damage parameter 0: no, 1: yes
+      Damage     = .true.            ! damage parameter 
       linearization = 'Zhang'        ! Tremblay, Zhang
       regularization = 'tanh'        ! tanh, Kreyscher, capping
       visc_method = 2                ! see viscousCoeff routine for details
       ini_guess  = 'previous time step' ! freedrift, previous time step
       adv_scheme = 'upwind'          ! upwind, upwindRK2, semilag 
       IMEX       = 0                 ! 0:split in time, 1:Picard, 2:JFNK
-      BDF         = 0                ! 0: back. Euler, 1: 2nd order back. diff. formula
+      BDF        = 0                 ! 0: back. Euler, 1: 2nd order back. diff. formula
       Dynamic    = .true.            ! ice model type
-      Thermodyn  = .true.           ! ice model type
+      Thermodyn  = .true.            ! ice model type
       BuoyTrack  = .false.
       Buoys      = 'Daily'           ! Buoy traj: 'Track' or 'Daily'
       Current    = 'YearlyMean'      ! YearlyMean, specified
       Wind       = '6hours'          ! 6hours, 60yrs_clim, specified
-      RampupWind  = .false.           ! smooth increase of specified wind
+      RampupWind = .false.           ! smooth increase of specified wind
       AirTemp    = 'MonthlyMean'     ! MonthlyMean, specified (-10C)
       OcnTemp    = 'calculated'      ! MonthlyClim, specified,calculated
       calc_month_mean = .false.      ! to calc monthly mean fields
@@ -125,7 +128,7 @@
 
       wjac  = 0.575d0
       wsor  = 0.95d0           ! relaxation parameter for SOR precond
-      wlsor = 1.40d0           ! relaxation parameter for SOR precond
+      wlsor = 1.30d0           ! relaxation parameter for SOR precond
       kjac  = 10               !
       ksor  = 10               ! nb of ite of precond SOR
       klsor = 10               ! nb of ite of precond line SOR
@@ -341,7 +344,7 @@ subroutine read_namelist
 
       namelist /phys_param_nml/ &
            Pstar, C, e_ratio, k1, k2, rhoair, rhoice, rhowater, &
-           Cdair, Cdwater, f
+           Cdair, Cdwater, f, td, th
 
       filename ='namelistSIM'
       filenb = 10
@@ -404,11 +407,6 @@ subroutine read_namelist
 
       if ( Rheology .ne. 1 .and. Rheology .ne. 2) then
          print *, 'Wrong Rheology chosen by user'
-         stop
-      endif
-      
-      if ( Damage .ne. 0 .and. Damage .ne. 1 ) then
-         print *, 'Given input for damage is neither 0 or 1'
          stop
       endif
       

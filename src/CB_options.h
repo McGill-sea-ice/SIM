@@ -8,7 +8,8 @@
                 BuoyTrack,      &
                 calc_month_mean,&
                 RampupWind,     &
-                runoff
+                runoff,         &
+                Damage
 
       character(LEN=20)         &
                 BndyCond,       &
@@ -25,7 +26,7 @@
                 Buoys,          &
                 Jac_finite_diff  
                           
-  integer   Rheology, Damage, IMEX, BDF, visc_method
+  integer   Rheology, IMEX, BDF, visc_method
 
       common/options/           &
                 Dynamic,        & ! sea ice dynamic model (yes or no)
@@ -42,7 +43,7 @@
                 adv_scheme,     & ! advection scheme: upwind or upwindRK2
                 BndyCond,       & ! noslip or freeslip
                 Rheology,       & ! ellipse, triangle
-                Damage,	        & ! 0: no damage, 1: damage
+                Damage,	        & ! no damage or damage
                 IMEX,           & ! 0: standard (splitting in time), 1 and 2: IMEX
                 BDF,            & ! 0: standard, 1: Backward diff formula (2nd order)
                 visc_method,    & ! choice of calc of visc coeff

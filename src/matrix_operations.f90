@@ -22,7 +22,7 @@
       call transformer (utp,vtp,xtp,0)
 
       if ( IMEX .eq. 2 ) then ! IMEX method 2                                  
-         call advection ( un1, vn1, utp, vtp, hn2, An2, hn1, An1, h, A )
+         call advection ( un1, vn1, utp, vtp, hn2, An2, damn2, hn1, An1, damn1, h, A, dam )
          call Ice_strength()
          call bvect_ind
       endif

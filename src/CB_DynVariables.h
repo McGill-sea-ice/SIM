@@ -25,7 +25,10 @@
                 etaCf    (0:nx+1,0:ny+1), &
                 etaBf    (0:nx+2,0:ny+2), &
                 zetaCf   (0:nx+1,0:ny+1), &
-                dam      (0:nx+1,0:ny+1)
+                dam      (0:nx+1,0:ny+1), &
+                damn1    (0:nx+1,0:ny+1), &
+                damn2    (0:nx+1,0:ny+1), &
+                damSS    (0:nx+1,0:ny+1)
 
       common/DynVariables/      &
                 h,              & ! ice thickness
@@ -49,7 +52,10 @@
                 etaCf,          & ! coefficient of shear viscosity (C-grid)
                 etaBf,          & ! coefficient of shear viscosity (B-grid)
                 zetaCf,         & ! coefficient of bulk viscosity (C-grid)
-                dam               ! damage parameter
+                dam,            & ! damage parameter
+                damn1,          & ! previous time step damage parameter
+                damn2,          & ! damage parameter at time level n-2
+                damSS             ! damage steady state solution
 
 
 

@@ -25,7 +25,7 @@
 
       if ( Rheology .eq. 1 ) then
 
-         if ( Damage .eq. 0 ) then
+         if ( Damage .eqv. .false. ) then
          
             do i = 1, nx
                do j = 1, ny
@@ -36,7 +36,7 @@
                enddo
             enddo
 
-         elseif ( Damage .eq. 1 ) then    ! if you want damage or not the model simply change the parameter
+         elseif ( Damage ) then    ! if you want damage or not the model simply change the parameter
 
             do i = 1, nx
                do j = 1, ny

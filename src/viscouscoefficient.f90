@@ -455,8 +455,8 @@ subroutine ViscousCoeff_method2(utp,vtp)
                  P(i,j) = zetaC(i,j)*deno ! replacement pressure 
                  etaC(i,j)  = zetaC(i,j) * ell_2
 
-                 if (Damage .eq. 1) then
-                    dam(i,j) = 1 - tanh(denomin*(1/deno)) ! damage parameter
+                 if (Damage) then
+                    damSS(i,j) = 1 - tanh(denomin*(1/deno)) ! damage steady state solution
                     
                  endif
                  
