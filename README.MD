@@ -7,7 +7,7 @@ cd where you want to go<br/>
 git clone git@github.com:McGill-sea-ice/SIM.git<br/>
 cd SIM<br/>
 git branch -a (list branches)<br/>
-git checkout choose your branch<br/>
+git checkout \<choose your branch\><br/>
 . setup_script (to compile and create link for forcing)<br/>
 export HDF5_DISABLE_VERSION_CHECK=2<br/>
 ./zoupa < input_file > outputfile &<br/>
@@ -24,7 +24,7 @@ cd REF<br/>
 cd ..<br/>
 git clone git@github.com:McGill-sea-ice/SIM.git NEW <br/>
 cd NEW<br/>
-git checkout choose your branch<br/>
+git checkout \<choose your branch\><br/>
 . testing_script<br/>
 ./test_results<br/>
 copy result of tests (should get 5 PASS).<br/>
