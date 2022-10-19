@@ -33,12 +33,12 @@ Subsequent compiles:
 `cd TESTS`<br/>
 `git clone git@github.com:McGill-sea-ice/SIM.git REF` <br/>
 `cd REF`<br/>
-`ln -s /path/to/forcing forcing`
+`ln -s /path/to/forcing forcing`<br/>
 `./testing_script`<br/>
 `cd ..`<br/>
 `git clone git@github.com:McGill-sea-ice/SIM.git NEW` <br/>
 `cd NEW`<br/>
-`ln -s /path/to/forcing forcing`
+`ln -s /path/to/forcing forcing`<br/>
 `git checkout <choose your branch>`<br/>
 `./testing_script`<br/>
 `./test_results`<br/>
