@@ -1,16 +1,21 @@
 
 
-McGill sea ice model (SIM) code.
+# McGill sea ice model (SIM) code.
 
-connect to dumbo or other machine via zephyr<br/>
-cd where you want to go<br/>
-git clone git@github.com:McGill-sea-ice/SIM.git<br/>
-cd SIM<br/>
-git branch -a (list branches)<br/>
-git checkout \<choose your branch\><br/>
-. setup_script (to compile and create link for forcing)<br/>
-export HDF5_DISABLE_VERSION_CHECK=2<br/>
-./zoupa < input_file > outputfile &<br/>
+## Setup
+
+connect to chosen machine via aos.meteo.mcgill.ca<br/>
+```cd <where-you-want-your-SIM-folder>```<br/>
+```git clone git@github.com:McGill-sea-ice/SIM.git```<br/>
+```cd SIM```<br/>
+if needed download forcing:<br/>
+```scp <username>@dumbo:/storage2/common/forcing <path-to-forcing-folder>``` <br/>
+```git branch -a (list branches)```<br/>
+```git checkout <choose your branch>```<br/>
+Edit setup_script: <br/>
+```./setup_script``` (to compile and create link for forcing)<br/>
+```export HDF5_DISABLE_VERSION_CHECK=2```<br/>
+```./zoupa < input_file > outputfile &```<br/>
 output files for fields are in the output directory<br/>
 
 
