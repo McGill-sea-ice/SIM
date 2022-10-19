@@ -1,7 +1,6 @@
 #!/bin/bash 
 
-ln -s /storage/common/forcing forcing
-cp /storage/common/restarts/40/*.40 output
+scp dumbo:/storage2/common/restarts/40/*.40 output
 scons
 export HDF5_DISABLE_VERSION_CHECK=2
 
