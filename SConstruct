@@ -55,7 +55,7 @@ DEBUG = ARGUMENTS.get('debug', 0)
 EXE = ARGUMENTS.get('exe', 'zoupa')
 
 
-if int(DEBUG):  
+if int(DEBUG):
     env.Append(F90FLAGS = '-g')
     env.Append(F90FLAGS = '-static')
     env.Append(F90FLAGS = '-fbacktrace')
@@ -66,17 +66,16 @@ if int(DEBUG):
 #           NetCDF4 Librairies
 # ---------------------------------------
 
-env.Append(LIBPATH='/aos/shared/lib/centos6/netcdf/4/gnu/lib')
-env.Append(F90PATH='/aos/shared/lib/centos6/netcdf/4/gnu/include')
-env.Append(LIBPATH='/aos/shared/lib/centos6/hdf5/default/gnu/lib')
-env.Append(F90PATH='/aos/shared/lib/centos6/hdf5/default/gnu/include')
-#env.Append(LIBPATH='/usr/lib64')
+env.Append(LIBPATH='/usr/lib64')
+env.Append(LIBPATH='/usr/lib64/gfortran/modules')
+env.Append(F90PATH='/usr/include')
+env.Append(F90PATH='/usr/lib64/gfortran/modules')
 
 # ----------------------------------------
 #             Create Executables
 # ----------------------------------------
 
-# Export the compilation environment so SConscript files in subdirectories can access it. 
+# Export the compilation environment so SConscript files in subdirectories can access it.
 
 Export('env')
 Export('EXE')
