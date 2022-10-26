@@ -34,7 +34,7 @@
       include 'CB_options.h'
       include 'CB_semilag.h'
 
-      integer i, j, k, caseSL, iloc, jloc
+      integer i, j, k, caseSL, iloc, jloc, peri
       integer isw, jsw, inw, jnw, ine, jne, ise, jse !SL SouthWest=sw, nw, ne, se corners
       double precision, intent(in)    :: un1(0:nx+2,0:ny+2), vn1(0:nx+2,0:ny+2)
       double precision, intent(in)    :: un(0:nx+2,0:ny+2), vn(0:nx+2,0:ny+2)
@@ -63,8 +63,8 @@
       if (peri .ne. 0) then
           call periodicBC(hn1,An1)     
           call periodicBC(hn2,An2) 
-          call periodicBC(utp,vtp)
-          call periodicBC(utps,vtps)
+          call periodicBC(un,vn)
+          call periodicBC(un1,vn1)
       endif
 
 !------------------------------------------------------------------------ 

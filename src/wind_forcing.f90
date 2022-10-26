@@ -1,4 +1,4 @@
-B  
+
       subroutine wind_forcing (date, tstep) 
         use datetime, only: datetime_type, datetime_delta_type, operator(+), operator(-)
         use datetime, only: delta_init, datetime_str, seconds, time_set_from_datetime
