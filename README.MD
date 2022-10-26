@@ -24,7 +24,7 @@ if needed download forcing:<br/>
 output files for fields are in the output directory<br/>
 
 Subsequent compiles: 
-`scons`
+`scons-3`
 
 ## PULL REQUESTS
 ### Testing procedure

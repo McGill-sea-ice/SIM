@@ -31,9 +31,23 @@
 *.exe
 *.out
 *.app
+zoupa
+
+# Output Folder
+output/*
 
 ### SCons ###
 build/
+
+# Namelist
+namelistSIM
+
+# Bin
+bin/*
+
+# Forcing
+forcing
+
 # for projects that use SCons for building: http://http://www.scons.org/
 .sconsign.dblite
 

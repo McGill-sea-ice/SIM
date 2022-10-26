@@ -3,5 +3,5 @@
 scp dumbo:/storage2/common/restarts/80/*.80 output
 scp dumbo:/storage2/common/restarts/40/*.40 output
 
-scons
+scons-3
 cp namelistSIM_control namelistSIM
