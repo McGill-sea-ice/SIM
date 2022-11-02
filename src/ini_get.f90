@@ -53,7 +53,7 @@ subroutine ini_get (restart, expno_r, restart_date)
                 A(i,j) = 0d0  
              endif
 
-!     Uniaxial loading experiment: we set bands of open water at the top and sides
+!     Uniaxial loading experiment: set bands of open water at the top and sides
 
              if ((nx == 100) .and. (ny == 250)) then
                 if (i .lt. 21 .or. i .gt. 80) h(i,j) = 0d0
