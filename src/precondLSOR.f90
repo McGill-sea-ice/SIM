@@ -765,7 +765,6 @@
 ! https://gist.github.com/shane5ul/9060784
 !
 !************************************************************************
-     !subroutine cyclicTriDiag(a, b, c, r, x)
      subroutine cyclicTriDiag(a, b, c, r, x, n)
 
      implicit double precision (a-h, o-z)
