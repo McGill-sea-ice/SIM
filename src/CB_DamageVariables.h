@@ -4,10 +4,10 @@
 !=======================================================================
 
 
-      double precision                    &
+      double precision                     &
                 Sdam       (0:nx+1,0:ny+1)
 
 
 
-      common/ThermoVariables/   &
-                Sdam                ! thermo source term (dam, continuity equation)
+      common/DamageVariables/   &
+                Sdam              ! thermo source term (dam, continuity equation)

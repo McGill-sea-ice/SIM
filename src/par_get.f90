@@ -67,7 +67,8 @@
       e_ratio    = 2.0d0             ! ellipse aspect ratio
 
       td         =  1d0 * 24*60*60   ! damage time scale [s] 
-      th         =  30d0 * 24*60*60  ! healing time scale [s]
+      th         =  3d1 * 24*60*60  ! healing time scale [s]
+      nexp       =  5d1             ! exponent of damage source term
  
       Clat_ia    =  1d-03            ! LH transfer coeff (ice/atm) []
       Clat_oa    =  1d-03            ! LH transfer coeff (ocn/atm) []
@@ -344,7 +345,7 @@ subroutine read_namelist
 
       namelist /phys_param_nml/ &
            Pstar, C, e_ratio, k1, k2, rhoair, rhoice, rhowater, &
-           Cdair, Cdwater, f, td, th
+           Cdair, Cdwater, f, td, th, nexp
 
       filename ='namelistSIM'
       filenb = 10

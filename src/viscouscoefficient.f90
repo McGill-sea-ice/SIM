@@ -456,7 +456,7 @@ subroutine ViscousCoeff_method2(utp,vtp)
                  etaC(i,j)  = zetaC(i,j) * ell_2
 
                  if (Damage) then
-                    damSS(i,j) = 1 - tanh(denomin*(1/deno)) ! damage steady state solution
+                    damSS(i,j) = 1 - tanh(denomin*(1/deno)) ** (1/nexp) ! damage steady state solution
                     
                  endif
                  
