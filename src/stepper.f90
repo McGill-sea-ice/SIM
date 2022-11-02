@@ -145,8 +145,8 @@
                   
                   if (Rheology .eq. 3) then !calculate the damage factor
                   
-                     kd = 0d0
-                     dam = dam1
+                     kd   = 0d0
+                     dam  = dam1
                      damB = damB1
                      !call advection ( un1, vn1, uice, vice, dummy, dummy,dummy, Dam1, dummy, Dam)
                      call stress_strain_MEB(uice, vice, date, kd, expno)
