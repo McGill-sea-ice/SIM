@@ -19,6 +19,7 @@
       subroutine get_default
 
         use ellipse
+        use elastic
         use ice_albedo
         use numerical_VP
         use numerical_EVP
@@ -49,6 +50,34 @@
       double precision lat(0:nx+1,0:ny+1), long(0:nx+1,0:ny+1)
       integer i, j
 
+      
+!------------------------------------------------------------------------
+!     yield curve parameters 
+!------------------------------------------------------------------------      
+
+! Ellipse (rheology = 1)
+      Pstar      =  27.5d03           ! ice yield stress [N/m2] 
+      Tens       =  0d0               ! sea ice tensile strength [N/m2] #mp#
+      e_ratio    = 2.0d0              ! ellipse aspect ratio 
+      
+! Triangle (rheology = 2)       
+      !phi        =  30d0             ! internal angle of friction
+      !delta      =  10d0             ! angle of dilatancy
+      !Cohe       =  0d0 !4d03        ! cohesion (tensile strght) [N/m2]
+      !etamax     =  1.0d12           ! max shear viscosity
+      
+! Mohr Coulomb and MEB(rheology = 3)       
+
+      phi       =  45d0              ! internal angle of friction
+      Cohe      =  10d3              ! cohesion (tensile strght) [N/m2]
+      sigc      =  -Cohe*5d8         ! compressive strength cut-off [N/m2]
+      sigt      =  Cohe*5d8          ! tensile strength cut-off [N/m2]
+      Young     =  1d9               ! Young's Modulus of sea ice
+      Poisson   =  3.3d-01           ! Poisson Ratio of sea ice
+      lambda0   =  1d5               ! viscous relaxation timescale for sea ice
+      alpha     =  3d0               ! non-linear damage parameter
+      Theal     =  0d0               ! Healing time scale. 0d0 = no healing.
+
 !------------------------------------------------------------------------
 !     set run parameters (dynamic - thermodynamic - options - domain)
 !------------------------------------------------------------------------
@@ -58,13 +87,7 @@
       Cdwater    =  5.5d-03          ! water-ice drag coeffient[]5.5e-03
       theta_a    =  25d0             ! wind turning angle [degree] 
       theta_w    =  25d0             ! water turning angle [degree]
-      Pstar      =  27.5d03            ! ice yield stress [N/m2] 
       C          =  20d0             ! ice concentration parameter  
-      !phi        =  30d0             ! internal angle of friction
-      !delta      =  10d0             ! angle of dilatancy
-      !Cohe       =  0d0 !4d03        ! cohesion (tensile strght) [N/m2]
-      !etamax     =  1.0d12           ! max shear viscosity
-      e_ratio    = 2.0d0             ! ellipse aspect ratio 
  
       Clat_ia    =  1d-03            ! LH transfer coeff (ice/atm) []
       Clat_oa    =  1d-03            ! LH transfer coeff (ocn/atm) []
@@ -81,7 +104,9 @@
       relhum     =  0.8d0            ! atmosphere relative humidity
 
       BndyCond   = 'noslip'          ! noslip
-      Rheology   = 1                 ! ellipse = 1, triangle = 2
+      Periodic_x = 0		     ! 0:open, 1:periodic at lateral boundaries
+      Periodic_y = 0		     ! 0:open, 1:periodic at lateral boundaries
+      Rheology   = 1                 ! ellipse = 1, triangle = 2, MEB = 3
       linearization = 'Zhang'        ! Tremblay, Zhang
       regularization = 'tanh'        ! tanh, Kreyscher, capping
       visc_method = 2                ! see viscousCoeff routine for details
@@ -90,25 +115,33 @@
       IMEX       = 0                 ! 0:split in time, 1:Picard, 2:JFNK
       BDF         = 0                ! 0: back. Euler, 1: 2nd order back. diff. formula
       Dynamic    = .true.            ! ice model type
-      Thermodyn  = .true.           ! ice model type
+      Thermodyn  = .true.            ! ice model type
       BuoyTrack  = .false.
       Buoys      = 'Daily'           ! Buoy traj: 'Track' or 'Daily'
       Current    = 'YearlyMean'      ! YearlyMean, specified
       Wind       = '6hours'          ! 6hours, 60yrs_clim, specified
-      RampupWind  = .false.           ! smooth increase of specified wind
+      RampupWind  = .false.          ! smooth increase of specified wind
       AirTemp    = 'MonthlyMean'     ! MonthlyMean, specified (-10C)
       OcnTemp    = 'calculated'      ! MonthlyClim, specified,calculated
       calc_month_mean = .false.      ! to calc monthly mean fields
       runoff     = .false.
-
+        
+!------------------------------------------------------------------------
+!     Grid parameters: resolution
+!------------------------------------------------------------------------      
+   
       if ((nx == 518) .and. (ny == 438)) then
-         Deltax     =  10d03           ! grid size [m] 
+         Deltax     =  10d03           ! Pan-Arctic 10km 
       elseif  ((nx == 258) .and. (ny == 218)) then
-         Deltax     =  20d03           ! grid size [m] 
+         Deltax     =  20d03           ! Pan-Arctic 20km
       elseif  ((nx == 128) .and. (ny == 108)) then
-         Deltax     =  40d03           ! grid size [m] 
+         Deltax     =  40d03           ! Pan-Arctic 40km
       elseif  ((nx == 63) .and. (ny == 53)) then
-         Deltax     =  80d03           ! grid size [m] 
+         Deltax     =  80d03           ! Pan-Arctic 80km
+      elseif ((nx == 100) .and. (ny == 250)) then
+         Deltax     =  1d03            ! Uniaxial loading (Ringeisen et al., 2019). 
+      elseif ((nx == 102) .and. (ny == 402)) then
+         Deltax     =  2d03            ! Ideal ice bridge (Plante et al., 2020) 
       else
          write(*,*) "Wrong grid size dimenions.", nx, ny
          STOP
@@ -209,12 +242,6 @@
       costheta_a = cos( theta_a ) 
       sintheta_w = sin( theta_w )             
       costheta_w = cos( theta_w ) 
-
-! Triangle rheology ... coming soon. 
-!      phi       =  phi * deg2rad          ! angle of friction [rad]
-!      delta     =  delta * deg2rad        ! angle of dilatancy [rad]
-      !tandelta   = tan ( delta )
-      !sinphi     = sin (phi)
 
       ell2       = e_ratio**2
       ell_2      = 1/(e_ratio**2)
@@ -401,7 +428,8 @@ subroutine read_namelist
          stop
       endif
 
-      if ( Rheology .ne. 1 .and. Rheology .ne. 2) then
+      if ( Rheology .ne. 1 .and. Rheology .ne. 2 .and.                 &
+           Rheology .ne. 3) then
          print *, 'Wrong Rheology chosen by user'
          stop
       endif

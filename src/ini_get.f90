@@ -44,17 +44,39 @@ subroutine ini_get (restart, expno_r, restart_date)
 
 !     h and A set to zero on open boundaries
 
-             if (i.eq.0 .or. i.eq.nx+1 .or. j.eq.0 .or. j.eq.ny+1) &
-                  h(i,j) = 0d0
-             if (i.eq.0 .or. i.eq.nx+1 .or. j.eq.0 .or. j.eq.ny+1) &
-                  A(i,j) = 0d0
+             if ((i.eq.0 .or. i.eq.nx+1) .and. Periodic_y .eq. 0) then
+                h(i,j) = 0d0
+                A(i,j) = 0d0   
+             endif
+             if ((j.eq.0 .or. j.eq.ny+1) .and. Periodic_x .eq. 0) then
+                h(i,j) = 0d0
+                A(i,j) = 0d0  
+             endif
 
-             Pp(i,j) = 0d0 
-             P(i,j)  = 0d0
+!     Uniaxial loading experiment: set bands of open water at the top and sides
+
+             if ((nx == 100) .and. (ny == 250)) then
+                if (i .lt. 21 .or. i .gt. 80) h(i,j) = 0d0
+                if (i .lt. 21 .or. i .gt. 80) A(i,j) = 0d0
+                if (j .gt. 250) h(i,j) = 0d0
+                if (j .gt. 250) A(i,j) = 0d0 
+
+             endif
+
+             Pp(i,j) = 0d0
+             Pt(i,j) = 0d0 
+             P(i,j)  = 0d0   
 
              etaC(i,j)= 0d0
              zetaC(i,j) = 0d0
              etaB(i,j)  = 0d0
+
+             GammaMEB(i,j) = 1d0
+             GammaMEB_B(i,j) = 1d0
+             dam(i,j) = 1d0
+             damB(i,j) = 1d0
+             dfactor(i,j) = 1d0
+             dfactorB(i,j) = 1d0
 
              Ta(i,j)  =  273.15d0              ! air temp
 

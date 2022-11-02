@@ -1,4 +1,4 @@
-  
+
       subroutine wind_forcing (date, tstep) 
         use datetime, only: datetime_type, datetime_delta_type, operator(+), operator(-)
         use datetime, only: delta_init, datetime_str, seconds, time_set_from_datetime
@@ -28,6 +28,7 @@
       integer i, j, imax, jmax 
       integer  ncell
       integer, parameter :: h2sec = 3600
+      integer  year, month, day, hour, minute, second, milli
 
       double precision tauax, tauay, wspeed, rampfactor, Tramp
       double precision uairmax, uairmean,alpha
@@ -38,6 +39,14 @@
       logical :: verbose = .false.
      
       delta =  int(deltax)/1000
+
+      year = date%year
+      month = date%month
+      day = date%day
+      hour = date%hour
+      minute = date%minute
+      second = date%second
+      milli = date%milli
 
 !------------------------------------------------------------------------
 !     load wind data for a given date and time
@@ -111,6 +120,7 @@
 
          if (RampupWind) then
             rampfactor=1d0-exp(-1d0*tstep*Deltat/Tramp)
+            !rampfactor= ADD LINEAR INCREASE
          else
             rampfactor=1d0
          endif

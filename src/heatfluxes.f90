@@ -31,7 +31,7 @@
 
       integer i, j
 
-      double precision, intent(in) :: htp(0:nx+1,0:ny+1), Atp(0:nx+1,0:ny+1)
+      double precision, intent(in) :: htp(0:nx+2,0:ny+2), Atp(0:nx+2,0:ny+2)
 
       double precision tiny, tiny2, absorpatm1, absorpatm2, absorpatm
       double precision qsi, qso, qa, Bi, Bi1, Ai1

@@ -61,8 +61,9 @@ subroutine ViscousCoefficient(utp,vtp)
   include 'CB_options.h'
   
   double precision utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
-
-  if (visc_method .eq. 1) then
+  if (Rheology .eq. 3) then
+     call MEBcoeff
+  elseif (visc_method .eq. 1) then
      call ViscousCoeff_method1(utp,vtp)
   elseif (visc_method .eq. 2) then
      call ViscousCoeff_method2(utp,vtp)
@@ -97,14 +98,14 @@ subroutine ViscousCoeff_method1(utp,vtp)
   include 'CB_mask.h'
   include 'CB_options.h'
 
-  integer i, j, rheo
+  integer i, j, rheo, peri
 
   double precision dudx, dvdy, dudy, dvdx, deno, denoT, denomin
   double precision utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
 
   denomin = 2d-09 ! Hibler, 1979
-
   rheo = Rheology ! define local variable to speed up the code
+  peri = Periodic_x + Periodic_y ! =1 if we have periodic conditions
 
 !------------------------------------------------------------------------
 !     free slip boundary condition:
@@ -134,10 +135,16 @@ subroutine ViscousCoeff_method1(utp,vtp)
         enddo
      enddo
 
+
      dudx       = 0d0
      dvdy       = 0d0
      dudy       = 0d0
      dvdx       = 0d0
+
+
+     
+     if (peri .ne. 0) call periodicBC(utp,vtp)
+     
 
      do i = 1, nx
         do j = 1, ny
@@ -210,18 +217,28 @@ subroutine ViscousCoeff_method1(utp,vtp)
                  if ( regularization .eq. 'tanh' ) then
 
                     deno = max( deno, 1d-20 )
-                    zetaC(i,j) =  ( Pp(i,j)/denomin ) &
+                     
+                    zetaC(i,j) =  ( (Pp(i,j)+Pt(i,j))/denomin ) &
                          *( tanh(denomin*(1/deno)))
+                         
+                    P(i,j) = ((( Pp(i,j)-Pt(i,j))/denomin ) &
+                         *tanh(denomin*(1/deno))) *deno 
 
                  elseif ( regularization .eq. 'Kreyscher' ) then
                         
                     denoT = deno + denomin
-                    zetaC(i,j) = Pp(i,j)/denoT 
+
+                    zetaC(i,j) = (Pp(i,j) + Pt(i,j))/denoT 
+                    
+                    P(i,j) = ((Pp(i,j) - Pt(i,j)) / denoT) * deno 
 
                  elseif ( regularization .eq. 'capping' ) then
 
                     denoT = max(deno,denomin)
-                    zetaC(i,j) = Pp(i,j)/denoT
+
+                    zetaC(i,j) = (Pp(i,j) + Pt(i,j)) / denoT
+
+                    P(i,j) = ((Pp(i,j) - Pt(i,j)) / denoT) * deno
 
                  else
                         
@@ -230,7 +247,6 @@ subroutine ViscousCoeff_method1(utp,vtp)
                         
                  endif
 
-                 P(i,j) = zetaC(i,j)*deno ! replacement pressure 
                  etaC(i,j)  = zetaC(i,j) * ell_2
                      
               elseif ( rheo .eq. 2 ) then ! triangle, jfl p.1124
@@ -246,12 +262,12 @@ subroutine ViscousCoeff_method1(utp,vtp)
 
      do i = 1, nx+1
 
-        if (maskC(i,0) .eq. 1) then
+        if (maskC(i,0) .eq. 1 .and. Periodic_y .eq. 0) then
            etaC(i,1)  = 0d0
            zetaC(i,1) = 0d0
         endif
             
-        if (maskC(i,ny+1) .eq. 1) then
+        if (maskC(i,ny+1) .eq. 1 .and. Periodic_y .eq. 0) then
            etaC(i,ny)  = 0d0
            zetaC(i,ny) = 0d0
         endif
@@ -260,18 +276,20 @@ subroutine ViscousCoeff_method1(utp,vtp)
          
      do j = 1, ny+1
             
-        if (maskC(0,j) .eq. 1) then   
+        if (maskC(0,j) .eq. 1 .and. Periodic_x .eq. 0) then   
            etaC(1,j)  = 0d0
            zetaC(1,j) = 0d0
         endif
             
-        if (maskC(nx+1,j) .eq. 1) then  
+        if (maskC(nx+1,j) .eq. 1 .and. Periodic_x .eq. 0) then  
            etaC(nx,j)  = 0d0
            zetaC(nx,j) = 0d0
         endif
 
      enddo
-
+     
+     if (peri .ne. 0) call periodicBC(etaC,zetaC)
+     if (peri .ne. 0) call periodicBC(etaB,P)  !etaB = zero and is a dummy here
 !------------------------------------------------------------------------
 !     Shear and bulk viscosity calculation at the grid node
 !------------------------------------------------------------------------
@@ -289,6 +307,8 @@ subroutine ViscousCoeff_method1(utp,vtp)
      enddo
          
   endif
+  
+
       
   return
 end subroutine ViscousCoeff_method1
@@ -316,7 +336,7 @@ subroutine ViscousCoeff_method2(utp,vtp)
   include 'CB_mask.h'
   include 'CB_options.h'
   
-  integer i, j, rheo, summaskC
+  integer i, j, rheo, summaskC, peri
 
   double precision dudx, dvdy, dudy, dvdx, deno, denoT, denomin, pnode
   double precision utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
@@ -324,6 +344,7 @@ subroutine ViscousCoeff_method2(utp,vtp)
   denomin = 2d-09 ! Hibler, 1979
 
   rheo = Rheology ! define local variable to speed up the code
+  peri = Periodic_x + Periodic_y ! =1 if we have periodic conditions
 
 !------------------------------------------------------------------------
 !     free slip boundary condition:
@@ -353,12 +374,16 @@ subroutine ViscousCoeff_method2(utp,vtp)
         enddo
      enddo
 
+
      dudx       = 0d0
      dvdy       = 0d0
      dudy       = 0d0
      dvdx       = 0d0
      pnode      = 0d0
 
+
+     if (peri .ne. 0) call periodicBC(utp,vtp)    
+     
 !------------------------------------------------------------------------
 !     Shear and bulk viscosity calculation at the grid center
 !------------------------------------------------------------------------   
@@ -432,29 +457,38 @@ subroutine ViscousCoeff_method2(utp,vtp)
                  if ( regularization .eq. 'tanh' ) then
 
                     deno = max( deno, 1d-20 )
-                    zetaC(i,j) =  ( Pp(i,j)/denomin ) &
+                     
+                    zetaC(i,j) =  ( (Pp(i,j)+Pt(i,j))/denomin ) &
                          *( tanh(denomin*(1/deno)))
+                         
+                    P(i,j) = ((( Pp(i,j)-Pt(i,j))/denomin ) &
+                         *tanh(denomin*(1/deno))) *deno 
 
                  elseif ( regularization .eq. 'Kreyscher' ) then
                         
                     denoT = deno + denomin
-                    zetaC(i,j) = Pp(i,j)/denoT 
+
+                    zetaC(i,j) = (Pp(i,j)+Pt(i,j))/denoT 
+                    
+                    P(i,j) = ((Pp(i,j) - Pt(i,j)) / denoT) * deno 
 
                  elseif ( regularization .eq. 'capping' ) then
 
                     denoT = max(deno,denomin)
-                    zetaC(i,j) = Pp(i,j)/denoT
+
+                    zetaC(i,j) = (Pp(i,j)+Pt(i,j))/denoT 
+
+                    P(i,j) = ((Pp(i,j) - Pt(i,j)) / denoT) * deno 
 
                  else
                         
                     print *, 'WRONG REGULARIZATION'
                     stop
-                    
+                        
                  endif
 
-                 P(i,j) = zetaC(i,j)*deno ! replacement pressure 
                  etaC(i,j)  = zetaC(i,j) * ell_2
-                        
+                     
               elseif ( rheo .eq. 2 ) then ! triangle, jfl p.1124
 
                  stop
@@ -472,12 +506,12 @@ subroutine ViscousCoeff_method2(utp,vtp)
 
      do i = 1, nx+1
 
-        if (maskC(i,0) .eq. 1) then
+        if (maskC(i,0) .eq. 1 .and. Periodic_y .eq. 0) then
            etaC(i,1)  = 0d0
            zetaC(i,1) = 0d0
         endif
             
-        if (maskC(i,ny+1) .eq. 1) then
+        if (maskC(i,ny+1) .eq. 1 .and. Periodic_y .eq. 0) then
            etaC(i,ny)  = 0d0
            zetaC(i,ny) = 0d0
         endif
@@ -486,17 +520,20 @@ subroutine ViscousCoeff_method2(utp,vtp)
          
      do j = 1, ny+1
             
-        if (maskC(0,j) .eq. 1) then   
+        if (maskC(0,j) .eq. 1 .and. Periodic_x .eq. 0) then   
            etaC(1,j)  = 0d0
            zetaC(1,j) = 0d0
         endif
             
-        if (maskC(nx+1,j) .eq. 1) then  
+        if (maskC(nx+1,j) .eq. 1 .and. Periodic_x .eq. 0) then  
            etaC(nx,j)  = 0d0
            zetaC(nx,j) = 0d0
         endif
 
      enddo
+
+     if (peri .ne. 0) call periodicBC(etaC,zetaC)
+     if (peri .ne. 0) call periodicBC(etaB,P)  !etaB = zero and is a dummy here     
 
 !------------------------------------------------------------------------
 !     Shear viscosity calculation at the grid node (see p.2-118 PDF notebook)
@@ -524,7 +561,8 @@ subroutine ViscousCoeff_method2(utp,vtp)
                  dvdy = ( (vtp(i-1,j+1) + vtp(i,j+1)) * maskB(i,j+1) - &
                       (vtp(i-1,j-1) + vtp(i,j-1)) * maskB(i,j-1) ) / (4d0*Deltax)
                      
-                 pnode = ( Pp(i-1,j) + Pp(i,j) + Pp(i,j-1) + Pp(i-1,j-1) ) / 4d0 
+                 pnode = ( Pp(i-1,j) + Pp(i,j) + Pp(i,j-1) + Pp(i-1,j-1) + & 
+                           Pt(i-1,j) + Pt(i,j) + Pt(i,j-1) + Pt(i-1,j-1) ) / 4d0 
                      
               elseif (summaskC .eq. 3) then 
 
@@ -540,7 +578,8 @@ subroutine ViscousCoeff_method2(utp,vtp)
                     dvdy = ( -vtp(i-1,j-1) - vtp(i,j-1) + &
                          ( vtp(i-1,j-2) + vtp(i,j-2) ) * maskB(i,j-2)/4d0 ) / Deltax
                         
-                    pnode = ( Pp(i,j) + Pp(i,j-1) + Pp(i-1,j-1) ) / 3d0 ! check ca 
+                    pnode = ( Pp(i,j) + Pp(i,j-1) + Pp(i-1,j-1) + & ! check ca 
+                              Pt(i,j) + Pt(i,j-1) + Pt(i-1,j-1) ) / 3d0 ! check ca 
 
                  elseif (maskC(i,j) .eq. 0) then !case 3
 ! ox
@@ -554,7 +593,8 @@ subroutine ViscousCoeff_method2(utp,vtp)
                     dvdy = ( -vtp(i-1,j-1) - vtp(i,j-1) + &
                          ( vtp(i-1,j-2) + vtp(i,j-2) ) * maskB(i,j-2)/4d0 ) / Deltax
 
-                    pnode = ( Pp(i-1,j) + Pp(i,j-1) + Pp(i-1,j-1) ) / 3d0
+                    pnode = ( Pp(i-1,j) + Pp(i,j-1) + Pp(i-1,j-1) + & 
+                              Pt(i-1,j) + Pt(i,j-1) + Pt(i-1,j-1) ) / 3d0
 
                  elseif (maskC(i,j-1) .eq. 0) then !case 5
 ! oo                                                          
@@ -568,7 +608,8 @@ subroutine ViscousCoeff_method2(utp,vtp)
                     dvdy = ( vtp(i-1,j+1) + vtp(i,j+1) - &
                          ( vtp(i-1,j+2) + vtp(i,j+2) ) * maskB(i,j+2)/4d0 ) / Deltax
     
-                    pnode = ( Pp(i-1,j) + Pp(i,j) + Pp(i-1,j-1) ) / 3d0
+                    pnode = ( Pp(i-1,j) + Pp(i,j) + Pp(i-1,j-1) + &
+                              Pt(i-1,j) + Pt(i,j) + Pt(i-1,j-1) ) / 3d0
 
                  elseif (maskC(i-1,j-1) .eq. 0) then !case 4
 ! oo                                                            
@@ -582,8 +623,8 @@ subroutine ViscousCoeff_method2(utp,vtp)
                     dvdy = ( vtp(i-1,j+1) + vtp(i,j+1) - &
                          ( vtp(i-1,j+2) + vtp(i,j+2) ) * maskB(i,j+2)/4d0 ) / Deltax
 
-                    pnode = ( Pp(i-1,j) + Pp(i,j) + Pp(i,j-1) ) / 3d0
-
+                    pnode = ( Pp(i-1,j) + Pp(i,j) + Pp(i,j-1) + &
+                              Pt(i-1,j) + Pt(i,j) + Pt(i,j-1) ) / 3d0
                  else
 
                     print *, 'wowowo1'
@@ -604,7 +645,8 @@ subroutine ViscousCoeff_method2(utp,vtp)
                          ( utp(i+2,j) + utp(i+2,j-1) ) * maskB(i+2,j)/4d0 ) / Deltax
 		      
                     dvdy = 0d0
-                    pnode = ( Pp(i,j) + Pp(i,j-1) )/2d0
+                    pnode = ( Pp(i,j) + Pp(i,j-1) + &
+                              Pt(i,j) + Pt(i,j-1) )/2d0
 
                  elseif(maskC(i,j) .eq. 0 .and. & !case 6
                       maskC(i,j-1) .eq. 0) then
@@ -617,7 +659,8 @@ subroutine ViscousCoeff_method2(utp,vtp)
                          ( utp(i-2,j) + utp(i-2,j-1) ) * maskB(i-2,j)/4d0 ) / Deltax
 
                     dvdy = 0d0
-                    pnode = ( Pp(i-1,j) + Pp(i-1,j-1) )/2d0
+                    pnode = ( Pp(i-1,j) + Pp(i-1,j-1) + &
+                              Pt(i-1,j) + Pt(i-1,j-1) )/2d0
 
                  elseif(maskC(i-1,j) .eq. 0 .and. & !case 8           
                       maskC(i,j) .eq. 0) then
@@ -629,7 +672,8 @@ subroutine ViscousCoeff_method2(utp,vtp)
                     dvdy = ( -vtp(i-1,j-1) - vtp(i,j-1) + &
                          ( vtp(i-1,j-2) + vtp(i,j-2) ) * maskB(i,j-2)/4d0 ) / Deltax
                     
-                    pnode = ( Pp(i-1,j-1) + Pp(i,j-1) )/2d0
+                    pnode = ( Pp(i-1,j-1) + Pp(i,j-1) + &
+			      Pt(i-1,j-1) + Pt(i,j-1) )/2d0
 
                  elseif(maskC(i,j-1) .eq. 0 .and. & !case 9
                       maskC(i-1,j-1) .eq. 0) then
@@ -641,7 +685,7 @@ subroutine ViscousCoeff_method2(utp,vtp)
                     dvdy = ( vtp(i-1,j+1) + vtp(i,j+1) - &
                          ( vtp(i-1,j+2) + vtp(i,j+2) ) * maskB(i,j+2)/4d0 ) / Deltax
                         
-                    pnode = ( Pp(i-1,j) + Pp(i,j) ) / 2d0
+                    pnode = ( Pp(i-1,j) + Pp(i,j) + Pt(i-1,j) + Pt(i,j)) / 2d0
 
                  elseif(maskC(i-1,j) .eq. 0 .and. & !case 15
                       maskC(i,j-1) .eq. 0) then
@@ -752,7 +796,7 @@ subroutine ViscousCoeff_method3_and_4(utp,vtp)
   include 'CB_mask.h'
   include 'CB_options.h'
 
-  integer i, j, rheo, summaskC
+  integer i, j, rheo, summaskC, peri
 
   double precision dudx, dvdy, dudy, dvdx, deno, denoT, denomin
   double precision utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
@@ -761,6 +805,7 @@ subroutine ViscousCoeff_method3_and_4(utp,vtp)
   denomin = 2d-09 ! Hibler, 1979
 
   rheo = Rheology ! define local variable to speed up the code
+  peri = Periodic_x + Periodic_y ! =1 if we have periodic conditions
 
 !------------------------------------------------------------------------
 !     free slip boundary condition:
@@ -795,6 +840,10 @@ subroutine ViscousCoeff_method3_and_4(utp,vtp)
      dudy       = 0d0
      dvdx       = 0d0
      deno       = 0d0
+
+
+     if (peri .ne. 0) call periodicBC(utp,vtp)
+     
 
 !------------------------------------------------------------------------
 !     ep12 calculation at the grid node (see p.2-118 PDF notebook)
@@ -944,20 +993,30 @@ subroutine ViscousCoeff_method3_and_4(utp,vtp)
                  endif
 
                  if ( regularization .eq. 'tanh' ) then
-                        
-                    deno = max( deno, 1d-20 )                     
-                    zetaC(i,j) =  ( Pp(i,j)/denomin ) &
+
+                    deno = max( deno, 1d-20 )
+                     
+                    zetaC(i,j) =  ( (Pp(i,j)+Pt(i,j))/denomin ) &
                          *( tanh(denomin*(1/deno)))
+                         
+                    P(i,j) = ((( Pp(i,j)-Pt(i,j))/denomin ) &
+                         *tanh(denomin*(1/deno))) *deno 
 
                  elseif ( regularization .eq. 'Kreyscher' ) then
                         
                     denoT = deno + denomin
-                    zetaC(i,j) = Pp(i,j)/denoT 
+
+                    zetaC(i,j) = (Pp(i,j)+Pt(i,j))/denoT 
+                    
+                    P(i,j) = ((Pp(i,j) - Pt(i,j)) / denoT) * deno 
 
                  elseif ( regularization .eq. 'capping' ) then
 
                     denoT = max(deno,denomin)
-                    zetaC(i,j) = Pp(i,j)/denoT
+
+                    zetaC(i,j) = (Pp(i,j)+Pt(i,j))/denoT 
+
+                    P(i,j) = ((Pp(i,j) - Pt(i,j)) / denoT) * deno
 
                  else
                         
@@ -966,9 +1025,8 @@ subroutine ViscousCoeff_method3_and_4(utp,vtp)
                         
                  endif
 
-                 P(i,j) = zetaC(i,j)*deno ! replacement pressure 
                  etaC(i,j)  = zetaC(i,j) * ell_2
-                        
+                     
               elseif ( rheo .eq. 2 ) then ! triangle, jfl p.1124
 
                  stop
@@ -986,12 +1044,12 @@ subroutine ViscousCoeff_method3_and_4(utp,vtp)
 
      do i = 1, nx+1
 
-        if (maskC(i,0) .eq. 1) then
+        if (maskC(i,0) .eq. 1 .and. Periodic_y .eq. 0) then
            etaC(i,1)  = 0d0
            zetaC(i,1) = 0d0
         endif
             
-        if (maskC(i,ny+1) .eq. 1) then
+        if (maskC(i,ny+1) .eq. 1 .and. Periodic_y .eq. 0) then
            etaC(i,ny)  = 0d0
            zetaC(i,ny) = 0d0
         endif
@@ -1000,17 +1058,20 @@ subroutine ViscousCoeff_method3_and_4(utp,vtp)
          
      do j = 1, ny+1
             
-        if (maskC(0,j) .eq. 1) then   
+        if (maskC(0,j) .eq. 1 .and. Periodic_x .eq. 0) then   
            etaC(1,j)  = 0d0
            zetaC(1,j) = 0d0
         endif
             
-        if (maskC(nx+1,j) .eq. 1) then  
+        if (maskC(nx+1,j) .eq. 1 .and. Periodic_x .eq. 0) then  
            etaC(nx,j)  = 0d0
            zetaC(nx,j) = 0d0
         endif
 
      enddo
+     
+     if (peri .ne. 0) call periodicBC(etaC,zetaC)
+     if (peri .ne. 0) call periodicBC(etaB,P)  !etaB = zero and is a dummy here          
 
 !------------------------------------------------------------------------
 !     Shear viscosity calculation at the grid node (see p.2-118 PDF notebook)
@@ -1137,128 +1198,331 @@ subroutine etaB_at_open_boundaries
   include 'parameter.h'
   include 'CB_DynVariables.h'
   include 'CB_mask.h'
+  include 'CB_options.h'
 
-  integer i, j, summaskC
+  integer i, j, summaskC, peri
 
 !------------------------------------------------------------------------                                                                                                      
 !     Set etaB to 0.0 at the open boundaries (see p.32-33 EC-2)                                                                                                                
-!------------------------------------------------------------------------                                                                                                      
+!------------------------------------------------------------------------  
 
-  etaB(1,1)=0d0
-  etaB(1,ny+1)=0d0
-  do j = 2, ny
-
-     summaskC = maskC(0,j) + maskC(1,j) + &
-          maskC(1,j-1) + maskC(0,j-1)
-
-     if (summaskC .ge. 2) then
-
-        if (summaskC .ge. 3) then
-           etaB(1,j) = 0d0
-        elseif (summaskC .eq. 2) then
-           if (maskC(0,j) .eq. 0 .and. maskC(1,j) .eq. 0) then
-              etaB(1,j) = 0d0
-           elseif (maskC(0,j-1) .eq. 0 .and. maskC(1,j-1) .eq. 0) then
-              etaB(1,j) = 0d0
-           elseif (maskC(0,j) .eq. 0 .and. maskC(0,j-1) .eq. 0) then
-              ! don't do anything...it can be non zero                                                                                                                   
-           else
-              print *, 'wowowo' ! ocean on the left is not possible                                                                                                         
-           endif
-
-        endif
-
-     endif
-
-  enddo
-
-  etaB(nx+1,1)=0d0
-  etaB(nx+1,ny+1)=0d0
-  do j = 2, ny
-        
-     summaskC = maskC(nx,j) + maskC(nx+1,j) + &
-          maskC(nx+1,j-1) + maskC(nx,j-1)
-
-     if (summaskC .ge. 2) then
-
-        if (summaskC .ge. 3) then
-           etaB(nx+1,j) = 0d0
-        elseif (summaskC .eq. 2) then
-           if (maskC(nx,j) .eq. 0 .and. maskC(nx+1,j) .eq. 0) then
-              etaB(nx+1,j) = 0d0
-           elseif (maskC(nx,j-1) .eq. 0 .and. maskC(nx+1,j-1) .eq. 0) then
-              etaB(nx+1,j) = 0d0
-           elseif (maskC(nx+1,j) .eq. 0 .and. maskC(nx+1,j-1) .eq. 0) then
-              ! don't do anything...it can be non zero                                                                                                                   
-           else
-              print *, 'wowowo' ! ocean on the right is not possible                                                                                                        
-           endif
-
-        endif
-
-     endif
-
-  enddo
-
-
-  do i = 2, nx
-
-     summaskC = maskC(i-1,1) + maskC(i,1) + &
-          maskC(i-1,0) + maskC(i,0)
-
-     if (summaskC .ge. 2) then
-
-        if (summaskC .ge. 3) then
-           etaB(i,1) = 0d0
-        elseif (summaskC .eq. 2) then
-           if (maskC(i-1,1) .eq. 0 .and. maskC(i-1,0) .eq. 0) then
-              etaB(i,1) = 0d0
-           elseif (maskC(i,1) .eq. 0 .and. maskC(i,0) .eq. 0) then
-              etaB(i,1) = 0d0
-           elseif (maskC(i-1,0) .eq. 0 .and. maskC(i,0) .eq. 0) then
-              ! don't do anything...it can be non zero                                                                                                                   
-           else
-              print *, 'wowowo' ! ocean below is not possible                                                                                                               
-           endif
-
-        endif
-
-     endif
-
-  enddo
+  peri = Periodic_x + Periodic_y ! =1 if we have periodic conditions                                                                                                    
   
-  do i = 2, nx
+  if (peri .ne. 2) then
+    etaB(1,1)=0d0
+    etaB(1,ny+1)=0d0
+    etaB(nx+1,1)=0d0
+    etaB(nx+1,ny+1)=0d0
+  endif  
 
-     summaskC = maskC(i-1,ny+1) + maskC(i,ny+1) + &
-          maskC(i-1,ny) + maskC(i,ny)
-     
-     if (summaskC .ge. 2) then
+  if (Periodic_x .eq. 0) then
+      
+      do j = 2, ny
 
-        if (summaskC .ge. 3) then
-           etaB(i,ny+1) = 0d0
-        elseif (summaskC .eq. 2) then
-           if (maskC(i-1,ny+1) .eq. 0 .and. maskC(i-1,ny) .eq. 0) then
-              etaB(i,ny+1) = 0d0
-           elseif (maskC(i,ny+1) .eq. 0 .and. maskC(i,ny) .eq. 0) then
-              etaB(i,ny+1) = 0d0
-           elseif (maskC(i-1,ny+1) .eq. 0 .and. maskC(i,ny+1) .eq. 0) then
-              ! don't do anything...it can be non zero                                                                                                                      
-           else
-              print *, 'wowowo' ! ocean above is not possible                                                                                                               
-           endif
-           
-        endif
+	summaskC = maskC(0,j) + maskC(1,j) + &
+	      maskC(1,j-1) + maskC(0,j-1)
 
-     endif
+	if (summaskC .ge. 2) then
 
-  enddo
+	    if (summaskC .ge. 3) then
+	      etaB(1,j) = 0d0
+	    elseif (summaskC .eq. 2) then
+	      if (maskC(0,j) .eq. 0 .and. maskC(1,j) .eq. 0) then
+		  etaB(1,j) = 0d0
+	      elseif (maskC(0,j-1) .eq. 0 .and. maskC(1,j-1) .eq. 0) then
+		  etaB(1,j) = 0d0
+	      elseif (maskC(0,j) .eq. 0 .and. maskC(0,j-1) .eq. 0) then
+		  ! don't do anything...it can be non zero                                                                                                                   
+	      else
+		  print *, 'wowowo' ! ocean on the left is not possible                                                                                                         
+	      endif
 
+	    endif
+
+	endif
+
+      enddo
+
+      do j = 2, ny
+	    
+	summaskC = maskC(nx,j) + maskC(nx+1,j) + &
+	      maskC(nx+1,j-1) + maskC(nx,j-1)
+
+	if (summaskC .ge. 2) then
+
+	    if (summaskC .ge. 3) then
+	      etaB(nx+1,j) = 0d0
+	    elseif (summaskC .eq. 2) then
+	      if (maskC(nx,j) .eq. 0 .and. maskC(nx+1,j) .eq. 0) then
+		  etaB(nx+1,j) = 0d0
+	      elseif (maskC(nx,j-1) .eq. 0 .and. maskC(nx+1,j-1) .eq. 0) then
+		  etaB(nx+1,j) = 0d0
+	      elseif (maskC(nx+1,j) .eq. 0 .and. maskC(nx+1,j-1) .eq. 0) then
+		  ! don't do anything...it can be non zero                                                                                                                   
+	      else
+		  print *, 'wowowo' ! ocean on the right is not possible                                                                                                        
+	      endif
+
+	    endif
+
+	endif
+
+      enddo
+      
+  endif 
+
+  if (Periodic_y .eq. 0) then  
+  
+      do i = 2, nx
+
+	summaskC = maskC(i-1,1) + maskC(i,1) + &
+	      maskC(i-1,0) + maskC(i,0)
+
+	if (summaskC .ge. 2) then
+
+	    if (summaskC .ge. 3) then
+	      etaB(i,1) = 0d0
+	    elseif (summaskC .eq. 2) then
+	      if (maskC(i-1,1) .eq. 0 .and. maskC(i-1,0) .eq. 0) then
+		  etaB(i,1) = 0d0
+	      elseif (maskC(i,1) .eq. 0 .and. maskC(i,0) .eq. 0) then
+		  etaB(i,1) = 0d0
+	      elseif (maskC(i-1,0) .eq. 0 .and. maskC(i,0) .eq. 0) then
+		  ! don't do anything...it can be non zero                                                                                                                   
+	      else
+		  print *, 'wowowo' ! ocean below is not possible                                                                                                               
+	      endif
+
+	    endif
+
+	endif
+
+      enddo
+      
+      do i = 2, nx
+
+	summaskC = maskC(i-1,ny+1) + maskC(i,ny+1) + &
+	      maskC(i-1,ny) + maskC(i,ny)
+	
+	if (summaskC .ge. 2) then
+
+	    if (summaskC .ge. 3) then
+	      etaB(i,ny+1) = 0d0
+	    elseif (summaskC .eq. 2) then
+	      if (maskC(i-1,ny+1) .eq. 0 .and. maskC(i-1,ny) .eq. 0) then
+		  etaB(i,ny+1) = 0d0
+	      elseif (maskC(i,ny+1) .eq. 0 .and. maskC(i,ny) .eq. 0) then
+		  etaB(i,ny+1) = 0d0
+	      elseif (maskC(i-1,ny+1) .eq. 0 .and. maskC(i,ny+1) .eq. 0) then
+		  ! don't do anything...it can be non zero                                                                                                                      
+	      else
+		  print *, 'wowowo' ! ocean above is not possible                                                                                                               
+	      endif
+	      
+	    endif
+
+	endif
+
+      enddo
+      
+  endif   
+      
   return
 end subroutine etaB_at_open_boundaries
 
 
 
-    
 
 
 
+
+subroutine MEBcoeff
+
+!************************************************************************                                  
+!     Subroutine MEBcoeff: computes the MEB coefficients in the same format as                                         
+!     those of the VP model, at the centers (zetaC, etaC) and at the nodes (etaB)                               
+!     of the grid. These are defined as (See Plante et al. 2019, The Cryosphere):
+!     
+!     zetaC = Gamma * E * (C1+C2) * Deltat
+!     etaC =  Gamma * E * Deltat * C3
+!                        
+!     where : 
+!     
+!        Gamma = [ 1 + Deltat / lambda   ] ^(-1)    is a viscous dissipation factor
+!        lambda = [ lambda0 * (1-d)^(1-alpha) ] / h * e^(-c(1-A))   
+!             : is the viscous relaxation time as function of d, h and A
+!
+!        with 
+
+!        E = Y * (1-d) * h * e^(-c(1-A))      is the Elastic Stiffness, 
+!                                      as a function of Y (young modulus), d, h, A
+!        C1 = 1 / (1 - poisson^2)
+!        C2 = poisson / (1 - poisson^2)
+!        C3 = (1-poisson) / (1 - poisson^2)
+!          : are three elastic constants (a version of the Lame coefficients)
+!
+!    In this code, we include the Elastic stiffness in the other coefficients,
+!    to decrease the number of variables. So we set:
+!
+!        Lame1 = Y * C3
+!        Lame2 = Y * ( C1 + C2 )
+!        hAfunc =  h * e^(-c(1-A)) 
+!
+!
+!
+!     Mathieu Plante, October 9 2019                                                                            
+!                                                                                                            
+!************************************************************************     
+
+     use elastic
+     use ellipse !we need this for the coefficient C
+     implicit none
+
+     include 'parameter.h'
+     include 'CB_DynVariables.h'
+     include 'CB_mask.h'
+     include 'CB_options.h'
+     include 'CB_const.h'
+
+     integer i, j, peri
+
+     double precision Lame1, Lame2,m1, m2, m3, m4
+     double precision hAfunc(0:nx+2,0:ny+2), hAfuncB(0:nx+2,0:ny+2)
+     peri = Periodic_x + Periodic_y ! =1 if we have periodic conditions      
+      
+!---------------------------------------------------------  
+!     set constants for for linear elastic Rheology (Matt, 2015)
+!---------------------------------------------------------
+
+      Lame1     =  Young/(2d0*(1d0 + Poisson)) ! Shear Modulus of sea ice
+      Lame2     =  2d0*Poisson*Lame1/(1d0-Poisson) ! elastic const of sea ice
+      Tdam      = max(Deltax /sqrt(Lame2/rhoice), Deltat) !Damage relaxation time scale
+
+!------------------------------------------------------------------------
+!     free slip boundary condition:
+!       d(v_tangential)/d(normal) = 0 & v_normal = 0, at close boundary
+!------------------------------------------------------------------------
+ 
+
+      if ( BndyCond .eq. 'freeslip' ) then
+
+               print *, 'WARNING: freeslip option not fully tested yet'
+
+      elseif ( BndyCond .eq. 'noslip' ) then
+      
+         do i = 0, nx+1
+            do j = 0, ny+1
+
+               etaC(i,j)  = Lame1*Deltat
+               zetaC(i,j) = (Lame1 + Lame2)*Deltat
+               etaB(i,j)  = Lame1*Deltat
+               hAfunc(i,j) = 1d0
+               hAfuncB(i,j) = 1d0
+            enddo
+         enddo
+
+         ! Apply periodic boundary conditions 
+         if (peri .ne. 0) call periodicBC(dam,dfactor)  
+         if (peri .ne. 0) call periodicBC(damB,dfactorB)  
+         ! ---
+               
+!------------------------------------------------------------------------
+!     Calculate the coefficient in the grid center
+!------------------------------------------------------------------------
+
+         do i = 1, nx
+           do j = 1, ny
+
+             if (IMEX .eq. 0) dfactor(i,j) = 1d0 !If IMEX=1, the following coefficients are computed 
+                                                 !using the implicit damage : d = d*dfactor
+
+             if (maskC(i,j) .eq. 1d0) then
+
+                hAfunc(i,j)  = h(i,j) * dexp(-C * ( 1d0 - A(i,j) ) )
+                
+                GammaMEB(i,j) = 1d0 / (1d0 + (Deltat * hAfunc(i,j)) / &
+                           (lambda0 * ((dam(i,j))*dfactor(i,j))**(alpha-1d0))) 
+
+             else
+             
+                hAfunc(i,j) = Lame1*Deltat                
+                GammaMEB(i,j) = 1d0
+                
+             endif
+
+             etaC(i,j)  = Lame1*hAfunc(i,j)*(dam(i,j))*dfactor(i,j)* &   !Elastic stiffness
+                                                 Deltat * GammaMEB(i,j)
+             zetaC(i,j) = hAfunc(i,j)*(Lame1 + Lame2)*Deltat * &
+                                 dam(i,j)* dfactor(i,j) * GammaMEB(i,j)
+             P(i,j) = 0d0
+             
+             CoheC(i,j) = Cohe*hAfunc(i,j)
+             sigtC(i,j) = sigt*hAfunc(i,j)
+             sigcC(i,j) = sigc*hAfunc(i,j)
+
+            enddo
+         enddo
+         
+         if (peri .ne. 0) call periodicBC(etaC,zetaC)
+         if (peri .ne. 0) call periodicBC(GammaMEB,P)
+         if (peri .ne. 0) call periodicBC(sigtC,CoheC)
+         if (peri .ne. 0) call periodicBC(sigcC,P) !P=0 everywhere: dummy
+         
+!------------------------------------------------------------------------
+!     Calculate the coefficient in the grid nodes
+!------------------------------------------------------------------------         
+         
+         do i = 1, nx+1
+            do j = 1, ny+1 
+
+               if (IMEX .eq. 0) dfactorB(i,j) = 1d0
+
+               m1 = maskC(i,j) 
+               m2 = maskC(i-1,j)
+               m3 = maskC(i,j-1)
+               m4 = maskC(i-1,j-1)
+
+               !open bc
+               if (Periodic_x .eq. 0) then
+                   if (i .eq. 1) then
+                      m2 = 0d0
+                      m4 = 0d0
+                   elseif (i .eq. nx+1) then
+                      m1 = 0d0
+                      m3 = 0d0  
+                   endif
+               endif                   
+                   
+               if (Periodic_y .eq. 0) then
+                   if (j .eq. 1) then
+                      m3 = 0d0
+                      m4 = 0d0
+                   elseif (j .eq. ny+1) then
+                      m1 = 0d0
+                      m2 = 0d0  
+                   endif                  
+               endif    
+
+               if (m1+m2+m3+m4 .ne. 0d0) then
+
+                  hAfuncB(i,j) = ((h(i,j)*m1 + h(i-1,j)*m2 + h(i,j-1)*m3 &
+                                  + h(i-1,j-1)*m4 )/ (m1+m2+m3+m4))  &
+                             * dexp(-C * ( 1d0 - ((A(i,j)*m1 + A(i-1,j)*m2 &
+                              + A(i,j-1)*m3 + A(i-1,j-1)*m4 )/ (m1+m2+m3+m4) ) ) )
+               endif
+
+               GammaMEB_B(i,j) = 1d0 / ( 1d0 + (Deltat * hAfuncB(i,j)) / &
+                              (lambda0 * (damB(i,j)*dfactorB(i,j))**(alpha-1d0) )  )
+               etaB(i,j)  = hAfuncB(i,j)*Lame1*Deltat*&
+                             (damB(i,j)*dfactorB(i,j)) *GammaMEB_B(i,j)
+            enddo
+         enddo
+         
+!------------------------------------------------------------------------ 
+
+         if (peri .ne. 0) call periodicBC(etaB,GammaMEB_B)    
+         
+      endif
+
+  return
+end subroutine MEBcoeff

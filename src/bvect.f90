@@ -16,8 +16,9 @@
       include 'CB_mask.h'
       include 'CB_DynForcing.h'
       include 'CB_bathymetry.h'
+      include 'CB_options.h'
 
-      integer i, j
+      integer i, j, peri
 
       double precision &
                        uwavg(0:nx+2,0:ny+2), & ! uw evaluated at the v-loc
@@ -32,7 +33,10 @@
 
       minA=0.01d0
       alpha = 1d06
-
+      
+      peri = Periodic_x + Periodic_y
+      if (peri .ne. 0)   call periodicBC(utp,vtp) ! Periodic boundaries
+      
       do j = 1, ny
          do i = 1, nx+1
 
@@ -199,7 +203,7 @@
       do j = 1, ny
          do i = 1, nx+1
 
-            if ( maskB(i,j) + maskB(i,j+1) .gt. 0 ) then
+           if ( maskB(i,j) + maskB(i,j+1) .gt. 0 ) then
 
                if (solver .le. 2) then ! Picard or JFNK
                
@@ -213,8 +217,26 @@
                        CdwC1(i,j) * ( uwatnd(i,j) * costheta_w - &
                        vwavg(i,j)  * sintheta_w   )
 
+
                endif
                
+               !--------------------------------------------
+               ! If MEB, put the decohesive terms to rhs :
+               !--------------------------------------------
+               if ( Rheology .eq. 3) then
+
+                  !     d ( sig_xx ) / dx
+                  bu(i,j) = bu(i,j) + &
+                       ( sigxx(i,j)*GammaMEB(i,j) &
+                       - sigxx(i-1,j)*GammaMEB(i-1,j) ) &
+                       /  Deltax
+
+                  !     d ( sig_xy) / dy    B1_2
+                  bu(i,j) = bu(i,j) + (sigxyB(i,j+1)*GammaMEB_B(i,j+1) - &
+                       sigxyB(i,j)*GammaMEB_B(i,j) ) /  Deltax
+
+               endif
+
             else
 
                bu(i,j) = 0d0
@@ -224,11 +246,10 @@
          enddo
       enddo
 
-
       do j = 1, ny+1
          do i = 1, nx
             
-            if ( maskB(i,j) + maskB(i+1,j) .gt. 0 ) then
+           if ( maskB(i,j) + maskB(i+1,j) .gt. 0 ) then
 
                if (solver .le. 2) then ! Picard or JFNK
 
@@ -242,8 +263,26 @@
                        CdwC2(i,j) * ( vwatnd(i,j) * costheta_w + &
                        uwavg(i,j)  * sintheta_w   )
             
+
                endif
                
+               !--------------------------------------------
+               ! If MEB, put the decohesive terms to rhs :
+               !--------------------------------------------
+               if ( Rheology .eq. 3) then
+
+                  !     d ( sig_yy ) / dy
+                  bv(i,j) = bv(i,j) + &
+                       ( sigyy(i,j) * GammaMEB(i,j) &
+                       - sigyy(i,j-1) * GammaMEB(i,j-1) ) &
+                       /  Deltax 
+
+                  !     d ( sig_xy) / dx    B1_2
+                  bv(i,j) = bv(i,j) + ( sigxyB(i+1,j)*GammaMEB_B(i+1,j) &
+                       - sigxyB(i,j)*GammaMEB_B(i,j) ) /  Deltax
+                  
+               endif
+
             else
 
                bv(i,j) = 0d0
@@ -257,24 +296,34 @@
 !   Set bu and bv to 0.0 at the 'appropriate' open bc
 !-----------------------------------------------------------------------------
 
-      do j = 1, ny+1
+      if (Periodic_x .eq. 0) then
+    
+         do j = 1, ny+1
 
-         bu(1,j)    = 0.0d0   ! Bering Strait
-         bu(nx+1,j) = 0.0d0   !
-         
-         bv(nx+1,j)    = 0.0d0 
-         
-      enddo
+            bu(1,j)    = 0.0d0   ! Bering Strait
+            bu(nx+1,j) = 0.0d0   !
+
+            bv(nx+1,j)    = 0.0d0 
+
+         enddo
       
-      do i = 1, nx+1
+      endif
+    
+      if (Periodic_y .eq. 0) then     
+      
+         do i = 1, nx+1
 
-         bv(i,1)    = 0.0d0   ! North Atlantic
-         bv(i,ny+1) = 0.0d0   ! no open bc in current configuration
-            
-         bu(i,ny+1)    = 0.0d0 
+            bv(i,1)    = 0.0d0   ! North Atlantic
+            bv(i,ny+1) = 0.0d0   ! no open bc in current configuration
+	      
+            bu(i,ny+1)    = 0.0d0 
 
-      enddo
-
+         enddo
+      
+      endif
+    
+      if (peri .ne. 0)   call periodicBC(bu,bv) ! Periodic boundaries
+      
       call transformer (bu,bv,rhs,1)
 
       return
