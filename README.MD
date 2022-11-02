@@ -28,24 +28,32 @@ Subsequent compiles:
 
 ## PULL REQUESTS
 ### Testing procedure
-```cd /where/you/want/your/TESTS```<br/>
-`mkdir TESTS`<br/>
-`cd TESTS`<br/>
-`git clone git@github.com:McGill-sea-ice/SIM.git REF` <br/>
-`cd REF`<br/>
-`ln -s /path/to/forcing forcing`<br/>
-`./testing_script`<br/>
-`cd ..`<br/>
-`git clone git@github.com:McGill-sea-ice/SIM.git NEW` <br/>
-`cd NEW`<br/>
-`ln -s /path/to/forcing forcing`<br/>
-`git checkout <choose your branch>`<br/>
-`./testing_script`<br/>
-`./test_results`<br/>
-copy result of tests (should get 5 PASS).<br/>
+
+Create a `TESTS` directory: 
+- `cd /where/you/want/your/TESTS`
+- `mkdir TESTS`
+- `cd TESTS`
+
+Get the master branch and reference solution in `REF` for reference
+- `git clone git@github.com:McGill-sea-ice/SIM.git REF`
+- `cd REF`
+- `ln -s /path/to/forcing forcing`
+- `./testing_script`
+
+Get your own branch in `NEW` and run the model
+- `cd ..`
+- `git clone git@github.com:McGill-sea-ice/SIM.git NEW`
+- `cd NEW`
+- `ln -s /path/to/forcing forcing`
+- `git checkout <choose your branch>`
+- `./testing_script`
+
+Compare the results
+- `./test_results`
+- copy result of tests (should get 5 PASS).
 
 ### steps for PR on github
-Click on pull request on github.<br/>
-Enter text to describe code modifications and paste result of tests.<br/>
-Assign someone for reviewing the code.<br/>
-Assign lbtremblay (and JFLemieux73 for a little bit) for approving the pull request.<br/>
+1. Click on pull request on github.
+2. Enter text to describe code modifications and paste result of tests.
+3. Assign someone for reviewing the code.
+4. Assign lbtremblay (and JFLemieux73 for a little bit) for approving the pull request.
