@@ -1,8 +1,35 @@
 #!/bin/bash 
 
-refcode=/aos/home/lemieux/TESTS/REF
-newcode=/aos/home/lemieux/TESTS/NEW
+newcode=$(pwd)
+cd ../REF
+refcode=$(pwd)
+cd $newcode
 
+newbranch=$(git -C $newcode branch --show-current)
+refbranch=$(git -C $refcode branch --show-current)
+
+echo ""
+echo "Reference code and branch:"
+echo $refcode
+echo $refbranch
+echo ""
+
+echo "New code and branch:"
+echo $newcode
+echo $newbranch
+echo ""
+
+if [[ "$refbranch" == "$newbranch" ]]
+then
+ echo "FAIL - ref and new branches are the same, you twat!"
+ exit
+fi
+
+if [[ "$newbranch" == "master" ]]
+then
+ echo "FAIL - new branch should not be the master, you twit!"
+ exit
+fi
 # --- TEST 1 ------------------------------------------
 
 file1=${refcode}/TEST/OUTPUT/h2002_01_01_02_00.41
@@ -62,4 +89,4 @@ then
 else
  echo "FAIL - test5"
 fi
-
+echo ""
