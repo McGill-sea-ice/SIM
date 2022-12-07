@@ -1,6 +1,8 @@
 #!/bin/bash
 
 scp dumbo:/storage2/common/restarts/40/*.40 output
+cp scons_repo/SConstruct_Test SConstruct
+
 scons-3
 export HDF5_DISABLE_VERSION_CHECK=2
 
@@ -42,3 +44,5 @@ cp TEST/NAMELISTS/namelistSIM5 namelistSIM
 
 mv output/h1990_01_01_01_00.45 TEST/OUTPUT
 rm -f output/*.45
+
+cp scons_repo/SConstruct_Run SConstruct
