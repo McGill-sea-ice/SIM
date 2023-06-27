@@ -17,7 +17,7 @@
 !***********************************************************************
 
 
-      subroutine dam_source_terms (damtp)
+   subroutine dam_source_terms (damtp)
       
       implicit none
 
@@ -60,9 +60,10 @@
       enddo
 
       return
-    end subroutine dam_source_terms
+      
+   end subroutine dam_source_terms
 
-    subroutine  ddam_damage (damtp)
+   subroutine  ddam_damage (damtp)
 
       implicit none
 
@@ -227,4 +228,4 @@
          
       endif
 
-    end subroutine ddam_damage
+   end subroutine ddam_damage

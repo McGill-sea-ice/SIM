@@ -1,0 +1,56 @@
+exp 11 is the spin up state without damage (most important one)
+exp 10 is spin up state with damage for half an additional year
+exp 12 (in D) is the other half from exp 10 with no damage (to check ini cond for damage)
+exp 12 (in no D) is also standard simulation without damage
+exp 1 and 2 are damage exprience without damage advection (1 is normal 2 is for cheking initial conditions with additional spin up year)
+compute these with input restart 1997
+input restart test is there to test code with the spin up state.
+experience 3 is damage with advection 
+anything with >7x is testing
+70 is with line 34 in damage.f90
+71 is without line 34 in damage.f90
+72 is without line 34, with upwindRK2
+73 is tihout line 34, semilag
+74 is no damage rk2
+75 is no damage semilag
+76 is dmg, rk2, wlsor=1.3
+77 is dmg, rk2, td=0.5
+78 is dmg, rk2, imex=2
+79 is dmg, rk2, imex=2, bdf=1
+
+exp 3 is dmg, rk2, imex2, bdf1, wlsor13, 200 NL, 
+
+5 and 6 and 7 used in paper they start from 11 with nexp = 1
+exp 5 is no dam, rk2, imex2, bdf1, wlsor13, 200 NL, 2002-01
+exp 6 is dam, rk2, imex2, bdf1, wlsor13, 200 NL, 2002-01, gam=1d-2, th = 30 days
+exp 7 is dam, rk2, imex2, bdf1, wlsor13, 200 NL, 2002-01, th = 2 days
+exp 9 is no dam, rk2, imex2, bdf1, wlsor13, 500 NL, gam=1d-3, 2002-01 (no diff compared to 5)
+
+
+trying other stuff with nexp in (1-zeta/zeta_max)**(1/nexp)
+expno > 8x will be reserved for this purpose. I want to understand why damage = 1 after 1 timestep...
+82 is same as 6 with nexp = 2
+83 is same as 6 with nexp = 3, th = 30
+84 is same as 6 with nexp = 4
+85 is same as 6 with nexp = 5, th = 30
+87 is same as 6 with nexp = 10
+93 is same as 6 with nexp = 3, th = 2
+95 is same as 6 with nexp = 5, th = 2
+
+trying other stuff with nexp in 1-(zeta/zeta_max)**(1/nexp)
+23 is same as 6 with nexp = 3, th = 30
+25 is same as 6 with nexp = 5, th = 30
+29 is same as 6 with nexp = 50, th = 30
+33 is same as 6 with nexp = 3, th = 2
+35 is same as 6 with nexp = 5, th = 2
+
+65 is same as 25 with (optimal dam) + e = 0.7 (rather than 2)
+66 is same as 65 with no dam + e = 0.7 (rather than 2)
+67 is same as 25 with P*=35000 and e=2
+68 is same as 25 with P*=55000 and e=2
+
+trying other stuff with an exponent in P (1-d)^k
+44 is same as 6 with nexp = 5, th = 30, k = 0.5
+45 is same as 6 with nexp = 5, th = 30, k = 2
+
+99 is random tests for 1 tstep for damage checking

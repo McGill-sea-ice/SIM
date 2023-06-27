@@ -67,8 +67,8 @@
       e_ratio    = 2.0d0             ! ellipse aspect ratio
 
       td         =  1d0 * 24*60*60   ! damage time scale [s] 
-      th         =  3d1 * 24*60*60  ! healing time scale [s]
-      nexp       =  5d1             ! exponent of damage source term
+      th         =  3d1 * 24*60*60   ! healing time scale [s]
+      nexp       =  5d0              ! exponent of damage source term
  
       Clat_ia    =  1d-03            ! LH transfer coeff (ice/atm) []
       Clat_oa    =  1d-03            ! LH transfer coeff (ocn/atm) []
@@ -379,6 +379,8 @@ subroutine read_namelist
       Cdw        =  rhowater * Cdwater
       Cda        =  rhoair * Cdair
       rhof       =  rhoice * f
+      td         = td * 24*60*60
+      th         = th * 24*60*60
 
       end subroutine read_namelist
 
@@ -485,6 +487,8 @@ subroutine read_namelist
       print *, 'Wind          =   ', Wind
       print *, 'AirTemp       =   ', AirTemp
       print *, 'OcnTemp       =   ', OcnTemp
+      print *, 'Healing [s]   =   ', th
+      print *, 'exp of dam    =   ', nexp
       print *,
       print *, 'time step [s] =   ', Deltat
       print *, 'Basal', BasalStress

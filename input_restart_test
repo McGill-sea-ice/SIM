@@ -1,0 +1,10 @@
+1                   input namelist
+1                   restart
+1975-01-01:00:00:00 year-month-day-hour-minute-second      
+11                  restart version
+99                  exp version
+2002-01-01:00:00:00 starting date
+2002-01-01:03:00:00 end date
+stop                end of post date string
+
+
