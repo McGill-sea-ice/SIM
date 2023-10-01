@@ -347,17 +347,20 @@
       integer i, j, m, year, month, day, hour, minute, second, milli, peri
 
       double precision dudx, dvdy, dudy, dvdx, land, lowA, deg2rad
+      double precision sigI_uncor, sigII_uncor, eI, eII, a_overshoot
       double precision pi, m1, m2, m3, m4, m5, frict
+      double precision Rmax, Rfactor, Ndam, Rabsmax, Rabsfactor
 
       double precision, intent(in):: utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
 
       double precision sigI(0:nx+2,0:ny+2), sigII(0:nx+2,0:ny+2), Fn(0:nx+2,0:ny+2)
-      double precision sig1(0:nx+2,0:ny+2), sig2(0:nx+2,0:ny+2)
+      double precision sig1(0:nx+2,0:ny+2), sig2(0:nx+2,0:ny+2), theta(0:nx+2,0:ny+2)
       double precision Dsigxx(0:nx+2,0:ny+2), Dsigyy(0:nx+2,0:ny+2), Dsigxy(0:nx+2,0:ny+2)
       double precision sigxx_it(0:nx+2,0:ny+2), sigyy_it(0:nx+2,0:ny+2), sigxy_it(0:nx+2,0:ny+2)
-      double precision DsigxyB(0:nx+2,0:ny+2)
+      double precision DsigxyB(0:nx+2,0:ny+2), Dflag(0:nx+2,0:ny+2)
       double precision Dexx(0:nx+2,0:ny+2), Deyy(0:nx+2,0:ny+2), Dexy(0:nx+2,0:ny+2)
-      double precision DexyB(0:nx+2,0:ny+2)
+      double precision DexyB(0:nx+2,0:ny+2), R(0:nx+2,0:ny+2)
+      double precision sigIM(0:nx+2,0:ny+2), sigIIM(0:nx+2,0:ny+2)
 
       year = date%year
       month = date%month
@@ -384,14 +387,21 @@
       Deyy      = 0d0
       Dexy      = 0d0
       DexyB     = 0d0
+      Dflag     = 0d0
       dfactor   = 1d0
       dfactorB   = 1d0
 
+      R = 0d0
+      Rfactor = 0d0
+      Ndam = 0d0
+      Rmax = 0d0
+      Rabsmax = 0d0
+      Rabsfactor = 0d0
       if (peri .ne. 0) call periodicBC(utp,vtp)
 
       call ViscousCoefficient(utp,vtp)
 
-
+     
 !----------------------------------------
 !------------------------------------------
 !Calculate the shear strain at the node
@@ -611,6 +621,10 @@
             sigI(i,j)   = (1/2d0)*( sigxx_it(i,j) + sigyy_it(i,j))
             sigII(i,j) = sqrt( ( (sigyy_it(i,j) - sigxx_it(i,j))/2d0 )**2d0 &
                                      + sigxy_it(i,j)**2d0 )
+            sigIM(i,j)   = (1/2d0)*( sigxx(i,j) + sigyy(i,j))
+            sigIIM(i,j) = sqrt( ( (sigyy(i,j) - sigxx(i,j))/2d0 )**2d0 &
+                                     + sigxy(i,j)**2d0 )
+
             Fn(i,j)  = sigII(i,j)  + frict * sigI(i,j) - CoheC(i,j)
 
 
@@ -633,26 +647,93 @@
         dfactor(i,j) = 1d0
         dfactorB(i,j) = 1d0
 
-        if ( maskC(i,j) .eq. 1 ) then
+        if ( maskC(i,j) .eq. 1 .and. etaC(i,j) .gt. 1d1) then
+             
 
              ! 1. compression capping
              if ( (sigI(i,j)-sigII(i,j)) .lt. sigcC(i,j)*(1+frict) ) then
-
+                Dflag(i,j) = 1d0
                 dfactor(i,j) = ( ( Deltat / Tdam)* &
                      ((sigcC(i,j)*(1+frict) / (sigI(i,j) - sigII(i,j)) ) - 1d0)+1d0)
-                print *, 'Compression, dfactor = ', dfactor(i,j), sigI(i,j), dfactor(i,j)
+
  
              ! 2. tensile capping
              elseif ( (sigI(i,j)+sigII(i,j)) .gt. sigtC(i,j)) then
-                   dfactor(i,j) = ( ( Deltat / Tdam)* &
+                Dflag(i,j) = 1d0
+                dfactor(i,j) = ( ( Deltat / Tdam)* &
                         ((sigtC(i,j) / (sigI(i,j)+sigII(i,j))) - 1d0)+1d0)
-                print *, 'tensile, dfactor = ', dfactor(i,j)
+
              ! 3.  Mohr-Coulomb
-             elseif ( Fn(i,j) .gt. 0d0) then
+             elseif ( Fn(i,j) .gt. 0d0 .and.  MEB_flow_rule .eq. 'none') then
+
+               Dflag(i,j) = 1d0
+
+               if (Dam_correction .eq. 'standard') then
+		!Standard line to origin 
 
                    dfactor(i,j) = (( Deltat / Tdam)* &
                           ((CoheC(i,j) / (frict*sigI(i,j) + sigII(i,j))) - 1d0)+1d0)
-!                print *, 'Mohr-Coulomb, dfactor = ', sigyy(i,j), Dsigyy(i,j),Deyy(i,j)
+
+                   R(i,j) = ((sigII(i,j)**2d0 + frict*frict*sigI(i,j)**2d0) / &
+                             (sigII(i,j) + frict*sigI(i,j))**2d0)**5d-1
+                   Rfactor = Rfactor + R(i,j)
+                   Ndam = Ndam + 1
+                   Rmax = max(Rmax,R(i,j))
+                   Rabsfactor = Rabsfactor + R(i,j)*sigII(i,j)*dfactor(i,j)             
+                   Rabsmax = max(Rabsmax,R(i,j)*sigII(i,j))*dfactor(i,j)
+
+               elseif (Dam_correction .eq. 'specified') then
+
+		 if (sigI(i,j) .lt. tan(theta_cor*deg2rad)*sigII(i,j)) then
+		   !Stress correction scheme following theta_cor
+
+                   dfactor(i,j) = (( Deltat / Tdam)* &
+                          (((CoheC(i,j) + frict*(tan(theta_cor*deg2rad))*sigII(i,j) &
+                            -frict*sigI(i,j)) / &
+                            ((1+frict*tan(theta_cor*deg2rad))*sigII(i,j))) - 1d0)+1d0)
+
+                   R(i,j) = (( (CoheC(i,j)- frict*sigI(i,j) )**2d0 + &
+                                                 frict*frict*sigI(i,j)**2d0) / &
+                       ( CoheC(i,j) + frict*tan(theta_cor*deg2rad)*sigII(i,j) &
+                                                - frict*sigI(i,j))**2d0)**5d-1
+                   Rfactor = Rfactor + R(i,j)
+                   Ndam = Ndam + 1
+                   Rmax = max(Rmax,R(i,j))
+                   Rabsfactor = Rabsfactor + R(i,j)*sigII(i,j)*dfactor(i,j)             
+                   Rabsmax = max(Rabsmax,R(i,j)*sigII(i,j))*dfactor(i,j)
+
+		 else
+                   !Standard line to origin
+
+                   dfactor(i,j) = (( Deltat / Tdam)* &
+                          ((CoheC(i,j) / (frict*sigI(i,j) + sigII(i,j))) - 1d0)+1d0)
+
+                   R(i,j) = ((sigII(i,j)**2d0 + frict*frict*sigI(i,j)**2d0) / &
+                             (sigII(i,j) + frict*sigI(i,j))**2d0)**5d-1
+                   Rfactor = Rfactor + R(i,j)
+                   Ndam = Ndam + 1
+                   Rmax = max(Rmax,R(i,j))
+                   Rabsfactor = Rabsfactor + R(i,j)*sigII(i,j)*dfactor(i,j)             
+                   Rabsmax = max(Rabsmax,R(i,j)*sigII(i,j))*dfactor(i,j)
+
+		 endif
+
+               elseif (Dam_correction .eq. 'associated') then
+		!not done yet
+                  print *, 'Associated stress correction not coded yet'
+                  stop
+               else
+                  print *, 'Wrong choice of stress correction'
+                  stop
+               endif
+
+             ! 3.  Mohr-Coulomb with flow rule
+             elseif ( Fn(i,j) .gt. 0d0 .and.  &
+                              (MEB_flow_rule .eq. 'specified')) then
+               Dflag(i,j) = 1d0 
+               dfactor(i,j) = (( Deltat / Tdam)* &
+                          ((sigIIM(i,j) / sigII(i,j)) - 1d0)+1d0)
+
              endif
 
              dfactor(i,j) = min(dfactor(i,j), 1d0)
@@ -720,33 +801,108 @@
     if (peri .ne. 0) call periodicBC(damB,dfactorB)
 
     if ((k .eq. 1d0)) then
-	print *, 'increment in stress!!!'
     ! this insures that we only update stress history outside IMEX
+
 !------------------------------------------
 !--------UPDATING THE DAMAGE AND HISTORY FIELDS
 !------------------------------------------
 
+        print *, "instability factor (final): ", Rmax, Rfactor, Ndam
+        print *, "absolute error (final): ", Rabsmax, Rabsfactor
+        Rfield = Rfield + R
+
+
         do i = 1, nx+1
           do j = 1, ny+1
-            if ( maskC(i,j) .eq. 1 ) then
+            if ( maskC(i,j) .eq. 1 .and. Dflag(i,j) .eq. 1d0) then
 
-            sigxx(i,j) = dfactor(i,j)*sigxx_it(i,j)
-            sigyy(i,j) = dfactor(i,j)*sigyy_it(i,j)
-            sigxy(i,j) = dfactor(i,j)*sigxy_it(i,j)
-            sigI(i,j)  = dfactor(i,j)*sigI(i,j)
-            sigII(i,j) = dfactor(i,j)*sigII(i,j) 
+ 	      if ((sigxx_it(i,j)-sigI(i,j)) .eq. 0d0) then 
+                theta(i,j) = pi/2d0
+              else
+                theta(i,j) = atan(sigxy_it(i,j)/ &
+                            (sigxx_it(i,j)-sigI(i,j)))
+              endif
+                
+              sigI_uncor = sigI(i,j)
+              sigII_uncor = sigII(i,j)
+              eI = (1/2d0)*( Dexx(i,j) + Deyy(i,j))
+              eII = sqrt( ( (Deyy(i,j) - Dexx(i,j))/2d0 )**2d0 &
+                                     + Dexy(i,j)**2d0 )
 
-            dam(i,j) = dam(i,j)*dfactor(i,j)
-            endif
-            sigxyB(i,j) = dfactorB(i,j)*( DsigxyB(i,j) &
+              if (MEB_flow_rule .eq. 'none') then
+
+                if (Dam_correction .eq. 'standard') then !line to origin
+
+                  sigII(i,j) = dfactor(i,j)*sigII(i,j)
+                  sigI(i,j)  = dfactor(i,j)*sigI(i,j)
+
+                elseif(Dam_correction .eq. 'specified') then !following theta_cor
+ 		  if (sigI(i,j) .lt. tan(theta_cor*deg2rad)*sigII(i,j)) then
+                    sigI(i,j)  = sigI(i,j) - (sigII(i,j)*(1-dfactor(i,j)) &
+                                             *tan(theta_cor*deg2rad))
+                    sigII(i,j) = dfactor(i,j)*sigII(i,j)
+		  else
+                    sigII(i,j) = dfactor(i,j)*sigII(i,j)
+                    sigI(i,j)  = dfactor(i,j)*sigI(i,j)
+		  endif
+
+                else
+                  print *, 'wrong stress correction path chosen by user'
+                  stop
+                endif
+
+              else
+                  print *, 'wrong flow rule chosen by user'
+                  stop
+              endif
+
+
+
+
+              sigxy(i,j) = dfactor(i,j)*sigxy_it(i,j)
+              dam(i,j) = dam(i,j)*dfactor(i,j)
+
+              if (sigxx_it(i,j) .ge. sigyy_it(i,j)) then
+                  sigxx(i,j) = sigI(i,j) + sigII(i,j)*cos(theta(i,j))
+                  sigyy(i,j) = sigI(i,j) - sigII(i,j)*cos(theta(i,j))
+              else
+                  sigxx(i,j) = sigI(i,j) - sigII(i,j)*cos(theta(i,j))
+                  sigyy(i,j) = sigI(i,j) + sigII(i,j)*cos(theta(i,j))
+              endif
+
+!              if (dam(i,j) .gt. 9d-1 .and. A(i,j) .ge. 5d-1) then 
+
+!                write(50,100) i*1d0, j*1d0, sigI_uncor, sigII_uncor, &
+!                               sigI(i,j), sigII(i,j), eI, eII, &
+!                               sigIM(i,j), sigIIM(i,j), &
+!                               day*1d0, hour*1d0, minute*1d0, &
+!                               second*1d0, milli*1d0 
+
+!              endif
+
+              sigxyB(i,j) = dfactorB(i,j)*( DsigxyB(i,j) &
                           + sigxyB(i,j)* GammaMEB_B(i,j) )
+              damB(i,j) = damB(i,j)*dfactorB(i,j)
+ 
+            else
 
-            damB(i,j) = damB(i,j)*dfactorB(i,j)
+              sigxx(i,j) = sigxx_it(i,j)
+              sigyy(i,j) = sigyy_it(i,j)
+              sigxy(i,j) = sigxy_it(i,j) 
+              sigI(i,j) = sigI(i,j)
+              sigII(i,j) = sigII(i,j)
+
+              sigxyB(i,j) = dfactorB(i,j)*( DsigxyB(i,j) &
+                          + sigxyB(i,j)* GammaMEB_B(i,j) )
+              damB(i,j) = damB(i,j)*dfactorB(i,j)
+
+            endif
+
+
 
 
           enddo
         enddo
-
 
 
         dfactor = 1d0
@@ -754,8 +910,8 @@
 
         do i = 1, nx+1
           do j = 1, ny+1
-             dam(i,j) = dam(i,j) + (Theal)*Deltat
-             damB(i,j) = damB(i,j) + (Theal)*Deltat
+             dam(i,j) = dam(i,j) + Deltat*Theal
+             damB(i,j) = damB(i,j) + Deltat*Theal
              dam(i,j) = min(dam(i,j), 1d0)
              damB(i,j) = min(damB(i,j), 1d0)
           enddo
@@ -772,13 +928,19 @@
         !------------------------------------------
 
 
-        if (((milli .eq. 0) .and. (second .eq. 0))&
-            .and. ((minute .eq. 0) .or. (minute .eq. 10) &
-            .or. (minute .eq. 5) .or. (minute .eq. 15) &
-            .or. (minute .eq. 20) .or. (minute .eq. 30) &
-            .or. (minute .eq. 25) .or. (minute .eq. 35) &
-            .or. (minute .eq. 45) .or. (minute .eq. 55) &
-            .or. (minute .eq. 40) .or. (minute .eq. 50))) then
+        if (((milli .eq. 0) .and. (second .eq. 0))) then! &
+!	    .and. ( hour .lt. 5 ) .and. (day .lt. 2) &
+!            .and. ((minute .eq. 0) .or. (minute .eq. 10) &
+!            .or. (minute .eq. 5) .or. (minute .eq. 15) &
+!            .or. (minute .eq. 20) .or. (minute .eq. 30) &
+!            .or. (minute .eq. 25) .or. (minute .eq. 35) &
+!            .or. (minute .eq. 45) .or. (minute .eq. 55) &
+!            .or. (minute .eq. 40) .or. (minute .eq. 50))) then
+
+!          call post_MEB_stress(utp, vtp, sigI, sigII, Dexx, Deyy, Dexy, date, expno)
+
+ !       elseif ((milli .eq. 0) .and. (second .eq. 0) &
+ !           .and. ( minute .eq. 0 ) ) then
 
           call post_MEB_stress(utp, vtp, sigI, sigII, Dexx, Deyy, Dexy, date, expno)
 
@@ -789,6 +951,8 @@
 
 
     endif ! if k == 1
+
+100            format (1x, 1000(f20.10, 1x))
 
       return
     end subroutine stress_strain_MEB
@@ -888,7 +1052,9 @@
     write (filename,'("output/A",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
                 year, month, day, hour, minute, milli, expno
     open (24, file = filename, status = 'unknown')
-
+    write (filename,'("output/R",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+                year, month, day, hour, minute, milli, expno
+    open (25, file = filename, status = 'unknown')
 
     do j = 0, ny+1
         write(12,100) ( sigI(i,j), i = 0, nx+1 )
@@ -904,9 +1070,10 @@
         write(22,100) ( sigxy(i,j), i = 0, nx+1 )
         write(23,200) ( h(i,j), i = 0, nx+1 )
         write(24,200) ( A(i,j), i = 0, nx+1 )
+        write(25,200) ( Rfield(i,j), i = 0, nx+1 )
     enddo
 
-    do m=12,24
+    do m=12,25
         close(m)
     enddo
 

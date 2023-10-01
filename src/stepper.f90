@@ -59,7 +59,7 @@
       double precision :: xtp(nvar), rhs(nvar), Fu(nvar)
       double precision :: uk2(0:nx+2,0:ny+2), vk2(0:nx+2,0:ny+2)
       double precision :: ul(0:nx+2,0:ny+2), vl(0:nx+2,0:ny+2)
-      double precision :: dummy(0:nx+2,0:ny+2)
+      double precision :: dummy(0:nx+2,0:ny+2), dadv1(0:nx+2,0:ny+2), dadv(0:nx+2,0:ny+2)
 
       double precision :: res, resk_1, time1, time2, timecrap
 
@@ -74,25 +74,24 @@
 
       if ( Dynamic ) then
 
+         if ( Wind .eq. '6hours' .or. Wind .eq. 'ramp' ) then
 
-         call wind_forcing (date, tstep) ! get wind forcing field
+            call wind_forcing (date) ! get wind forcing field
+
+         endif
 
          if ( BDF .eq. 1 ) then
             un2 = un1
             vn2 = vn1
          endif
-
-         if ( adv_scheme .eq. 'semilag') then ! semilag is 3 time level scheme                     
-            hn2 = hn1
-            An2 = An1
-         endif
-
+         
 	 if (peri .ne. 0) call periodicBC(uice,vice)
 	 
          un1 = uice ! previous time step solution
          vn1 = vice ! previous time step solution
          hn1 = h
          An1 = A
+	 noise1 = noise
          dam1 = dam
          damB1 = damB
 
@@ -140,15 +139,18 @@
                call transformer (uice,vice,xtp,1)
 
                if ( IMEX .eq. 1 ) then ! IMEX 1 (2 doesn't work with Picard) 
+                  call advection ( un1, vn1, uice, vice, hn1, An1, h, A )
 
-                  call advection ( un1, vn1, uice, vice, hn2, An2, hn1, An1, h, A )
-                  
                   if (Rheology .eq. 3) then !calculate the damage factor
                   
-                     kd   = 0d0
-                     dam  = dam1
+                     kd = 0d0
+                     dam = dam1
                      damB = damB1
-                     !call advection ( un1, vn1, uice, vice, dummy, dummy,dummy, Dam1, dummy, Dam)
+		     !dadv1 = 1d0 - dam1
+		     !dadv = dadv1
+                     !call advection ( un1, vn1, uice, vice, noise1, dadv1, noise, dadv)
+		     !dam = 1d0-dadv
+                     
                      call stress_strain_MEB(uice, vice, date, kd, expno)
                      
                   else
@@ -156,7 +158,7 @@
                      call Ice_strength()
                      
                   endif
-
+                  
                   call bvect_ind
                   
                endif
@@ -169,7 +171,7 @@
                
                if (k.eq. 1) NLtol = gamma_nl * res
 
-               if (res .lt. NLtol .or. res .lt. 1d-08) then
+               if ( res .lt. 1d-05) then
                   print *, 'L2norm is', k,res,'(final)'
                   print *, 'nb outer ite, FGMRES ite =',k-1, sumtot_its
                   exit
@@ -202,16 +204,20 @@
 
                call transformer (uice,vice,xtp,1)
 
-
-               if ( IMEX .gt. 0 ) then ! IMEX method 1 or 2                     
-                  call advection ( un1, vn1, uice, vice, hn2, An2, hn1, An1, h, A )
+               if ( IMEX .gt. 0 ) then ! IMEX method 1 or 2    
+               
+                  call advection ( un1, vn1, uice, vice, hn1, An1, h, A )
                   
                   if (Rheology .eq. 3) then !calculate the damage factor
                   
-                     kd   = 0d0
-                     dam  = dam1
+                     kd = 0d0
+                     dam = dam1
                      damB = damB1
-                     !call advection ( un1, vn1, uice, vice, dummy, dummy, dummy,Dam1, dummy, Dam)
+                     dadv1 = 1d0 - dam1
+                     dadv = dadv1
+                     call advection ( un1, vn1, uice, vice, noise1, dadv1, noise, dadv)
+                     
+                     dam = 1d0-dadv
                      call stress_strain_MEB(uice, vice, date, kd, expno)
                      
                   else
@@ -256,11 +262,6 @@
             enddo
 
 !------- End of Newton loop ----------------------------------------------            
-         
-            if (tstep .eq. -1) then ! change tstep value to output stresses and strain rates
-               call stress_strain (uice, vice, date, 9, expno)
-!               stop
-            endif
                  
          elseif (solver .eq. 3) then ! EVP solver 
 
@@ -282,25 +283,35 @@
          print *, 'cpu time =', time2-time1
          print *, 'Total nb of failures during the simulation =', nbfail
 
-
+!      if (tstep .eq. 4) then
+!           call stress_strain (uice, vice, date, 9, expno)
+!             stop
+!      endif        
+         
+         
       endif
 
+      
 !------------------------------------------------------------------------
-!     Integrate the continuity equations to get h,A^n
-!     This is done in 2 steps: transport (dyn) and thermo  
+!     Integrate the continuity equations to get  h,A^t (and other tracers) 
+!     from h,A^t-1. We use uice and vice (u^t and v&t) to advect the tracers.
 !------------------------------------------------------------------------
 
       if ( Dynamic ) then
 
          if (IMEX .eq. 0) then ! already done with IMEX 1 and 2
-            call advection ( un1, vn1, uice, vice, hn2, An2, hn1, An1, h, A )
+            call advection ( un1, vn1, uice, vice, hn1, An1, h, A )
 
-            !if (Rheology .eq. 3) &
-            !     call advection ( un1, vn1, uice, vice, dummy, dummy,dummy, Dam1, dummy, Dam)
+           !if (Rheology .eq. 3) &
+            !call advection ( un1, vn1, uice, vice, dummy, Dam1, dummy, Dam)
 
          endif
+         tracer(:,:,1) = h
+         tracer(:,:,2) = A
             
       endif
+
+!         call diffusion ( tracer )   ! not modified yet
 
 ! we should have monthly winds fr thermo forcing...modify load_forcing.f
          
@@ -314,19 +325,20 @@
             Ta = 263.15d0
          end select
          
-         call thermo_source_terms (date, hn1, An1)
+         call thermodynamic (date)
          
-         call dh_dA_thermo (h, A)
+         call update_tracer
       
       endif
 
 !------- Get some statistics for h, A, u and v --------------------------
 
-      call var_analysis(date, expno)
+      call var_analysis
       print *, ''
 !------------------------------------------------------------------------
 !    Advect buoys using uice & vice to the position at the next time step
 !------------------------------------------------------------------------
+
 
       if ( BuoyTrack ) then
 
