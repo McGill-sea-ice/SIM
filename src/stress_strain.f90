@@ -305,23 +305,39 @@
 
 !************************************************************************
 !     This subroutine contains the damage parameterization computations.
-!     First, the stress tensor is computed from the strain rates. In the
-!     MEB case, the momentum equations uses the shear stress memory component
-!     defined at the nodes: so we compute it here at the
-!     nodes. The shear strain rate at the grid center is then computed using
-!     simple averages of neighbouring shear strain rate. 
+!     First, the stress tensor is computed from the strain rates. 
+
+!     In the momentum equation, the shear stress/strain rates are naturally defined
+!     at the nodes, and the normal stress/strain rates at the tracer pts (center). 
+!     To define the stress invariants, shear stress terms are also defined
+!     at the tracer points. This term is only used here in the damage computations,
+!     and is computed from simple averages of neighbouring shear strain rate, 
+!     and has its own memory variable (otherwise, checker-board instability 
+!     arise from over-averaging). 
 !     
-!     Then, the yield function is used to find whether we have overshooting.
-!     The damage factor is computed to keep the stress state on the yield curve
+!     The damage increments are computed from the stress in excess of the yield 
+!     criteria (overshooting). The stress terms are then corrected according to
+!     the correction scheme:
 !
-!     Note that the stress memory is defined by the corrected stress state, and
-!     is only updated if outside of the outer loop. The damage parameter is
-!     also ony updated outside of the outer loop.
+!         - Standard: the correction follows a line from the overshooting stress 
+!           state to the origin. In this case, the correction is a simple 
+!           scaling of the stress components. From Dansereau et al. 2016, 
+!           Rampal et al. 2019, Olason et al. 2023)
 !
-!     For details on the damage equations, see Plante et al. 2019, 
+!         - Generalised: the correction follows a line with angle set by the 
+!           user (Plante et al., 2021). In this case, the shear stress is 
+!           corrected by a simple scaling but the normal stress correction 
+!           involves a deviation from the line to origin. The stress components 
+!           (sigxx, sigyy) are defined by assuming that the orientation of the 
+!           principal stresses are unchanged during the correction.  
+!
+!     Note that the stress memory terms (and damage) are only updated outside 
+!     of the outer loop, once the model has converged to a solution.
+!
+!     For details on the damage equations, see Plante et al. 2020, 2021, in
 !     The Cryosphere Discussion
 !
-!     Mathieu Plante, October 10 2019
+!     Mathieu Plante, October 10 2023
 !
 !************************************************************************
 
@@ -348,16 +364,18 @@
 
       double precision dudx, dvdy, dudy, dvdx, land, lowA, deg2rad
       double precision pi, m1, m2, m3, m4, m5, frict
+      double precision sigI_uncor, sigII_uncor, eI, eII, Rmax
 
       double precision, intent(in):: utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
 
       double precision sigI(0:nx+2,0:ny+2), sigII(0:nx+2,0:ny+2), Fn(0:nx+2,0:ny+2)
-      double precision sig1(0:nx+2,0:ny+2), sig2(0:nx+2,0:ny+2)
+      double precision sig1(0:nx+2,0:ny+2), sig2(0:nx+2,0:ny+2), theta(0:nx+2,0:ny+2)
       double precision Dsigxx(0:nx+2,0:ny+2), Dsigyy(0:nx+2,0:ny+2), Dsigxy(0:nx+2,0:ny+2)
       double precision sigxx_it(0:nx+2,0:ny+2), sigyy_it(0:nx+2,0:ny+2), sigxy_it(0:nx+2,0:ny+2)
       double precision DsigxyB(0:nx+2,0:ny+2)
       double precision Dexx(0:nx+2,0:ny+2), Deyy(0:nx+2,0:ny+2), Dexy(0:nx+2,0:ny+2)
       double precision DexyB(0:nx+2,0:ny+2)
+      double precision R(0:nx+2,0:ny+2)
 
       year = date%year
       month = date%month
@@ -386,6 +404,8 @@
       DexyB     = 0d0
       dfactor   = 1d0
       dfactorB   = 1d0
+      R = 0d0
+      Rmax = 0d0
 
       if (peri .ne. 0) call periodicBC(utp,vtp)
 
@@ -640,20 +660,57 @@
 
                 dfactor(i,j) = ( ( Deltat / Tdam)* &
                      ((sigcC(i,j)*(1+frict) / (sigI(i,j) - sigII(i,j)) ) - 1d0)+1d0)
-               ! print *, 'Compression, dfactor = ', h(i,j), sigI(i,j), sigcC(i,j)
  
              ! 2. tensile capping
              elseif ( (sigI(i,j)+sigII(i,j)) .gt. sigtC(i,j)) then
                    dfactor(i,j) = ( ( Deltat / Tdam)* &
                         ((sigtC(i,j) / (sigI(i,j)+sigII(i,j))) - 1d0)+1d0)
-               ! print *, 'tensile, dfactor = ', dfactor(i,j)
+
              ! 3.  Mohr-Coulomb
              elseif ( Fn(i,j) .gt. 0d0) then
 
-                   dfactor(i,j) = (( Deltat / Tdam)* &
-                          ((CoheC(i,j) / (frict*sigI(i,j) + sigII(i,j))) - 1d0)+1d0)
-!                print *, 'Mohr-Coulomb, dfactor = ', sigyy(i,j), Dsigyy(i,j),Deyy(i,j)
-             endif
+                 if (Dam_correction .eq. 'standard') then
+
+                     dfactor(i,j) = (( Deltat / Tdam)* &
+                            ((CoheC(i,j) / (frict*sigI(i,j) + sigII(i,j))) - 1d0)+1d0)
+
+                     R(i,j) = ((sigII(i,j)**2d0 + frict*frict*sigI(i,j)**2d0) / &
+                            (sigII(i,j) + frict*sigI(i,j))**2d0)**5d-1
+
+                 elseif (Dam_correction .eq. 'specified') then
+
+                     if (sigI(i,j) .lt. tan(theta_cor*deg2rad)*sigII(i,j)) then
+                         !The shear scaling (dfactor) is computed based on theta_cor
+
+                         dfactor(i,j) = (( Deltat / Tdam)* &
+                                (((CoheC(i,j) + frict*(tan(theta_cor*deg2rad))*sigII(i,j) &
+                                           -frict*sigI(i,j)) / &
+                                ((1+frict*tan(theta_cor*deg2rad))*sigII(i,j))) - 1d0)+1d0)
+
+
+                         R(i,j) = (( (CoheC(i,j)- frict*sigI(i,j) )**2d0 + &
+                                                 frict*frict*sigI(i,j)**2d0) / &
+                                 ( CoheC(i,j) + frict*tan(theta_cor*deg2rad)*sigII(i,j) &
+                                                - frict*sigI(i,j))**2d0)**5d-1
+
+		     else
+                         !Standard line to origin when approaching biaxial tension
+
+
+                         dfactor(i,j) = (( Deltat / Tdam)* &
+                                ((CoheC(i,j) / (frict*sigI(i,j) + sigII(i,j))) - 1d0)+1d0)
+
+                         R(i,j) = ((sigII(i,j)**2d0 + frict*frict*sigI(i,j)**2d0) / &
+                                  (sigII(i,j) + frict*sigI(i,j))**2d0)**5d-1
+
+                     endif
+
+                 else
+
+                     print *, 'Error::: Wrong choice of stress correction'
+                     stop
+
+                 endif
 
              dfactor(i,j) = min(dfactor(i,j), 1d0)
              dfactor(i,j) = max(dfactor(i,j), 0d0)
@@ -720,8 +777,8 @@
     if (peri .ne. 0) call periodicBC(damB,dfactorB)
 
     if ((k .eq. 1d0)) then
-	print *, 'increment in stress!!!'
     ! this insures that we only update stress history outside IMEX
+
 !------------------------------------------
 !--------UPDATING THE DAMAGE AND HISTORY FIELDS
 !------------------------------------------
