@@ -364,7 +364,7 @@
 
       double precision dudx, dvdy, dudy, dvdx, land, lowA, deg2rad
       double precision pi, m1, m2, m3, m4, m5, frict
-      double precision sigI_uncor, sigII_uncor, eI, eII, Rmax
+      double precision sigI_uncor, sigII_uncor, eI, eII
 
       double precision, intent(in):: utp(0:nx+2,0:ny+2), vtp(0:nx+2,0:ny+2)
 
@@ -405,7 +405,6 @@
       dfactor   = 1d0
       dfactorB   = 1d0
       R = 0d0
-      Rmax = 0d0
 
       if (peri .ne. 0) call periodicBC(utp,vtp)
 
@@ -787,18 +786,86 @@
           do j = 1, ny+1
             if ( maskC(i,j) .eq. 1 ) then
 
-            sigxx(i,j) = dfactor(i,j)*sigxx_it(i,j)
-            sigyy(i,j) = dfactor(i,j)*sigyy_it(i,j)
-            sigxy(i,j) = dfactor(i,j)*sigxy_it(i,j)
-            sigI(i,j)  = dfactor(i,j)*sigI(i,j)
-            sigII(i,j) = dfactor(i,j)*sigII(i,j) 
+                !Calculate the x-y plane orientation on the Mohr circle 
+ 	        if ((sigxx_it(i,j)-sigI(i,j)) .eq. 0d0) then !(avoiding divide by zero) 
+                    theta(i,j) = pi/2d0
+                else
+                    theta(i,j) = atan(sigxy_it(i,j)/ &
+                            (sigxx_it(i,j)-sigI(i,j)))
+                endif
+                
+                sigI_uncor = sigI(i,j)
+                sigII_uncor = sigII(i,j)
+                eI = (1/2d0)*( Dexx(i,j) + Deyy(i,j))
+                eII = sqrt( ( (Deyy(i,j) - Dexx(i,j))/2d0 )**2d0 &
+                                     + Dexy(i,j)**2d0 )
 
-            dam(i,j) = dam(i,j)*dfactor(i,j)
-            endif
-            sigxyB(i,j) = dfactorB(i,j)*( DsigxyB(i,j) &
+               !---------------------------
+               ! Normal stress invariant correction:
+               !---------------------------
+                if (Dam_correction .eq. 'standard') then !line to origin
+
+                    sigI(i,j)  = dfactor(i,j)*sigI(i,j)
+
+                elseif(Dam_correction .eq. 'specified') then
+
+ 		    if (sigI(i,j) .lt. tan(theta_cor*deg2rad)*sigII(i,j)) then
+
+                        sigI(i,j)  = sigI(i,j) - (sigII(i,j)*(1-dfactor(i,j)) &
+                                             *tan(theta_cor*deg2rad))
+		    else
+                        sigI(i,j)  = dfactor(i,j)*sigI(i,j)
+                    endif
+
+                else
+                    print *, 'wrong stress correction path chosen by user'
+                    stop
+                endif
+
+               !---------------------------
+               ! Shear stress invariant correction: (same in all cases)
+               !---------------------------
+
+                sigII(i,j) = dfactor(i,j)*sigII(i,j)
+
+               !---------------------------
+               ! Update normal stress components: (same in all cases)
+               !---------------------------
+
+                if (sigxx_it(i,j) .ge. sigyy_it(i,j)) then
+                    sigxx(i,j) = sigI(i,j) + sigII(i,j)*cos(theta(i,j))
+                    sigyy(i,j) = sigI(i,j) - sigII(i,j)*cos(theta(i,j))
+                else
+                    sigxx(i,j) = sigI(i,j) - sigII(i,j)*cos(theta(i,j))
+                    sigyy(i,j) = sigI(i,j) + sigII(i,j)*cos(theta(i,j))
+                endif
+
+               !---------------------------
+               ! Update shear stress components: (same in all cases)
+               !---------------------------
+                sigxy(i,j) = dfactor(i,j)*sigxy_it(i,j)
+
+                sigxyB(i,j) = dfactorB(i,j)*( DsigxyB(i,j) &
                           + sigxyB(i,j)* GammaMEB_B(i,j) )
 
-            damB(i,j) = damB(i,j)*dfactorB(i,j)
+                dam(i,j) = dam(i,j)*dfactor(i,j)
+
+                damB(i,j) = damB(i,j)*dfactorB(i,j)
+ 
+
+            else
+
+                sigxx(i,j) = sigxx_it(i,j)
+                sigyy(i,j) = sigyy_it(i,j)
+                sigxy(i,j) = sigxy_it(i,j) 
+                sigI(i,j)  = sigI(i,j)
+                sigII(i,j) = sigII(i,j)
+
+                sigxyB(i,j)= dfactorB(i,j)*( DsigxyB(i,j) &
+                            + sigxyB(i,j)* GammaMEB_B(i,j) )
+                damB(i,j) = damB(i,j)*dfactorB(i,j)
+
+            endif
 
 
           enddo
