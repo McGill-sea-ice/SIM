@@ -25,7 +25,8 @@
                 startdate,      &
                 enddate,        &
                 Buoys,          &
-                Jac_finite_diff
+                Jac_finite_diff,&
+                Dam_correction
 
       integer   Rheology, IMEX, BDF, visc_method, Periodic_x, Periodic_y
 
@@ -58,5 +59,6 @@
                 linearization,  & ! Tremblay, Zhang
                 regularization, & ! tanh, Kreyscher
                 ini_guess,      & ! freedrift, previous time step
-                Jac_finite_diff
+                Jac_finite_diff,&
+                Dam_correction    ! Choice of MEB stress correction: standard, specified
 
