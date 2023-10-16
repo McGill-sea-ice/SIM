@@ -8,8 +8,11 @@
     Airtemp = 'MonthlyMean'
     OcnTemp = 'calculated'
     Wind = '6hours'
-    RampupWind = .false. 	
+    RampupWind = .false.
+    RampupForcing = .false.
     Current = 'YearlyMean'
+    Periodic_x = 0
+    Periodic_y = 0
     Rheology = 1
     IMEX = 2
     BDF = 1
