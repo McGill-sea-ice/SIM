@@ -23,7 +23,7 @@
 
 &numerical_param_nml
     Deltat  = 20.0
-    gamma_nl = 1d-06
+    gamma_nl = 1d-03
     NLmax = 200     
     OLmax = 500
     Nsub  = 120  
