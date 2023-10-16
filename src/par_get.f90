@@ -360,8 +360,8 @@ subroutine read_namelist
            Dynamic, Thermodyn,                                  &
            linearization, regularization, ini_guess,            &
            adv_scheme, AirTemp, OcnTemp, Wind, RampupWind,      &
-           Current, Rheology, IMEX, BDF, visc_method, solver,   &
-           BasalStress
+           RampupForcing, Current, Rheology, IMEX, BDF,         &
+           visc_method, solver, BasalStress
 
       namelist /numerical_param_nml/ &
            Deltat, gamma_nl, NLmax, OLmax, Nsub
