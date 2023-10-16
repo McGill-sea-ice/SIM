@@ -126,7 +126,9 @@
          elseif (RampupForcing) then
             wspeed = 14.0d0
             Tramp = 0.3d0/3.6d3  ! Rate of forcing increase, in N/m2 per hour
-            rampfactor = (Tramp * (milli*1d-3 + 1d0*second + 6.0d1*minute + 3.6d3*hour + 8.64d4*(day-1d0))  / Cda   )**0.5d0 / wspeed
+            rampfactor = (Tramp * (milli*1d-3 + 1d0*second + &
+                                  6.0d1*minute + 3.6d3*hour + &
+                                  8.64d4*(day-1d0))  / Cda   )**0.5d0 / wspeed
             rampfactor = min(rampfactor, 1d0)                        
          else
             wspeed = 10.0d0

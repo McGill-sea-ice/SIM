@@ -8,6 +8,7 @@
                 BuoyTrack,      &
                 calc_month_mean,&
                 RampupWind,     &
+                RampupForcing,  &
                 runoff
 
       character(LEN=20)         &
@@ -38,7 +39,7 @@
                 OcnTemp,        & ! specified, MonthlyMean
                 Wind,           & ! specified, MonthlyMean
                 RampupWind,     & ! smooth increase of specified wind
-                RampupForcing   & ! smooth increase of specified wind forcing
+                RampupForcing,   & ! smooth increase of specified wind forcing
                 Current,        & ! specified, YearlyMean
                 adv_scheme,     & ! advection scheme: upwind or upwindRK2
                 BndyCond,       & ! noslip or freeslip
