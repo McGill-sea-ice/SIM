@@ -120,7 +120,7 @@
 
          if (RampupWind) then
             wspeed = 10.0d0
-            Tramp = 6do*3600d0
+            Tramp = 6d0*3600d0
             rampfactor=1d0-exp(-1d0*tstep*Deltat/Tramp)
 
          elseif (RampupForcing) then
@@ -138,8 +138,8 @@
          do i = 1, nx+1
             do j = 1, ny+1
                
-               uair(i,j) = 0d0 !rampfactor*wspeed
-               vair(i,j) =  - rampfactor*wspeed
+               uair(i,j) = rampfactor*wspeed
+               vair(i,j) = 0d0 ! - rampfactor*wspeed
                
 !     call random_number(rdnumb)
 !               uair(i,j) = wm * (rdnumb - 0.5d0)

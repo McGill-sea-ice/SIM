@@ -121,7 +121,7 @@
       Current    = 'YearlyMean'      ! YearlyMean, specified
       Wind       = '6hours'          ! 6hours, 60yrs_clim, specified
       RampupWind  = .false.          ! smooth increase of specified wind
-      RampupForcing = .true.         ! smooth increase of specified wind forcing
+      RampupForcing = .false.         ! smooth increase of specified wind forcing
       AirTemp    = 'MonthlyMean'     ! MonthlyMean, specified (-10C)
       OcnTemp    = 'calculated'      ! MonthlyClim, specified,calculated
       calc_month_mean = .false.      ! to calc monthly mean fields
