@@ -13,6 +13,7 @@
     Current = 'YearlyMean'
     Periodic_x = 0
     Periodic_y = 0
+    ideal = .false.
     Rheology = 1
     IMEX = 0
     BDF = 0

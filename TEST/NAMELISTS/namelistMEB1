@@ -9,10 +9,11 @@
     OcnTemp = 'calculated'
     Wind = '6hours'
     RampupWind = .false.
-    RampupForcing = .False.
+    RampupForcing = .false.
     Current = 'YearlyMean'
     Periodic_x = 0
     Periodic_y = 0
+    ideal = .false.
     Rheology = 3
     IMEX = 1
     BDF = 0

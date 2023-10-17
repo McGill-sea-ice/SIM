@@ -9,6 +9,7 @@
                 calc_month_mean,&
                 RampupWind,     &
                 RampupForcing,  &
+                ideal,          &
                 runoff
 
       character(LEN=20)         &
@@ -39,14 +40,15 @@
                 OcnTemp,        & ! specified, MonthlyMean
                 Wind,           & ! specified, MonthlyMean
                 RampupWind,     & ! smooth increase of specified wind
-                RampupForcing,   & ! smooth increase of specified wind forcing
+                RampupForcing,  & ! smooth increase of specified wind forcing
                 Current,        & ! specified, YearlyMean
                 adv_scheme,     & ! advection scheme: upwind or upwindRK2
                 BndyCond,       & ! noslip or freeslip
                 Periodic_x,     & ! open or periodic condition in x
                 Periodic_y,     & ! open or periodic condition in y
-		Rheology,       & ! ellipse, triangle, MEB
-		IMEX,           & ! 0: standard (splitting in time), 1 and 2: IMEX
+                ideal,          & ! if true, no coriolis, turning angles eq 0
+                Rheology,       & ! ellipse, triangle, MEB
+                IMEX,           & ! 0: standard (splitting in time), 1 and 2: IMEX
                 BDF,            & ! 0: standard, 1: Backward diff formula (2nd order)
                 visc_method,    & ! choice of calc of visc coeff
                 startdate,      & ! starting date

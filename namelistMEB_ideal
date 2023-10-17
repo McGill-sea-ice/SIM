@@ -1,30 +1,29 @@
 &option_nml
     Dynamic  = .true.
-    ThermoDyn  = .false.
+    ThermoDyn  = .true.
     linearization = 'Zhang'
     regularization = 'tanh'
     ini_guess = 'previous time step'
     adv_scheme = 'upwind'
-    Airtemp = 'MonthlyMean'
-    OcnTemp = 'calculated'
-    Wind = '6hours'
+    Airtemp = 'specified'
+    OcnTemp = 'specified'
+    Wind = 'specified'
     RampupWind = .false.
-    RampupForcing = .false.
-    Current = 'YearlyMean'
+    RampupForcing = .true.
+    Current = 'specified'
     Periodic_x = 0
     Periodic_y = 0
-    ideal = .false.
-    Rheology = 1
-    IMEX = 0
+    Rheology = 3
+    IMEX = 1
     BDF = 0
     visc_method = 2
-    solver = 2
+    solver = 1
     BasalStress = .false.
 /
 
 &numerical_param_nml
-    Deltat  = 1200.0
-    gamma_nl = 1d-03
+    Deltat  = 1.0
+    gamma_nl = 1d-04
     NLmax = 200     
     OLmax = 500
     Nsub  = 120  

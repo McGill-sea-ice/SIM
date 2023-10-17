@@ -640,13 +640,13 @@
 
                 dfactor(i,j) = ( ( Deltat / Tdam)* &
                      ((sigcC(i,j)*(1+frict) / (sigI(i,j) - sigII(i,j)) ) - 1d0)+1d0)
-                print *, 'Compression, dfactor = ', dfactor(i,j), sigI(i,j), dfactor(i,j)
+               ! print *, 'Compression, dfactor = ', h(i,j), sigI(i,j), sigcC(i,j)
  
              ! 2. tensile capping
              elseif ( (sigI(i,j)+sigII(i,j)) .gt. sigtC(i,j)) then
                    dfactor(i,j) = ( ( Deltat / Tdam)* &
                         ((sigtC(i,j) / (sigI(i,j)+sigII(i,j))) - 1d0)+1d0)
-                print *, 'tensile, dfactor = ', dfactor(i,j)
+               ! print *, 'tensile, dfactor = ', dfactor(i,j)
              ! 3.  Mohr-Coulomb
              elseif ( Fn(i,j) .gt. 0d0) then
 
