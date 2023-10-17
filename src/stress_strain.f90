@@ -710,7 +710,7 @@
                      stop
 
                  endif
-
+             endif
              dfactor(i,j) = min(dfactor(i,j), 1d0)
              dfactor(i,j) = max(dfactor(i,j), 0d0)
 
