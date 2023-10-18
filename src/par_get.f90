@@ -77,7 +77,7 @@
       lambda0   =  1d5               ! viscous relaxation timescale for sea ice
       alpha     =  3d0               ! non-linear damage parameter
       Theal     =  0d0               ! Healing time scale. 0d0 = no healing.
-      Dam_correction = 'specified'   ! standard:line to origin, specified:generalized correction
+      Dam_correction = 'standard'   ! standard:line to origin, specified:generalized correction
       pi        =  4d0 * datan(1d0)  ! pi
       theta_cor = datan(sin(phi*pi/180d0))*180d0/pi  ! Stress correction path angle if using generalized MEB
 
@@ -405,8 +405,12 @@ subroutine read_namelist
           f = 0d0
           theta_a = 0d0
           theta_w = 0d0
+          sintheta_a = 0d0 
+          costheta_a = 1d0
+          sintheta_w = 0d0
+          costheta_w = 1d0
       endif
-
+      print *, theta_w, f, theta_a
       DtoverDx   = Deltat / Deltax
       ell2       = e_ratio**2
       ell_2      = 1/(e_ratio**2)
