@@ -40,8 +40,8 @@
                 AirTemp,        & ! specified, MonthlyMean
                 OcnTemp,        & ! specified, MonthlyMean
                 Wind,           & ! specified, MonthlyMean
-                RampupWind,     & ! smooth increase of specified wind
-                RampupForcing,  & ! smooth increase of specified wind forcing
+                RampupWind,     & ! smooth increase of surface wind
+                RampupForcing,  & ! smooth increase of surface wind stress
                 Current,        & ! specified, YearlyMean
                 adv_scheme,     & ! advection scheme: upwind or upwindRK2
                 BndyCond,       & ! noslip or freeslip
