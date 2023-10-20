@@ -119,9 +119,19 @@
          Tramp=6d0*3600d0
 
          if (RampupWind) then
+            wspeed = 10.0d0
+            Tramp = 6d0*3600d0
             rampfactor=1d0-exp(-1d0*tstep*Deltat/Tramp)
-            !rampfactor= ADD LINEAR INCREASE
+
+         elseif (RampupForcing) then
+            wspeed = 14.0d0
+            Tramp = 0.3d0/3.6d3  ! Rate of forcing increase, in N/m2 per hour
+            rampfactor = (Tramp * (milli*1d-3 + 1d0*second + &
+                                  6.0d1*minute + 3.6d3*hour + &
+                                  8.64d4*(day-1d0))  / Cda   )**0.5d0 / wspeed
+            rampfactor = min(rampfactor, 1d0)                        
          else
+            wspeed = 10.0d0
             rampfactor=1d0
          endif
 
@@ -131,7 +141,7 @@
             do j = 1, ny+1
                
                uair(i,j) = rampfactor*wspeed
-               vair(i,j) =  0d0
+               vair(i,j) = 0d0
                
 !     call random_number(rdnumb)
 !               uair(i,j) = wm * (rdnumb - 0.5d0)

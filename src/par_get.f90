@@ -77,6 +77,10 @@
       lambda0   =  1d5               ! viscous relaxation timescale for sea ice
       alpha     =  3d0               ! non-linear damage parameter
       Theal     =  0d0               ! Healing time scale. 0d0 = no healing.
+      Dam_correction = 'standard'   ! standard:line to origin, specified:generalized correction
+      pi        =  4d0 * datan(1d0)  ! pi
+      theta_cor = datan(sin(phi*pi/180d0))*180d0/pi  ! Stress correction path angle if using generalized MEB
+
 
 !------------------------------------------------------------------------
 !     set run parameters (dynamic - thermodynamic - options - domain)
@@ -120,7 +124,8 @@
       Buoys      = 'Daily'           ! Buoy traj: 'Track' or 'Daily'
       Current    = 'YearlyMean'      ! YearlyMean, specified
       Wind       = '6hours'          ! 6hours, 60yrs_clim, specified
-      RampupWind  = .false.          ! smooth increase of specified wind
+      RampupWind  = .false.          ! smooth increase in surface wind
+      RampupForcing = .false.        ! smooth increase in surface wind forcing
       AirTemp    = 'MonthlyMean'     ! MonthlyMean, specified (-10C)
       OcnTemp    = 'calculated'      ! MonthlyClim, specified,calculated
       calc_month_mean = .false.      ! to calc monthly mean fields
@@ -143,7 +148,7 @@
       elseif ((nx == 102) .and. (ny == 402)) then
          Deltax     =  2d03            ! Ideal ice bridge (Plante et al., 2020) 
       else
-         write(*,*) "Wrong grid size dimenions.", nx, ny
+         write(*,*) "Wrong grid size dimensions.", nx, ny
          STOP
       endif
 
@@ -359,7 +364,8 @@ subroutine read_namelist
            Dynamic, Thermodyn,                                  &
            linearization, regularization, ini_guess,            &
            adv_scheme, AirTemp, OcnTemp, Wind, RampupWind,      &
-           Current, Rheology, IMEX, BDF, visc_method, solver,   &
+           RampupForcing, Current, Periodic_x, Periodic_y,      &
+           ideal, Rheology, IMEX, BDF, visc_method, solver,            &
            BasalStress
 
       namelist /numerical_param_nml/ &
@@ -395,6 +401,16 @@ subroutine read_namelist
 
       close(filenb)
 
+      if (ideal) then
+          f = 0d0
+          theta_a = 0d0
+          theta_w = 0d0
+          sintheta_a = 0d0 
+          costheta_a = 1d0
+          sintheta_w = 0d0
+          costheta_w = 1d0
+      endif
+      print *, theta_w, f, theta_a
       DtoverDx   = Deltat / Deltax
       ell2       = e_ratio**2
       ell_2      = 1/(e_ratio**2)
@@ -533,15 +549,46 @@ subroutine read_namelist
 !     Grid parameter: land mask (grid center), velocity mask (node)                                           
 !------------------------------------------------------------------------                                     
 
-      write(cdelta, '(I2)') int(Deltax)/1000
+! Uniaxial compression experiment.
+      if ((nx == 100) .and. (ny == 250)) then
+         !Make mask:
+         do i = 0, nx+1
+         do j = 0, ny+1
+           maskC(i,j) = 1
+           if ((j .lt. 1)) then
+              maskC(i,j) = 0
+           endif
+         enddo
+         enddo
+         
+! Ideal ice bridge experiment, 2.0 km resolution.	 
+      elseif ((nx == 102) .and. (ny == 402)) then
 
-      open (unit = 20, file = 'src/mask'//cdelta//'.dat', status = 'old')
+         !Mask:
+         do i = 0, nx+1
+         do j = 0, ny+1 
+           maskC(i,j) = 1
+           if (( i .gt. 66 ) .and. ((j .gt. (151)) .and. (j .lt. 252+1)) ) then
+              maskC(i,j) = 0 
+           elseif (( i .lt. (35)+1 ) .and. ((j .gt. (151)) .and. (j .lt. 252+1))) then
+              maskC(i,j) = 0
+           elseif (j .lt.  0) then
+              maskC(i,j) = 0 
+           elseif (j .gt. ny-1) then
+              maskC(i,j) = 0
+           endif 
+         enddo
+         enddo
+! In pan Arctic simulation, load to mask file corresponding to the resolution 
+      else	 
 
-      do j = 0, ny+1               ! land mask                                                                
-         read (20,10) ( maskC(i,j), i = 0, nx+1 )
-      enddo
-
-      close (unit = 20)
+          write(cdelta, '(I2)') int(Deltax)/1000
+          open (unit = 20, file = 'src/mask'//cdelta//'.dat', status = 'old')
+          do j = 0, ny+1               ! land mask                                                                
+             read (20,10) ( maskC(i,j), i = 0, nx+1 )
+          enddo
+          close (unit = 20)
+      endif
       
 10    format (1x,1000(i1)) ! different format because of the grid                                              
 

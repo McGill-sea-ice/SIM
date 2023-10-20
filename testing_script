@@ -45,4 +45,11 @@ cp TEST/NAMELISTS/namelistSIM5 namelistSIM
 mv output/h1990_01_01_01_00.45 TEST/OUTPUT
 rm -f output/*.45
 
+cp TEST/NAMELISTS/namelistMEB1 namelistSIM
+
+./zoupa < TEST/INPUTFILES/input_norestart46
+
+mv output/h1990_01_01_01_00.46 TEST/OUTPUT
+rm -f output/*.46
+
 cp scons_repo/SConstruct_Run SConstruct

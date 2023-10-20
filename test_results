@@ -89,4 +89,16 @@ then
 else
  echo "FAIL - test5"
 fi
+
+# --- TEST 6: MEB standard ------------------------------------------        
+
+file1=${refcode}/TEST/OUTPUT/h1990_01_01_01_00.46
+file2=${newcode}/TEST/OUTPUT/h1990_01_01_01_00.46
+
+if cmp -s $file1 $file2
+then
+ echo "PASS - test6 (MEB)"
+else
+ echo "FAIL - test6 (MEB)"
+fi
 echo ""
