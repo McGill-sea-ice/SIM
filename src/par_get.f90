@@ -124,8 +124,8 @@
       Buoys      = 'Daily'           ! Buoy traj: 'Track' or 'Daily'
       Current    = 'YearlyMean'      ! YearlyMean, specified
       Wind       = '6hours'          ! 6hours, 60yrs_clim, specified
-      RampupWind  = .false.          ! smooth increase of specified wind
-      RampupForcing = .false.         ! smooth increase of specified wind forcing
+      RampupWind  = .false.          ! smooth increase in surface wind
+      RampupForcing = .false.        ! smooth increase in surface wind forcing
       AirTemp    = 'MonthlyMean'     ! MonthlyMean, specified (-10C)
       OcnTemp    = 'calculated'      ! MonthlyClim, specified,calculated
       calc_month_mean = .false.      ! to calc monthly mean fields
