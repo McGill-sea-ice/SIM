@@ -32,6 +32,8 @@
 
       double precision tauax, tauay, wspeed, rampfactor, Tramp
       double precision uairmax, uairmean,alpha
+      double precision xx, yy, wx, wy, mx, my, alpha_bench, 
+      double precision r_bench, s_bench
       double precision uair1(0:nx+2,0:ny+2),vair1(0:nx+2,0:ny+2)
       double precision uair2(0:nx+2,0:ny+2),vair2(0:nx+2,0:ny+2)
       double precision uuair(0:nx+2,0:ny+2),uvair(0:nx+2,0:ny+2)
@@ -112,7 +114,31 @@
               ( ( vair(i,j), i = 1, nx+1 ), j = 1, ny+1 )
          
          close(21)
-         
+
+      elseif (Wind .eq. 'benchmark') then 
+
+
+          mx = ni*Deltax*.1 + ni*Deltax*.1*(day+4d0)
+          my = nj*Deltax*.1 + nj*Deltax*.1*(day+4d0)
+
+          alpha_bench = pi/2d0 - np.pi/2d0/5d0
+          wspeed = 15.0; # maximale windgeschwindigkeit in m/s
+
+          do i = 1, ni+1
+              do j = 1, nj+1
+                  xx = (i-0.5d0)*Deltax
+                  yy = (j-0.5d0)*Deltax
+                  wx =  cos(alpha_bench)*(xx-mx) + sin(alpha_bench)*(yy-my)
+                  wy = -sin(alpha_bench)*(xx-mx) + cos(alpha_bench)*(yy-my)
+                  r_bench = ((mx-xx)*(mx-xx)+(my-yy)*(my-yy))**0.5d0
+                  s_bench = 1.0d0/50d3*exp(-r_bench/100d3)
+
+                  uair(j,i) = -wx*s_bench*wspeed
+                  vair(j,i) = -wy*s_bench*wspeed
+              enddo
+          enddo
+
+
       elseif ( Wind .eq. 'specified' ) then
          
          wspeed = 10.0d0

@@ -486,7 +486,7 @@ subroutine read_namelist
       endif
 
       if ( Wind .ne. '6hours' .and. Wind .ne. 'specified' .and.        &
-           Wind .ne. '60yrs_clim' ) then
+           Wind .ne. '60yrs_clim' .and. Wind .ne. 'benchmark') then
          print *, 'Wrong Wind chosen by user'
          stop
       endif
