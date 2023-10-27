@@ -15,6 +15,7 @@
     Periodic_y = 0
     ideal = .false.
     Rheology = 3
+    Dam_correction = 'standard'
     IMEX = 1
     BDF = 0
     visc_method = 2
