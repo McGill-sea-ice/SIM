@@ -365,7 +365,8 @@ subroutine read_namelist
            linearization, regularization, ini_guess,            &
            adv_scheme, AirTemp, OcnTemp, Wind, RampupWind,      &
            RampupForcing, Current, Periodic_x, Periodic_y,      &
-           ideal, Rheology, IMEX, BDF, visc_method, solver,            &
+           ideal, Rheology, Dam_correction, IMEX, BDF,          &
+           visc_method, solver,                                 &
            BasalStress
 
       namelist /numerical_param_nml/ &
