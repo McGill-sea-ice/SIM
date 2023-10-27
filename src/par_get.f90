@@ -143,6 +143,8 @@
          Deltax     =  40d03           ! Pan-Arctic 40km
       elseif  ((nx == 63) .and. (ny == 53)) then
          Deltax     =  80d03           ! Pan-Arctic 80km
+      elseif  ((nx == 64) .and. (ny == 64)) then
+         Deltax     =  8d03            ! Benchmark 8km
       elseif ((nx == 100) .and. (ny == 250)) then
          Deltax     =  1d03            ! Uniaxial loading (Ringeisen et al., 2019). 
       elseif ((nx == 102) .and. (ny == 402)) then
@@ -580,9 +582,20 @@ subroutine read_namelist
            endif 
          enddo
          enddo
-! In pan Arctic simulation, load to mask file corresponding to the resolution 
-      else	 
 
+      elseif ((nx == 64) .and. (ny == 64)) then
+         !Make mask:
+         do i = 0, nx+1
+             maskC(i,0) = 0
+             maskC(i,ny+1) = 0
+         enddo
+         do j = 0, ny+1
+             maskC(0,j) = 0
+             maskC(nx+1,j) = 0
+         enddo
+
+! In pan Arctic simulation, load to mask file corresponding to the resolution 
+      else
           write(cdelta, '(I2)') int(Deltax)/1000
           open (unit = 20, file = 'src/mask'//cdelta//'.dat', status = 'old')
           do j = 0, ny+1               ! land mask                                                                

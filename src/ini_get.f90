@@ -63,9 +63,10 @@ subroutine ini_get (restart, expno_r, restart_date)
 
              endif
 
-             if Wind .eq. 'benchmark' then
-                 h(i,j) = 0.3d0 + 0.005d0*(sin(60d0/1000d3* ((i-0.5d0)*Deltax) ) &
-                                         + sin(30d0/1000d3* ((i-0.5d0)*Deltax) ) )             
+
+             if (Wind .eq. 'benchmark') then
+                 h(i,j) = 0.3d0 + 0.005d0*( sin(60d0/1000d3* ((i-0.5d0)*Deltax) ) &
+                                         +  sin(30d0/1000d3* ((j-0.5d0)*Deltax) ) )
              endif
 
              Pp(i,j) = 0d0

@@ -32,8 +32,8 @@
 
       double precision tauax, tauay, wspeed, rampfactor, Tramp
       double precision uairmax, uairmean,alpha
-      double precision xx, yy, wx, wy, mx, my, alpha_bench, 
-      double precision r_bench, s_bench
+      double precision xx, yy, wx, wy, mx, my, alpha_bench
+      double precision r_bench, s_bench, pi
       double precision uair1(0:nx+2,0:ny+2),vair1(0:nx+2,0:ny+2)
       double precision uair2(0:nx+2,0:ny+2),vair2(0:nx+2,0:ny+2)
       double precision uuair(0:nx+2,0:ny+2),uvair(0:nx+2,0:ny+2)
@@ -116,25 +116,28 @@
          close(21)
 
       elseif (Wind .eq. 'benchmark') then 
+          pi        =  4d0 * datan(1d0)
+          mx = nx*deltax*1d-1 + nx*deltax*.1d0*(day+4d0)
+          my = ny*deltax*1d-1 + ny*deltax*.1d0*(day+4d0)
 
-
-          mx = ni*Deltax*.1 + ni*Deltax*.1*(day+4d0)
-          my = nj*Deltax*.1 + nj*Deltax*.1*(day+4d0)
-
-          alpha_bench = pi/2d0 - np.pi/2d0/5d0
-          wspeed = 15.0; # maximale windgeschwindigkeit in m/s
-
-          do i = 1, ni+1
-              do j = 1, nj+1
-                  xx = (i-0.5d0)*Deltax
-                  yy = (j-0.5d0)*Deltax
-                  wx =  cos(alpha_bench)*(xx-mx) + sin(alpha_bench)*(yy-my)
-                  wy = -sin(alpha_bench)*(xx-mx) + cos(alpha_bench)*(yy-my)
-                  r_bench = ((mx-xx)*(mx-xx)+(my-yy)*(my-yy))**0.5d0
-                  s_bench = 1.0d0/50d3*exp(-r_bench/100d3)
-
-                  uair(j,i) = -wx*s_bench*wspeed
-                  vair(j,i) = -wy*s_bench*wspeed
+          alpha_bench = pi/2d0 - pi/2d0/5d0
+          wspeed = 15d0
+          
+          do i = 1, nx+1
+              do j = 1, ny+1
+                  uair(i,j) = 0d0
+                  vair(i,j) = 0d0
+                  if (i .ne. nx+1 .and. j .ne. ny+1) then
+                      xx = (i-0.5d0)*deltax
+                      yy = (j-0.5d0)*deltax
+                      wx =  cos(alpha_bench)*(xx-mx) + sin(alpha_bench)*(yy-my)
+                      wy = -sin(alpha_bench)*(xx-mx) + cos(alpha_bench)*(yy-my)
+                      r_bench = ((mx-xx)*(mx-xx)+(my-yy)*(my-yy))**0.5d0
+                      s_bench = 1.0d0/50d3*exp(-r_bench/100d3)
+                      uair(i,j) = -wx*s_bench*wspeed
+                      vair(i,j) = -wy*s_bench*wspeed
+                      print *, uair(i,j), vair(i,j)
+                  endif
               enddo
           enddo
 
