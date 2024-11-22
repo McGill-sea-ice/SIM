@@ -34,7 +34,7 @@
       character filename*45
 
       integer, intent(in) :: k, expno
-      integer i, j, m, year, month, day, hour, minute
+      integer i, j, m, year, month, day, hour, minute, milli
 
       double precision dudx, dvdy, dudy, dvdx, land, lowA
 
@@ -45,15 +45,16 @@
       double precision sigInorm(0:nx+1,0:ny+1), sigIInorm(0:nx+1,0:ny+1)! stress invariants
       double precision sig1norm(0:nx+1,0:ny+1), sig2norm(0:nx+1,0:ny+1) ! princ stresses
       double precision zetaCout(0:nx+1,0:ny+1)
+      double precision exx(0:nx+2,0:ny+2), eyy(0:nx+2,0:ny+2), exy(0:nx+2,0:ny+2)
 
-      year = date%year
-      month = date%month
-      day = date%day
-      hour = date%hour
+      year   = date%year
+      month  = date%month
+      day    = date%day
+      hour   = date%hour
       minute = date%minute
-
-      land=-999d0
-      lowA=-888d0
+      milli  = date%milli
+      land   = -999d0
+      lowA   = -888d0
 
 !      land=0d0
 !      lowA=0d0
@@ -62,6 +63,9 @@
       shear     = land
       sigI      = land
       sigII     = land
+      sigxx     = land
+      sigyy     = land
+      sigxy     = land
       sigInorm  = land
       sigIInorm = land
       sig1norm  = land
@@ -169,6 +173,17 @@
                   sig1norm(i,j) = -1d0*sigInorm(i,j) + sigIInorm(i,j)
                   sig2norm(i,j) = -1d0*sigInorm(i,j) - sigIInorm(i,j)
 
+
+                  exx(i,j) = dudx
+                  eyy(i,j) = dvdy
+                  exy(i,j) = (dudy + dvdx)/2d0
+
+                  sigxx(i,j)  = ( dudx *(zetaC(i,j)+etaC(i,j)) &
+                        + (zetaC(i,j)-etaC(i,j))*dvdy )
+                  sigyy(i,j)  = ( dudx *(zetaC(i,j)-etaC(i,j)) &
+                        + (zetaC(i,j)+etaC(i,j))*dvdy )
+                  sigxyB(i,j) = 2d0*etaC(i,j)*exy(i,j)
+
                   endif
 
                endif
@@ -240,11 +255,11 @@
          enddo
 
       write (filename,'("output/sigI",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
-           year, month, day, hour, minute, k, expno
+           year, month, day, hour, minute, milli, expno
       open (12, file = filename, status = 'unknown')
 
       write (filename,'("output/sigII",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
-           year, month, day, hour, minute, k, expno
+           year, month, day, hour, minute, milli, expno
       open (13, file = filename, status = 'unknown')
 
       write (filename,'("output/sigInorm",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
@@ -252,28 +267,72 @@
       open (14, file = filename, status = 'unknown')
 
       write (filename,'("output/sigIInorm",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
-           year, month, day, hour, minute, k, expno
+           year, month, day, hour, minute, milli, expno
       open (15, file = filename, status = 'unknown')
 
       write (filename,'("output/sig1norm",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
-           year, month, day, hour, minute, k, expno
+           year, month, day, hour, minute, milli, expno
       open (16, file = filename, status = 'unknown')
 
       write (filename,'("output/sig2norm",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
-           year, month, day, hour, minute, k, expno
+           year, month, day, hour, minute, milli, expno
       open (17, file = filename, status = 'unknown')
 
       write (filename,'("output/div",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
-           year, month, day, hour, minute, k, expno
+           year, month, day, hour, minute, milli, expno
       open (18, file = filename, status = 'unknown')
 
       write (filename,'("output/shear",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
-           year, month, day, hour, minute, k, expno
+           year, month, day, hour, minute, milli, expno
       open (19, file = filename, status = 'unknown')
 
       write (filename,'("output/zetaC",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
-           year, month, day, hour, minute, k, expno
+           year, month, day, hour, minute, milli, expno
       open (20, file = filename, status = 'unknown')
+
+      write (filename,'("output/etaC",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+                year, month, day, hour, minute, milli, expno
+      open (21, file = filename, status = 'unknown')
+
+      write (filename,'("output/u",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+                year, month, day, hour, minute, milli, expno
+      open (22, file = filename, status = 'unknown')
+
+      write (filename,'("output/v",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+                year, month, day, hour, minute, milli, expno
+      open (23, file = filename, status = 'unknown')
+
+      write (filename,'("output/exx",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+                year, month, day, hour, minute, milli, expno
+      open (24, file = filename, status = 'unknown')
+
+      write (filename,'("output/eyy",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+                year, month, day, hour, minute, milli, expno
+      open (25, file = filename, status = 'unknown')
+
+      write (filename,'("output/exy",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+                year, month, day, hour, minute, milli, expno
+      open (26, file = filename, status = 'unknown')
+
+      write (filename,'("output/sigxx",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+                year, month, day, hour, minute, milli, expno
+      open (27, file = filename, status = 'unknown')
+
+      write (filename,'("output/sigyy",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+                year, month, day, hour, minute, milli, expno
+      open (28, file = filename, status = 'unknown')
+
+      write (filename,'("output/sigxy",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+                year, month, day, hour, minute, milli, expno
+      open (29, file = filename, status = 'unknown')
+
+      write (filename,'("output/h",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+                year, month, day, hour, minute, milli, expno
+      open (30, file = filename, status = 'unknown')
+
+      write (filename,'("output/A",i4.4,"_",i2.2,"_",i2.2,"_",i2.2,"_",i2.2,"_k",i4.4,".",i2.2)') &
+                year, month, day, hour, minute, milli, expno
+      open (31, file = filename, status = 'unknown')
 
       do j = 0, ny+1
          write(12,100) ( sigI(i,j), i = 0, nx+1 )
@@ -284,10 +343,22 @@
          write(17,200) ( sig2norm(i,j), i = 0, nx+1 )
          write(18,200) ( div(i,j), i = 0, nx+1 )
          write(19,200) ( shear(i,j), i = 0, nx+1 )
-         write(20,300) ( zetaCout(i,j), i = 0, nx+1 )
+         !write(20,300) ( zetaCout(i,j), i = 0, nx+1 )
+         write(20,100) ( zetaC(i,j)*1.0d-8, i = 0, nx+1 )
+         write(21,100) ( etaC(i,j)*1.0d-8, i = 0, nx+1 )
+         write(22,200) ( utp(i,j), i = 0, nx+1 )
+         write(23,200) ( vtp(i,j), i = 0, nx+1 )
+         write(24,100) ( exx(i,j),   i = 0, nx+1 )
+         write(25,100) ( eyy(i,j),   i = 0, nx+1 )
+         write(26,100) ( exy(i,j),   i = 0, nx+1 )
+         write(27,100) ( sigxx(i,j), i = 0, nx+1 )
+         write(28,100) ( sigyy(i,j), i = 0, nx+1 )
+         write(29,100) ( sigxy(i,j), i = 0, nx+1 )
+         write(30,200) ( h(i,j), i = 0, nx+1 )
+         write(31,200) ( A(i,j), i = 0, nx+1 )
       enddo
 
-      do m=12,20
+      do m=12,31
          close(m)
       enddo
 
@@ -670,7 +741,7 @@
 
                  if (Dam_correction .eq. 'standard') then
 
-                     dfactor(i,j) = (( Deltat / Tdam)* &
+                     dfactor(i,j) = ( ( Deltat / Tdam)* &
                             ((CoheC(i,j) / (frict*sigI(i,j) + sigII(i,j))) - 1d0)+1d0)
 
                      R(i,j) = ((sigII(i,j)**2d0 + frict*frict*sigI(i,j)**2d0) / &
@@ -681,7 +752,7 @@
                      if (sigI(i,j) .lt. tan(theta_cor*deg2rad)*sigII(i,j)) then
                          !The shear scaling (dfactor) is computed based on theta_cor
 
-                         dfactor(i,j) = (( Deltat / Tdam)* &
+                         dfactor(i,j) = ( ( Deltat / Tdam)* &
                                 (((CoheC(i,j) + frict*(tan(theta_cor*deg2rad))*sigII(i,j) &
                                            -frict*sigI(i,j)) / &
                                 ((1+frict*tan(theta_cor*deg2rad))*sigII(i,j))) - 1d0)+1d0)
@@ -696,7 +767,7 @@
                          !Standard line to origin when approaching biaxial tension
 
 
-                         dfactor(i,j) = (( Deltat / Tdam)* &
+                         dfactor(i,j) = ( ( Deltat / Tdam)* &
                                 ((CoheC(i,j) / (frict*sigI(i,j) + sigII(i,j))) - 1d0)+1d0)
 
                          R(i,j) = ((sigII(i,j)**2d0 + frict*frict*sigI(i,j)**2d0) / &
@@ -713,7 +784,7 @@
              endif
              dfactor(i,j) = min(dfactor(i,j), 1d0)
              dfactor(i,j) = max(dfactor(i,j), 0d0)
-
+             !dfactor(i,j) = 1d0
         endif ! (if maskC = 1)
 
       enddo
@@ -897,12 +968,18 @@
 
 
         if (((milli .eq. 0) .and. (second .eq. 0))&
-            .and. ((minute .eq. 0) .or. (minute .eq. 10) &
-            .or. (minute .eq. 5) .or. (minute .eq. 15) &
-            .or. (minute .eq. 20) .or. (minute .eq. 30) &
-            .or. (minute .eq. 25) .or. (minute .eq. 35) &
-            .or. (minute .eq. 45) .or. (minute .eq. 55) &
-            .or. (minute .eq. 40) .or. (minute .eq. 50))) then
+            .and. ((minute .eq. 0))) then!.or. (minute .eq. 10) &
+         !   .or. (minute .eq. 5) .or. (minute .eq. 15) &
+         !   .or. (minute .eq. 20) .or. (minute .eq. 30) &
+         !   .or. (minute .eq. 25) .or. (minute .eq. 35) &
+         !   .or. (minute .eq. 45) .or. (minute .eq. 55) &
+         !   .or. (minute .eq. 40) .or. (minute .eq. 50))) then
+
+          call post_MEB_stress(utp, vtp, sigI, sigII, Dexx, Deyy, Dexy, date, expno)
+
+        elseif ( ( day .eq. 1) .and. (hour .eq. 0) .and. &
+                 (minute .lt. 30) .and. &
+                  (second .eq. 0) .and. (milli .eq. 0)) then 
 
           call post_MEB_stress(utp, vtp, sigI, sigII, Dexx, Deyy, Dexy, date, expno)
 
