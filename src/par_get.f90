@@ -68,19 +68,18 @@
       
 ! Mohr Coulomb and MEB(rheology = 3)       
 
-      phi       =  45d0              ! internal angle of friction
-      Cohe      =  10d3              ! cohesion (tensile strght) [N/m2]
+      phi       =  44.427d0              ! internal angle of friction
+      Cohe      =  25d3!25d3              ! cohesion (tensile strght) [N/m2]
       sigc      =  -Cohe*5d8         ! compressive strength cut-off [N/m2]
-      sigt      =  Cohe*5d8          ! tensile strength cut-off [N/m2]
-      Young     =  1d9               ! Young's Modulus of sea ice
-      Poisson   =  3.3d-01           ! Poisson Ratio of sea ice
-      lambda0   =  1d5               ! viscous relaxation timescale for sea ice
+      Young     =  5d8               ! Young's Modulus of sea ice
+      Poisson   =  3.d-01           ! Poisson Ratio of sea ice
+      lambda0   =  1d7               ! viscous relaxation timescale for sea ice
       alpha     =  3d0               ! non-linear damage parameter
-      Theal     =  0d0               ! Healing time scale. 0d0 = no healing.
+      Theal     =  1d-05               ! Healing time scale. 0d0 = no healing.
       Dam_correction = 'standard'   ! standard:line to origin, specified:generalized correction
       pi        =  4d0 * datan(1d0)  ! pi
       theta_cor = datan(sin(phi*pi/180d0))*180d0/pi  ! Stress correction path angle if using generalized MEB
-
+      sigt      =  1d8*Cohe/(1d0 + sin(phi*pi/180d0))     ! tensile strength cut-off [N/m2]
 
 !------------------------------------------------------------------------
 !     set run parameters (dynamic - thermodynamic - options - domain)
@@ -143,8 +142,12 @@
          Deltax     =  40d03           ! Pan-Arctic 40km
       elseif  ((nx == 63) .and. (ny == 53)) then
          Deltax     =  80d03           ! Pan-Arctic 80km
-      elseif  ((nx == 64) .and. (ny == 64)) then
+      elseif  ((nx == 66) .and. (ny == 66)) then
          Deltax     =  8d03            ! Benchmark 8km
+      elseif  ((nx == 130) .and. (ny == 130)) then
+         Deltax     =  4d03            ! Benchmark 4km
+      elseif  ((nx == 258) .and. (ny == 258)) then
+         Deltax     =  2d03            ! Benchmark 2km
       elseif ((nx == 100) .and. (ny == 250)) then
          Deltax     =  1d03            ! Uniaxial loading (Ringeisen et al., 2019). 
       elseif ((nx == 102) .and. (ny == 402)) then
@@ -405,7 +408,6 @@ subroutine read_namelist
       close(filenb)
 
       if (ideal) then
-          f = 0d0
           theta_a = 0d0
           theta_w = 0d0
           sintheta_a = 0d0 
@@ -483,7 +485,8 @@ subroutine read_namelist
       endif
 
       if ( Current .ne. 'YearlyMean' .and.                             &
-           Current .ne. 'specified' ) then
+           Current .ne. 'specified'  .and.                             &
+           Current .ne. 'benchmark' ) then
          print *, 'Wrong Current chosen by user'
          stop
       endif
@@ -552,6 +555,8 @@ subroutine read_namelist
 !     Grid parameter: land mask (grid center), velocity mask (node)                                           
 !------------------------------------------------------------------------                                     
 
+      print *, "retrieving the mask", nx, ny
+
 ! Uniaxial compression experiment.
       if ((nx == 100) .and. (ny == 250)) then
          !Make mask:
@@ -583,17 +588,29 @@ subroutine read_namelist
          enddo
          enddo
 
-      elseif ((nx == 64) .and. (ny == 64)) then
+! Mehlmann benchmark experiment, 8.0, 4.0, 2.0 km resolution.
+      elseif (((nx == 66) .and. (ny == 66)) .or. &
+               ((nx == 130) .and. (ny == 130)) .or. &  
+               ((nx == 258) .and. (ny == 258))) then
          !Make mask:
          do i = 0, nx+1
              maskC(i,0) = 0
              maskC(i,ny+1) = 0
+             maskC(i,1) = 0
+             maskC(i,ny) = 0
          enddo
          do j = 0, ny+1
              maskC(0,j) = 0
              maskC(nx+1,j) = 0
+             maskC(1,j) = 0
+             maskC(nx,j) = 0
          enddo
-
+         do i = 2, nx-1
+         do j = 2, ny-1
+             maskC(i,j) = 1
+         enddo
+         enddo
+         print *, maskC(50, 50)
 ! In pan Arctic simulation, load to mask file corresponding to the resolution 
       else
           write(cdelta, '(I2)') int(Deltax)/1000

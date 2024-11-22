@@ -50,7 +50,7 @@
       character(LEN=6) :: datestr
       
       integer, intent(in) :: tstep, expno
-      integer ::  year    ! current year
+      integer ::  year, month,day,hour,minute    ! current year
 
       integer :: k, tot_its, peri, kd
       integer, save :: sumtot_its, nbfail
@@ -66,6 +66,11 @@
       double precision, save :: NLtol
 
       year = date%year
+      month = date%month
+      day = date%day
+      hour = date%hour
+      minute = date%minute
+
       datestr = datetime_str_6(date)
       
       peri = Periodic_x + Periodic_y
@@ -146,9 +151,9 @@
                   if (Rheology .eq. 3) then !calculate the damage factor
                   
                      kd   = 0d0
-                     dam  = dam1
-                     damB = damB1
-                     !call advection ( un1, vn1, uice, vice, dummy, dummy,dummy, Dam1, dummy, Dam)
+ !                    dam  = dam1
+ !                    damB = damB1
+!                     call advection ( un1, vn1, uice, vice, dummy, dummy,dummy, Dam1, dummy, Dam)
                      call stress_strain_MEB(uice, vice, date, kd, expno)
                      
                   else
@@ -257,10 +262,19 @@
 
 !------- End of Newton loop ----------------------------------------------            
          
-            if (tstep .eq. -1) then ! change tstep value to output stresses and strain rates
+            if (tstep .lt. 30) then ! change tstep value to output stresses and strain rates
                call stress_strain (uice, vice, date, 9, expno)
 !               stop
             endif
+
+
+            !if (minute .eq. 0) then
+            !   print *, date
+            !   call stress_strain(uice, vice, date, 9, expno)
+
+            !endif
+
+
                  
          elseif (solver .eq. 3) then ! EVP solver 
 

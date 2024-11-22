@@ -117,8 +117,16 @@
 
       elseif (Wind .eq. 'benchmark') then 
           pi        =  4d0 * datan(1d0)
-          mx = nx*deltax*1d-1 + nx*deltax*.1d0*(day+4d0)
-          my = ny*deltax*1d-1 + ny*deltax*.1d0*(day+4d0)
+
+! Cyclone displasing towards north-east corner
+          mx = nx*deltax*1d-1 + nx*deltax*.1d0*(day+4d0 + &
+                          (hour*60d0*60d0 + minute*60d0 + second*1d0)/(24d0*60d0*60d0) )
+          my = ny*deltax*1d-1 + ny*deltax*.1d0*(day+4d0 + & 
+                          (hour*60d0*60d0 + minute*60d0 + second*1d0)/(24d0*60d0*60d0) )
+
+! Non moving at center
+!          mx = nx*deltax*5d-1
+!          my = ny*deltax*5d-1
 
           alpha_bench = pi/2d0 - pi/2d0/5d0
           wspeed = 15d0
@@ -136,11 +144,10 @@
                       s_bench = 1.0d0/50d3*exp(-r_bench/100d3)
                       uair(i,j) = -wx*s_bench*wspeed
                       vair(i,j) = -wy*s_bench*wspeed
-                      print *, uair(i,j), vair(i,j)
                   endif
               enddo
           enddo
-
+          rampfactor = 1d0
 
       elseif ( Wind .eq. 'specified' ) then
          
