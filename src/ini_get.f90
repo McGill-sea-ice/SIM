@@ -66,8 +66,8 @@ subroutine ini_get (restart, expno_r, restart_date)
 
              if (Wind .eq. 'benchmark') then
                  h(i,j) = 0.3d0 * maskC(i,j) + & 
-                          0.005d0*maskC(i,j)* ( sin(500d0*1d-3* ((i-0.5d0)*Deltax/2d0) ) + &
-                                                sin(500d0*1d-3* ((j-0.5d0)*Deltax/2d0) ) )
+                          0.005d0*maskC(i,j)* ( sin(60d0*1000d-3* ((i-0.5d0)*Deltax/2d0) ) + &
+                                                sin(30d0*1000d-3* ((j-0.5d0)*Deltax/2d0) ) )
              endif
 
              Pp(i,j) = 0d0
