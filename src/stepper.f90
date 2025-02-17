@@ -174,6 +174,11 @@
                
                if (k.eq. 1) NLtol = gamma_nl * res
 
+               if ((Rheology .eq. 3) .and. (res .gt.1d20)) then
+                   print *, 'WARNING, VERY LARGE RESIDUAL'
+                   res = sqrt(DOT_PRODUCT(Fu*1d-10,Fu*1d-10)) ! L2norm 
+               endif
+
                if (res .lt. NLtol .or. res .lt. 1d-08) then
                   print *, 'L2norm is', k,res,'(final)'
                   print *, 'nb outer ite, FGMRES ite =',k-1, sumtot_its
@@ -236,6 +241,11 @@
                endif
 
                res = sqrt(DOT_PRODUCT(Fu,Fu)) ! L2norm
+               if ((Rheology .eq. 3) .and. (res .gt.1d20)) then
+                   print *, 'WARNING, VERY LARGE RESIDUAL'
+                   res = sqrt(DOT_PRODUCT(Fu*1d-10,Fu*1d-10)) ! L2norm 
+               endif
+
                if (k.eq. 1) then
                   NLtol = gamma_nl * res
                   res_t = res / dropini !transition between fast & slow phases 
