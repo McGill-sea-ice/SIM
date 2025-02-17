@@ -880,7 +880,12 @@
 
                 elseif(Dam_correction .eq. 'specified') then
 
- 		    if (sigI(i,j) .lt. tan(theta_cor*deg2rad)*sigII(i,j)) then
+                    ! 1. compression capping
+                    if ( (sigI(i,j)-sigII(i,j)) .lt. sigcC(i,j)*(1+frict) ) then
+
+                        sigI(i,j)  = dfactor(i,j)*sigI(i,j)
+
+ 		    elseif (sigI(i,j) .lt. tan(theta_cor*deg2rad)*sigII(i,j)) then
 
                         sigI(i,j)  = sigI(i,j) - (sigII(i,j)*(1-dfactor(i,j)) &
                                              *tan(theta_cor*deg2rad))
@@ -977,8 +982,10 @@
 
           call post_MEB_stress(utp, vtp, sigI, sigII, Dexx, Deyy, Dexy, date, expno)
 
+
+
         elseif ( ( day .eq. 1) .and. (hour .eq. 0) .and. &
-                 (minute .lt. 30) .and. &
+!                 (minute .lt. 30) .and. &
                   (second .eq. 0) .and. (milli .eq. 0)) then 
 
           call post_MEB_stress(utp, vtp, sigI, sigII, Dexx, Deyy, Dexy, date, expno)
