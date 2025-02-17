@@ -40,8 +40,9 @@ output/*
 build/
 
 # Namelist
-namelistSIM
-
+namelist*
+input_norestart_*
+sample_run*
 # Bin
 bin/*
 
