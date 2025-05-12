@@ -69,8 +69,8 @@
 ! Mohr Coulomb and MEB(rheology = 3)       
 
       phi       =  44.427d0              ! internal angle of friction
-      Cohe      =  25d3!25d3              ! cohesion (tensile strght) [N/m2]
-      sigc      =  -Cohe*5d8         ! compressive strength cut-off [N/m2]
+      Cohe      =  1.56d3!25d3              ! cohesion (tensile strght) [N/m2]
+      sigc      =  -5.0d4         ! compressive strength cut-off [N/m2]
       Young     =  5d8               ! Young's Modulus of sea ice
       Poisson   =  3.d-01           ! Poisson Ratio of sea ice
       lambda0   =  1d7               ! viscous relaxation timescale for sea ice
@@ -78,7 +78,7 @@
       Theal     =  1d-05               ! Healing time scale. 0d0 = no healing.
       Dam_correction = 'standard'   ! standard:line to origin, specified:generalized correction
       pi        =  4d0 * datan(1d0)  ! pi
-      theta_cor = datan(sin(phi*pi/180d0))*180d0/pi  ! Stress correction path angle if using generalized MEB
+      theta_cor =  datan(sin(phi*pi/180d0))*180d0/pi  ! Stress correction path angle if using generalized MEB
       sigt      =  1d8*Cohe/(1d0 + sin(phi*pi/180d0))     ! tensile strength cut-off [N/m2]
 
 !------------------------------------------------------------------------
