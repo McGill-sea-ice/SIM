@@ -115,8 +115,8 @@
             elseif (Current .eq. 'benchmark') then
                !uwater(i,j) = -1.0d-02 *(2d0*(j-0.5d0)*deltax-512d3)/512d3
                !vwater(i,j) = +1.0d-02 *(2d0*(i-0.5d0)*deltax-512d3)/512d3
-               uwatnd(i,j) = +1.0d-02 *(2d0*(j-1d0)*deltax-512d3)/512d3
-               vwatnd(i,j) = -1.0d-02 *(2d0*(i-1d0)*deltax-512d3)/512d3
+               uwatnd(i,j) = +1.0d-02 *(2d0*(j-0.5d0)*deltax-512d3)/512d3
+               vwatnd(i,j) = -1.0d-02 *(2d0*(i-0.5d0)*deltax-512d3)/512d3
                uwatnd(i,j) = uwatnd(i,j) * min( maskB(i,j) + maskB(i,j+1), 1 )
                vwatnd(i,j) = vwatnd(i,j) * min( maskB(i,j) + maskB(i+1,j), 1 )
             endif

@@ -119,9 +119,9 @@
           pi        =  4d0 * datan(1d0)
 
 ! Cyclone displasing towards north-east corner
-          mx = nx*deltax*5d-1 + nx*deltax*.1d0*(day + &
+          mx = (nx-2d0)*deltax*1d-1 + (nx-2d0)*deltax*1d-1*(day + 3d0 + &
                           (hour*60d0*60d0 + minute*60d0 + second*1d0)/(24d0*60d0*60d0) )
-          my = ny*deltax*5d-1 + ny*deltax*.1d0*(day + & 
+          my = (ny-2d0)*deltax*1d-1 + (ny-2d0)*deltax*1d-1*(day + 3d0 + & 
                           (hour*60d0*60d0 + minute*60d0 + second*1d0)/(24d0*60d0*60d0) )
 
 ! Non moving at center
