@@ -675,8 +675,8 @@
                         + (zetaC(i,j)-etaC(i,j))*dvdy )
             Dsigyy(i,j)  = ( dudx *(zetaC(i,j)-etaC(i,j)) &
                         + (zetaC(i,j)+etaC(i,j))*dvdy )
-            Dsigxy(i,j)  = (DsigxyB(i,j) + DsigxyB(i,j+1) + &
-                        DsigxyB(i+1,j) + DsigxyB(i+1,j+1) ) / 4d0
+            Dsigxy(i,j)  = ((DsigxyB(i,j)**2d0 + DsigxyB(i,j+1)**2d0 + &
+                        DsigxyB(i+1,j)**2d0 + DsigxyB(i+1,j+1)**2d0 ) / 4d0)**0.5d0
 
         endif
       enddo
