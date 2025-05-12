@@ -1395,9 +1395,9 @@ subroutine MEBcoeff
 !---------------------------------------------------------
 
       Lame1     =  Young/(2d0*(1d0 + Poisson)) ! Shear Modulus of sea ice
-      Lame2     =  2d0*Poisson*Lame1/(1d0-Poisson) ! elastic const of sea ice
-      Tdam      = max(Deltax /sqrt(Lame2/rhoice), Deltat) !Damage relaxation time scale
-
+      Lame2     =  2d0*Poisson/(1d0-Poisson) ! elastic const of sea ice
+!      Tdam      = max(Deltax /sqrt(Lame2/rhoice), Deltat) !Damage relaxation time scale
+      Tdam      = 2d0
 !------------------------------------------------------------------------
 !     free slip boundary condition:
 !       d(v_tangential)/d(normal) = 0 & v_normal = 0, at close boundary
@@ -1414,7 +1414,7 @@ subroutine MEBcoeff
             do j = 0, ny+1
 
                etaC(i,j)  = Lame1*Deltat
-               zetaC(i,j) = (Lame1 + Lame2)*Deltat
+               zetaC(i,j) = Lame1*(1d0 + Lame2)*Deltat
                etaB(i,j)  = Lame1*Deltat
                hAfunc(i,j) = 1d0
                hAfuncB(i,j) = 1d0
@@ -1440,7 +1440,7 @@ subroutine MEBcoeff
 
                 hAfunc(i,j)  = h(i,j) * dexp(-C * ( 1d0 - A(i,j) ) )
                 
-                GammaMEB(i,j) = 1d0 / (1d0 + (Deltat * hAfunc(i,j)) / &
+                GammaMEB(i,j) = 1d0 / (1d0 + (Deltat) / &
                            (lambda0 * ((dam(i,j))*dfactor(i,j))**(alpha-1d0))) 
 
              else
@@ -1452,7 +1452,7 @@ subroutine MEBcoeff
 
              etaC(i,j)  = Lame1*hAfunc(i,j)*(dam(i,j))*dfactor(i,j)* &   !Elastic stiffness
                                                  Deltat * GammaMEB(i,j)
-             zetaC(i,j) = hAfunc(i,j)*(Lame1 + Lame2)*Deltat * &
+             zetaC(i,j) = hAfunc(i,j)*Lame1*(1d0 + Lame2)*Deltat * &
                                  dam(i,j)* dfactor(i,j) * GammaMEB(i,j)
              P(i,j) = 0d0
              
@@ -1511,7 +1511,7 @@ subroutine MEBcoeff
                               + A(i,j-1)*m3 + A(i-1,j-1)*m4 )/ (m1+m2+m3+m4) ) ) )
                endif
 
-               GammaMEB_B(i,j) = 1d0 / ( 1d0 + (Deltat * hAfuncB(i,j)) / &
+               GammaMEB_B(i,j) = 1d0 / ( 1d0 + (Deltat) / &
                               (lambda0 * (damB(i,j)*dfactorB(i,j))**(alpha-1d0) )  )
                etaB(i,j)  = hAfuncB(i,j)*Lame1*Deltat*&
                              (damB(i,j)*dfactorB(i,j)) *GammaMEB_B(i,j)
