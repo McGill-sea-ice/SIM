@@ -1,59 +1,7 @@
-
-
 # McGill sea ice model (SIM) code.
 
-## Setup
-### clone SIM
-connect to chosen machine via aos.meteo.mcgill.ca<br/>
-```cd /where/you/want/your/SIM```<br/>
-```git clone git@github.com:McGill-sea-ice/SIM.git```<br/>
-```cd SIM```<br/>
-if needed download forcing:<br/>
-```scp <username>@dumbo:/storage2/common/forcing /path/to/forcing``` <br/>
-### create link to forcing: 
-```ln -s /path/to/forcing forcing``` 
+The [__SIM github repository__](https://github.com/McGill-sea-ice/SIM) contains all code, forcing and input files to run some simple tests with the model. To obtain the code by cloning the repository, follow the instructions in the [__installation and setup guide__](docs/installation.ipynb#Obtaining-the-code). Verify that the system you are working on has the [__required dependencies__](docs/installation.ipynb#Installing-the-dependencies) installed.  
 
-```git branch -a (list branches)```<br/>
-```git checkout <choose your branch>```<br/>
+A more detailed description of how to [__use the model__](docs/usage.ipynb#How-to-run-SIM), [__create input files__](docs/usage.ipynb#Inputfile,-namelist-and-forcing), and [__contribute to the code development__](docs/usage.ipynb#Using-github) are found in the [__usage guide__](docs/usage.ipynb).  
 
-### Initial compile:
-```./setup_script```<br/>
-```export HDF5_DISABLE_VERSION_CHECK=2```<br/>
-### Run the code:
-```./zoupa < input_file > outputfile &```<br/>
-output files for fields are in the output directory<br/>
-
-Subsequent compiles: 
-`scons-3`
-
-## PULL REQUESTS
-### Testing procedure
-
-Create a `TESTS` directory: 
-- `cd /where/you/want/your/TESTS`
-- `mkdir TESTS`
-- `cd TESTS`
-
-Get the master branch and reference solution in `REF` for reference
-- `git clone git@github.com:McGill-sea-ice/SIM.git REF`
-- `cd REF`
-- `ln -s /path/to/forcing forcing`
-- `./testing_script`
-
-Get your own branch in `NEW` and run the model
-- `cd ..`
-- `git clone git@github.com:McGill-sea-ice/SIM.git NEW`
-- `cd NEW`
-- `ln -s /path/to/forcing forcing`
-- `git checkout <choose your branch>`
-- `./testing_script`
-
-Compare the results
-- `./test_results`
-- copy result of tests (should get 5 PASS).
-
-### steps for PR on github
-1. Click on pull request on github.
-2. Enter text to describe code modifications and paste result of tests.
-3. Assign someone for reviewing the code.
-4. Assign lbtremblay (and JFLemieux73 for a little bit) for approving the pull request.
+Details of the underlying equations, parameterizations and disretization can be found in [__the documentation__](docs/documentation.ipynb).
