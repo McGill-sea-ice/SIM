@@ -31,8 +31,10 @@
       include 'CB_mask.h'
       include 'CB_const.h'
 
-      character(len=2) :: cdelta
-      character(LEN=60) fname1, fname2
+      character(len=5) :: cdelta
+      character(len=4) :: cnx, cny
+      character(len=*), parameter :: dir = 'forcing/ocncurrent/'
+      character(LEN=80) fname1, fname2
 
       integer startyear, endyear
       integer i, j
@@ -40,7 +42,6 @@
 
       read ( startdate(5:6), '(i2)' ) startyear
       read ( enddate  (5:6), '(i2)' ) endyear
-      write(cdelta, '(I2)') int(Deltax)/1000
 
 !------------------------------------------------------------------------
 !     load ocean current data (time independant)
@@ -48,10 +49,24 @@
 
       fname1 = ''
       fname2 = ''
-
-      if ( Current .eq. 'YearlyMean' ) then
-         fname1= 'forcing/ocncurrent/'// cdelta // '/uwater' // cdelta // '.clim'
-         fname2= 'forcing/ocncurrent/'// cdelta // '/vwater' // cdelta // '.clim'
+    
+      if ( Current .eq. 'clim' ) then
+         write(cnx, '(I0)') int(nx)
+         write(cny, '(I0)') int(ny)
+         if  ( ( Deltax == 80d03 ) .or. ( Deltax == 40d03 ) .or. &
+             & ( Deltax == 20d03 ) .or. ( Deltax == 10d03 ) ) then
+             write(cdelta, '(I0)') int(Deltax/1d03)
+             fname1 = dir // cdelta // 'uwater' // cdelta // '.clim'
+             fname2 = dir // cdelta // 'vwater' // cdelta // '.clim'
+         elseif ( ( Deltax == 32d03 ) .or. ( Deltax == 16d03 ) .or. &
+             & ( Deltax == 8d03 )  .or. ( Deltax == 4d03 ) .or. &
+             & ( Deltax == 2d03 )  .or. ( Deltax == 1d03 ) ) then
+             write(cdelta, '(F0.2)') Deltax/1d03
+             fname1 = dir // 'uwater' // '_dx' // trim(cdelta) // '_nx' &
+                    & // trim(cnx) // '_ny' // trim(cny)// '.clim'
+             fname2 = dir // 'vwater' // '_dx' // trim(cdelta) // '_nx' &
+                    & // trim(cnx) // '_ny' // trim(cny)// '.clim'
+         endif
       endif
       
       print *, 'Reading ocean currents for the ' // cdelta // ' km resolution grid.' 

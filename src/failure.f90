@@ -136,7 +136,7 @@
          close(l)
       enddo
 
-100            format (1x, 1000(f20.12, 1x))
+100            format (1x, 12000(f20.12, 1x))
       
       return
     end subroutine failure

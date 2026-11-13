@@ -32,7 +32,7 @@ subroutine prep_monthly_mean_fields ( end_date, start_date )
   
   TYPE(datetime_type) :: start_date, end_date
   
-  print *,
+  print *, ' '
   print *, '********* monthly mean fields will be calculated ********'
 
   if ( start_date%day .ne. 1 .or. start_date%hour .ne. 0 .or. &
@@ -47,7 +47,7 @@ subroutine prep_monthly_mean_fields ( end_date, start_date )
 
   endif
 
-  print *,
+  print *, ' '
 
   return
 end subroutine prep_monthly_mean_fields
@@ -150,7 +150,7 @@ subroutine output_monthly_mean_fields ( htp,Atp, utp, vtp, expno)
      close(i)
   enddo
 
-10 format (1x, 1000(f10.6, 1x))
+10 format (1x, 12000(f10.6, 1x))
 
   return
 end subroutine output_monthly_mean_fields

@@ -1,0 +1,104 @@
+#!/bin/bash 
+
+newcode=$(pwd)
+cd ../REF
+refcode=$(pwd)
+cd $newcode
+
+newbranch=$(git -C $newcode branch --show-current)
+refbranch=$(git -C $refcode branch --show-current)
+
+echo ""
+echo "Reference code and branch:"
+echo $refcode
+echo $refbranch
+echo ""
+
+echo "New code and branch:"
+echo $newcode
+echo $newbranch
+echo ""
+
+if [[ "$refbranch" == "$newbranch" ]]
+then
+ echo "FAIL - ref and new branches are the same, you twat!"
+ exit
+fi
+
+if [[ "$newbranch" == "master" ]]
+then
+ echo "FAIL - new branch should not be the master, you twit!"
+ exit
+fi
+# --- TEST 1 ------------------------------------------
+
+file1=${refcode}/TEST/OUTPUT/h2008_01_01_02_00.91
+file2=${newcode}/TEST/OUTPUT/h2008_01_01_02_00.91
+
+if cmp -s $file1 $file2
+then
+ echo "PASS - test1"
+else
+ echo "FAIL - test1"
+fi
+
+# --- TEST 2 ------------------------------------------
+
+file1=${refcode}/TEST/OUTPUT/h2008_01_01_02_00.92
+file2=${newcode}/TEST/OUTPUT/h2008_01_01_02_00.92
+
+if cmp -s $file1 $file2
+then
+ echo "PASS - test2"
+else
+ echo "FAIL - test2"
+fi
+
+# --- TEST 3 ------------------------------------------ 
+
+file1=${refcode}/TEST/OUTPUT/h2008_01_01_02_00.93
+file2=${newcode}/TEST/OUTPUT/h2008_01_01_02_00.93
+
+if cmp -s $file1 $file2
+then
+ echo "PASS - test3"
+else
+ echo "FAIL - test3"
+fi
+
+# --- TEST 4 ------------------------------------------  
+
+file1=${refcode}/TEST/OUTPUT/h2008_01_01_02_00.94
+file2=${newcode}/TEST/OUTPUT/h2008_01_01_02_00.94
+
+if cmp -s $file1 $file2
+then
+ echo "PASS - test4"
+else
+ echo "FAIL - test4"
+fi
+
+# --- TEST 5 ------------------------------------------        
+
+file1=${refcode}/TEST/OUTPUT/h2007_01_01_01_00.95
+file2=${newcode}/TEST/OUTPUT/h2007_01_01_01_00.95
+
+if cmp -s $file1 $file2
+then
+ echo "PASS - test5"
+else
+ echo "FAIL - test5"
+fi
+
+# --- TEST 6: MEB standard ------------------------------------------        
+
+file1=${refcode}/TEST/OUTPUT/h2007_01_01_01_00.96
+file2=${newcode}/TEST/OUTPUT/h2007_01_01_01_00.96
+
+if cmp -s $file1 $file2
+then
+ echo "PASS - test6 (MEB)"
+else
+ echo "FAIL - test6 (MEB)"
+fi
+echo ""

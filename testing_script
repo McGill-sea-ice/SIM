@@ -1,55 +1,57 @@
 #!/bin/bash
 
-scp dumbo:/storage2/common/restarts/40/*.40 output
+cp restarts/*.90 output/
 cp scons_repo/SConstruct_Test SConstruct
 
 scons-3
 export HDF5_DISABLE_VERSION_CHECK=2
 
-rm -rf TEST/OUTPUT
-mkdir TEST/OUTPUT
+rm -rf tests/output
+mkdir tests/output
 
 
-cp TEST/NAMELISTS/namelistSIM1 namelistSIM
+ln -sf tests/namelists/namelistSIM1 namelist
+ln -sf wind_dx32.00_nx160_ny135_2008.nc forcing/wind/wind_dx32.00_nx160_ny135.nc
 
-./zoupa < TEST/INPUTFILES/input_restart41
+./zoupa < tests/inputfiles/input_restart91
 
-mv output/h2002_01_01_02_00.41 TEST/OUTPUT
-rm -f output/*.41
+mv output/h2008_01_01_02_00.91 tests/output
+rm -f output/*.91
 
-cp TEST/NAMELISTS/namelistSIM2 namelistSIM
+ln -sf tests/namelists/namelistSIM2 namelist
 
-./zoupa < TEST/INPUTFILES/input_restart42
+./zoupa < tests/inputfiles/input_restart92
 
-mv output/h2002_01_01_02_00.42 TEST/OUTPUT
-rm -f output/*.42
+mv output/h2008_01_01_02_00.92 tests/output
+rm -f output/*.92
 
-cp TEST/NAMELISTS/namelistSIM3 namelistSIM
+ln -sf tests/namelists/namelistSIM3 namelist
 
-./zoupa < TEST/INPUTFILES/input_restart43
+./zoupa < tests/inputfiles/input_restart93
 
-mv output/h2002_01_01_02_00.43 TEST/OUTPUT
-rm -f output/*.43
+mv output/h2008_01_01_02_00.93 tests/output
+rm -f output/*.93
 
-cp TEST/NAMELISTS/namelistSIM4 namelistSIM
+ln -sf tests/namelists/namelistSIM4 namelist
 
-./zoupa < TEST/INPUTFILES/input_restart44
+./zoupa < tests/inputfiles/input_restart94
 
-mv output/h2002_01_01_02_00.44 TEST/OUTPUT
-rm -f output/*.44
+mv output/h2008_01_01_02_00.94 tests/output
+rm -f output/*.94
 
-cp TEST/NAMELISTS/namelistSIM5 namelistSIM
+ln -sf tests/namelists/namelistSIM5 namelist
+ln -sf wind_dx32.00_nx160_ny135_2007.nc forcing/wind/wind_dx32.00_nx160_ny135.nc
 
-./zoupa < TEST/INPUTFILES/input_norestart45
+./zoupa < tests/inputfiles/input_norestart95
 
-mv output/h1990_01_01_01_00.45 TEST/OUTPUT
-rm -f output/*.45
+mv output/h2007_01_01_01_00.95 tests/output
+rm -f output/*.95
 
-cp TEST/NAMELISTS/namelistMEB1 namelistSIM
+ln -sf tests/namelists/namelistMEB1 namelist
 
-./zoupa < TEST/INPUTFILES/input_norestart46
+./zoupa < tests/inputfiles/input_norestart96
 
-mv output/h1990_01_01_01_00.46 TEST/OUTPUT
-rm -f output/*.46
+mv output/h2007_01_01_01_00.96 tests/output
+rm -f output/*.96
 
 cp scons_repo/SConstruct_Run SConstruct

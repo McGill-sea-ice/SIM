@@ -42,7 +42,7 @@ env = Environment(LIBPATH=[libs],
                   FORTRANMODDIR=[include,], 
                   FORTRANMODDIRPREFIX='-J', 
                   F90PATH=[include,], 
-                  F90FLAGS=['-Wall', '-fPIC','-fbackslash', '-O3', '-ffast-math'], 
+                  F90FLAGS=['-Wall', '-fPIC','-fbackslash', '-O3', '-ffast-math', '-frecursive', '-mcmodel=medium'], 
                   FORTRAN=FC,
                   LINKFLAGS=[],
                   F90=FC)

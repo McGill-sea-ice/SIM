@@ -291,9 +291,9 @@
          close(m)
       enddo
 
-100            format (1x, 1000(f20.10, 1x))
-200            format (1x, 1000(f15.10, 1x))
-300            format (1x, 1000(f20.4,  1x))
+100            format (1x, 12000(f20.10, 1x))
+200            format (1x, 12000(f15.10, 1x))
+300            format (1x, 12000(f20.4,  1x))
       
       return
     end subroutine stress_strain
@@ -1036,9 +1036,9 @@
 
 
 
-100            format (1x, 1000(f20.10, 1x))
-200            format (1x, 1000(f15.10, 1x))
-300            format (1x, 1000(f20.4,  1x))
+100            format (1x, 12000(f20.10, 1x))
+200            format (1x, 12000(f15.10, 1x))
+300            format (1x, 12000(f20.4,  1x))
 
 return
 end subroutine post_MEB_stress

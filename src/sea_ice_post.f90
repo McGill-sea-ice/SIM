@@ -179,13 +179,13 @@
          close(k)
       enddo
 
- 10   format (1x, 1000(f20.16, 1x))
- 20   format (1x, 1000(f20.16, 1x))
- 30   format (1x, 1000(f12.6, 1x))
- !40   format (1x, 1000(f12.6, 1x))
- !50   format (1x, 1000(f14.6, 1x))
- !80   format (1x, 1000(f12.6, 1x))
- !100  format (1x, 1000(e12.4, 1x))
+ 10   format (1x, 12000(f20.16, 1x))
+ 20   format (1x, 12000(f20.16, 1x))
+ 30   format (1x, 12000(f12.6, 1x))
+ !40   format (1x, 12000(f12.6, 1x))
+ !50   format (1x, 12000(f14.6, 1x))
+ !80   format (1x, 12000(f12.6, 1x))
+ !100  format (1x, 12000(e12.4, 1x))
       return
     end subroutine sea_ice_post
 

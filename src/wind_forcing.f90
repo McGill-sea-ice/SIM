@@ -22,6 +22,7 @@
       type(datetime_delta_type) :: diff, step
       integer :: dseconds, delta
       character(len=2) :: cdelta
+      character(len=4) :: cnx, cny
 
       character(LEN=60) file_u, file_v
 
@@ -37,7 +38,11 @@
       double precision uuair(0:nx+2,0:ny+2),uvair(0:nx+2,0:ny+2)
  
       logical :: verbose = .false.
-     
+
+      write(cnx, '(I0)') int(nx)
+      write(cny, '(I0)') int(ny)
+
+
       delta =  int(deltax)/1000
 
       year = date%year
@@ -88,10 +93,22 @@
        end if
 !------------------------------------------------------------------------------
 
-      elseif ( Wind .eq. '60yrs_clim' ) then 
-         WRITE(cdelta, '(I2)') delta
-         file_u = "forcing/wind/" // cdelta // "/climatological_uwnd_" // cdelta // ".txt"
-         file_v = "forcing/wind/" // cdelta // "/climatological_vwnd_" // cdelta // ".txt"         
+      elseif ( Wind .eq. 'clim' ) then 
+         ! Define the names of the file.
+         if  ( ( Deltax == 80d03 ) .or. ( Deltax == 40d03 ) .or. &
+             & ( Deltax == 20d03 ) .or. ( Deltax == 10d03 ) ) then
+             write(cdelta, '(I0)') int(Deltax/1d03)
+             file_u = "forcing/wind/" // cdelta // 'climatological_uwnd' // cdelta // '.txt'
+             file_v = "forcing/wind/" // cdelta // 'climatological_vwnd' // cdelta // '.txt'
+         elseif ( ( Deltax == 32d03 ) .or. ( Deltax == 16d03 ) .or. &
+                & ( Deltax == 8d03 )  .or. ( Deltax == 4d03 ) .or. &
+                & ( Deltax == 2d03 )  .or. ( Deltax == 1d03 ) ) then
+             write(cdelta, '(F0.2)') Deltax/1d03
+             file_u = "forcing/wind/" // 'climatological_uwnd_dx' // trim(cdelta) // '_nx' &
+                   & // trim(cnx) // '_ny' // trim(cny)// '.txt'
+             file_v = "forcing/wind/" // 'climatological_vwnd_dx' // trim(cdelta) // '_nx' &
+                   & // trim(cnx) // '_ny' // trim(cny)// '.txt'
+         endif
 
          open ( unit = 20, file = file_u, status = 'old' )
          

@@ -20,6 +20,7 @@ subroutine ini_get (restart, expno_r, restart_date)
 
     integer, intent(in) :: restart, expno_r
     integer :: i, j, k, year, month, day, hour, minute
+    integer :: lbx, ubx
     TYPE(datetime_type), intent(in) :: restart_date
 
     year = restart_date%year
@@ -33,6 +34,11 @@ subroutine ini_get (restart, expno_r, restart_date)
 !------------------------------------------------------------------------
 
     if ( restart .eq. 0 ) then
+
+       if (uniaxial) then
+          lbx = (nx/5) + 1
+          ubx = nx - (nx/5)
+       endif
 
        do i = 0, nx+1
           do j = 0, ny+1               
@@ -54,13 +60,11 @@ subroutine ini_get (restart, expno_r, restart_date)
              endif
 
 !     Uniaxial loading experiment: set bands of open water at the top and sides
-
-             if ((nx == 100) .and. (ny == 250)) then
-                if (i .lt. 21 .or. i .gt. 80) h(i,j) = 0d0
-                if (i .lt. 21 .or. i .gt. 80) A(i,j) = 0d0
-                if (j .gt. 250) h(i,j) = 0d0
-                if (j .gt. 250) A(i,j) = 0d0 
-
+             if (uniaxial) then
+                if (i .lt. lbx .or. i .gt. ubx) h(i,j) = 0d0
+                if (i .lt. lbx .or. i .gt. ubx) A(i,j) = 0d0
+                if (j .gt. ny) h(i,j) = 0d0
+                if (j .gt. ny) A(i,j) = 0d0
              endif
 
              Pp(i,j) = 0d0

@@ -9,6 +9,7 @@
 !     V01             14-05-97               L.-B. Tremblay
 !     V2.0            16-10-06               L.-B. Tremblay & JF Lemieux
 !     V3.0            30-01-08               JF Lemieux & L.-B. Tremblay
+!     V3.1            13-08-26		     J.K. Rieck
 !
 !     Address : Dept. of Atmospheric and Oceanic Sciences, McGill University
 !     -------   Montreal, Quebec, Canada
@@ -48,7 +49,7 @@
       double precision e_ratio, Cdair, Cdwater
       double precision x1, y1, r1, rs, tanteta
       double precision lat(0:nx+1,0:ny+1), long(0:nx+1,0:ny+1)
-      integer i, j
+      integer i, j, dx_pole, dy_pole
 
       
 !------------------------------------------------------------------------
@@ -122,8 +123,8 @@
       Thermodyn  = .true.            ! ice model type
       BuoyTrack  = .false.
       Buoys      = 'Daily'           ! Buoy traj: 'Track' or 'Daily'
-      Current    = 'YearlyMean'      ! YearlyMean, specified
-      Wind       = '6hours'          ! 6hours, 60yrs_clim, specified
+      Current    = 'specified'       ! clim, specified
+      Wind       = '6hours'          ! 6hours, clim, specified
       RampupWind  = .false.          ! smooth increase in surface wind
       RampupForcing = .false.        ! smooth increase in surface wind forcing
       AirTemp    = 'MonthlyMean'     ! MonthlyMean, specified (-10C)
@@ -132,27 +133,46 @@
       runoff     = .false.
         
 !------------------------------------------------------------------------
-!     Grid parameters: resolution
+!     Grid parameters: depending on resolution
 !------------------------------------------------------------------------      
-   
-      if ((nx == 518) .and. (ny == 438)) then
-         Deltax     =  10d03           ! Pan-Arctic 10km 
-      elseif  ((nx == 258) .and. (ny == 218)) then
-         Deltax     =  20d03           ! Pan-Arctic 20km
-      elseif  ((nx == 128) .and. (ny == 108)) then
-         Deltax     =  40d03           ! Pan-Arctic 40km
-      elseif  ((nx == 63) .and. (ny == 53)) then
-         Deltax     =  80d03           ! Pan-Arctic 80km
-      elseif ((nx == 100) .and. (ny == 250)) then
-         Deltax     =  1d03            ! Uniaxial loading (Ringeisen et al., 2019). 
-      elseif ((nx == 102) .and. (ny == 402)) then
-         Deltax     =  2d03            ! Ideal ice bridge (Plante et al., 2020) 
-      else
-         write(*,*) "Wrong grid size dimensions.", nx, ny
+
+      if ( ( .not. uniaxial ) .and. ( .not. ideal_bridge ) ) then
+         if    ( ( Deltax == 80d03 ) .or. ( Deltax == 40d03 ) .or. & 
+               & ( Deltax == 20d03 ) .or. ( Deltax == 10d03 ) ) then          ! old grids
+            dx_pole = 2480d03 + (80d03 - (Deltax / 2)) ! distance of pole from
+            dy_pole = 2240d03 + (80d03 - (Deltax / 2)) ! tracer point of cell 0,0
+         elseif ( ( Deltax == 32d03 ) .or. ( Deltax == 16d03 ) .or. & 
+                & ( Deltax == 8d03 )  .or. ( Deltax == 4d03 ) .or. &
+                & ( Deltax == 2d03 )  .or. ( Deltax == 1d03 ) ) then
+            dx_pole = 2464d03 + (32d03 - (Deltax / 2)) ! distance of pole from
+            dy_pole = 2208d03 + (32d03 - (Deltax / 2)) ! tracer point of cell 0,0
+         else
+            write(*,*) "Grid resolution of ", Deltax, " not implemented&
+                      & for pan-Arctic experiments!"
+            STOP
+         endif
+      elseif ( ( uniaxial ) .and. ( .not. ideal_bridge ) ) then ! uniaxial exp.
+         if ( Deltax == 1d03 ) then
+            dx_pole = 2464d03 + (32d03 - (Deltax / 2)) ! distance of pole from
+            dy_pole = 2208d03 + (32d03 - (Deltax / 2)) ! tracer point of cell 0,0
+         else
+            write(*,*) "Grid resolution of ", Deltax, " not implemented&
+                     & for uniaxial loading experiments!"
+         endif
+      elseif ( ( ideal_bridge ) .and. ( .not. uniaxial ) ) then ! ideal ice bridge
+         if ( Deltax == 2d03 ) then
+            dx_pole = 2464d03 + (32d03 - (Deltax / 2)) ! distance of pole from
+            dy_pole = 2208d03 + (32d03 - (Deltax / 2)) ! tracer point of cell 0,0
+         else
+            write(*,*) "Grid resolution of ", Deltax, " not implemented&
+                     & for ideal ice bridge experiments!"
+         endif
+      elseif ( ( uniaxial ) .and. ( ideal_bridge ) ) then
+         write(*,*) "uniaxial and ideal_bridge cannot both be .true.!"
          STOP
       endif
-
-      Deltax2 = Deltax**2d0
+      
+      Deltax2 = Deltax**2d0   
 
 !------------------------------------------------------------------------
 !     Numerical parameters
@@ -375,7 +395,7 @@ subroutine read_namelist
            Pstar, C, e_ratio, k1, k2, rhoair, rhoice, rhowater, &
            Cdair, Cdwater, f
 
-      filename ='namelistSIM'
+      filename = 'namelist'
       filenb = 10
 
       print *, 'Reading namelist values'
@@ -479,14 +499,14 @@ subroutine read_namelist
          stop
       endif
 
-      if ( Current .ne. 'YearlyMean' .and.                             &
+      if ( Current .ne. 'clim' .and.                                   &
            Current .ne. 'specified' ) then
          print *, 'Wrong Current chosen by user'
          stop
       endif
 
       if ( Wind .ne. '6hours' .and. Wind .ne. 'specified' .and.        &
-           Wind .ne. '60yrs_clim' ) then
+           Wind .ne. 'clim' ) then
          print *, 'Wrong Wind chosen by user'
          stop
       endif
@@ -511,7 +531,7 @@ subroutine read_namelist
 ! print info of the run for the output txt file                                                                                        
 !-------------------------------------------------------------------------                                                      
  
-      print *,
+      print *, ' '
       print *, 'Rheology      =   ', Rheology
       print *, 'Pstar         =   ', Pstar
       print *, 'linearization =   ', linearization
@@ -523,7 +543,7 @@ subroutine read_namelist
       print *, 'Wind          =   ', Wind
       print *, 'AirTemp       =   ', AirTemp
       print *, 'OcnTemp       =   ', OcnTemp
-      print *,
+      print *, ' '
       print *, 'time step [s] =   ', Deltat
       print *, 'Basal', BasalStress
 
@@ -543,14 +563,16 @@ subroutine read_namelist
       include 'CB_bathymetry.h'
 
       integer :: i,j
-      character(len=2) :: cdelta
+      character(len=5) :: cdelta
+      character(len=4) :: cnx
+      character(len=4) :: cny
 
 !------------------------------------------------------------------------                                     
 !     Grid parameter: land mask (grid center), velocity mask (node)                                           
 !------------------------------------------------------------------------                                     
 
 ! Uniaxial compression experiment.
-      if ((nx == 100) .and. (ny == 250)) then
+      if ( ( uniaxial ) .and. ( .not. ideal_bridge ) ) then
          !Make mask:
          do i = 0, nx+1
          do j = 0, ny+1
@@ -562,15 +584,16 @@ subroutine read_namelist
          enddo
          
 ! Ideal ice bridge experiment, 2.0 km resolution.	 
-      elseif ((nx == 102) .and. (ny == 402)) then
-
+      elseif ( ( ideal_bridge ) .and. ( .not. uniaxial ) ) then
          !Mask:
          do i = 0, nx+1
          do j = 0, ny+1 
            maskC(i,j) = 1
-           if (( i .gt. 66 ) .and. ((j .gt. (151)) .and. (j .lt. 252+1)) ) then
+           if (( i .gt. 66 ) .and. &
+                  &  ((j .gt. (151)) .and. (j .lt. 252+1)) ) then
               maskC(i,j) = 0 
-           elseif (( i .lt. (35)+1 ) .and. ((j .gt. (151)) .and. (j .lt. 252+1))) then
+           elseif (( i .lt. (35)+1 ) .and. & 
+                  & ((j .gt. (151)) .and. (j .lt. 252+1))) then
               maskC(i,j) = 0
            elseif (j .lt.  0) then
               maskC(i,j) = 0 
@@ -579,18 +602,35 @@ subroutine read_namelist
            endif 
          enddo
          enddo
-! In pan Arctic simulation, load to mask file corresponding to the resolution 
-      else	 
 
-          write(cdelta, '(I2)') int(Deltax)/1000
-          open (unit = 20, file = 'src/mask'//cdelta//'.dat', status = 'old')
+! In pan Arctic simulation, load to mask file corresponding to the resolution 
+      elseif ( ( .not. uniaxial ) .and. ( .not. ideal_bridge ) ) then 
+          write(cdelta, '(F0.2)') Deltax/1d03
+          write(cnx, '(I0)') int(nx)
+          write(cny, '(I0)') int(ny)
+          if  ( ( Deltax == 80d03 ) .or. ( Deltax == 40d03 ) .or. &
+              & ( Deltax == 20d03 ) .or. ( Deltax == 10d03 ) ) then
+              open (unit = 20, file = 'src/mask'//cdelta//'.dat', status = 'old')
+          elseif ( ( Deltax == 32d03 ) .or. ( Deltax == 16d03 ) .or. &
+                & ( Deltax == 8d03 )  .or. ( Deltax == 4d03 ) .or. &
+                & ( Deltax == 2d03 )  .or. ( Deltax == 1d03 ) ) then
+              open (unit = 20, file = 'src/mask_dx'//trim(cdelta)//'_nx' &
+                      & //trim(cnx)//'_ny'//trim(cny)//'.dat', status = 'old')
+          else
+              write(*,*) "Grid resolution of ", Deltax, " not implemented&
+                      & for pan-Arctic experiments!"
+              STOP
+          endif
           do j = 0, ny+1               ! land mask                                                                
              read (20,10) ( maskC(i,j), i = 0, nx+1 )
           enddo
           close (unit = 20)
+      else
+         write(*,*) "uniaxial and ideal_bridge cannot both be .TRUE."
+         STOP
       endif
-      
-10    format (1x,1000(i1)) ! different format because of the grid                                              
+     
+10    format (1x,12000(i1)) ! different format because of the grid                                              
 
 !-----------------------------------------                                                                    
 

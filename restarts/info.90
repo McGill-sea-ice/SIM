@@ -1,0 +1,34 @@
+ PHYSICAL PARAMETERS
+ 
+ C =
+       20.0000000000
+ Pstar =
+    27500.0000000000
+ e =
+        2.0000000000
+ 
+ RUN SETUP
+ 
+ Deltax (m) =
+    32000.0000000000
+ Deltat (s) =
+     1200.0000000000
+ Dynamic =
+ T
+ Thermodynamic =
+ T
+ Current =
+ specified           
+ Wind =
+ specified           
+ Method to calculate the viscous coefficients
+           2
+ 
+ NUMERICAL
+ 
+ JFNK solver
+ 
+ max nb of Newton loops
+         200
+ nonlinear convergence criterion for JFNK
+        0.0010000000

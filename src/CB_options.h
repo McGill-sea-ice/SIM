@@ -39,10 +39,10 @@
                 runoff,         & ! River runoff switch
                 AirTemp,        & ! specified, MonthlyMean
                 OcnTemp,        & ! specified, MonthlyMean
-                Wind,           & ! specified, MonthlyMean
+                Wind,           & ! specified, clim, 6hours
                 RampupWind,     & ! smooth increase of surface wind
                 RampupForcing,  & ! smooth increase of surface wind stress
-                Current,        & ! specified, YearlyMean
+                Current,        & ! specified, clim
                 adv_scheme,     & ! advection scheme: upwind or upwindRK2
                 BndyCond,       & ! noslip or freeslip
                 Periodic_x,     & ! open or periodic condition in x

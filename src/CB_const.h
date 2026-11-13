@@ -6,7 +6,7 @@
                 sinlat(0:nx+1,0:ny+1), &
                 coslat(0:nx+1,0:ny+1)
 
-      double precision relhum, Deltax, Deltax2, theta_a, theta_w
+      double precision relhum, Deltax2, theta_a, theta_w
       double precision sintheta_a, costheta_a, sintheta_w, costheta_w
       double precision Deltat, DtoverDx, rhof, Tif, Tof
       double precision emisice, emisatml,emisocn
@@ -17,7 +17,6 @@
                 sinlat,         & ! sin (lat) of every grid point
                 coslat,         & ! cos (lat) of every grid point
                 relhum,         & ! atmosphere relative humidity
-                Deltax,         & ! grid size [m]
                 Deltax2,        & ! Deltax**2
                 Deltat,         & ! time step
                 DtoverDx,       & ! Deltat / Deltax

@@ -29,12 +29,16 @@
       include 'CB_mask.h'
       include 'CB_const.h'
 
-      character(LEN=60) fname1
-      character(len=2) :: cdelta, cmonth
+      character(len=*), parameter :: dir = 'forcing/ocnT/'
+      character(LEN=80) fname1
+      character(len=2) :: cmonth
+      character(len=5) :: cdelta
+      character(len=4) :: cnx, cny
       integer i, j,  kmo, mo
 
       if ( Thermodyn ) then
-         write(cdelta, '(I2)') int(Deltax)/1000
+         write(cnx, '(I0)') int(nx)
+         write(cny, '(I0)') int(ny)
 !------------------------------------------------------------------------
 !     load ocean temperature created by Tocn_clim_gen.m
 !------------------------------------------------------------------------
@@ -54,7 +58,17 @@
          if ( OcnTemp .eq. 'MonthlyClim' .or.                     &
                    OcnTemp .eq. 'calculated' ) then
             write(cmonth, '(I2.2)') mo
-            fname1  = 'forcing/ocnT/' // cdelta // '/Tocn' // cmonth
+            if  ( ( Deltax == 80d03 ) .or. ( Deltax == 40d03 ) .or. &
+                & ( Deltax == 20d03 ) .or. ( Deltax == 10d03 ) ) then
+                write(cdelta, '(I0)') int(Deltax/1d03)
+                fname1 = dir // cdelta // '/Tocn' // cmonth
+            elseif ( ( Deltax == 32d03 ) .or. ( Deltax == 16d03 ) .or. &
+                & ( Deltax == 8d03 )  .or. ( Deltax == 4d03 ) .or. &
+                & ( Deltax == 2d03 )  .or. ( Deltax == 1d03 ) ) then
+                write(cdelta, '(F0.2)') Deltax/1d03
+                fname1 = dir // 'Tocn' // cmonth // '_dx' // trim(cdelta) &
+                    & // '_nx' // trim(cnx) // '_ny' // trim(cny)
+            endif
 
             open(unit = 30, file = fname1, status = 'unknown')
          

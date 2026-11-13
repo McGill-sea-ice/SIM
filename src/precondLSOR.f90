@@ -710,7 +710,7 @@
       subroutine tridag (a, b, c, r, u, n)
       implicit double precision (a-h, o-z)
 
-      parameter (nmax = 4000)
+      parameter (nmax = 12000)
 
       dimension gam(nmax) , a(n), b(n), c(n), r(n), u(n)
 
