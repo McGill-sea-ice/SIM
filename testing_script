@@ -11,7 +11,7 @@ mkdir tests/output
 
 
 ln -sf tests/namelists/namelistSIM1 namelist
-ln -sf forcing/wind/wind_dx32.00_nx160_ny135_2008.nc forcing/wind/wind_dx32.00_nx160_ny135.nc
+ln -sf wind_dx32.00_nx160_ny135_2008.nc forcing/wind/wind_dx32.00_nx160_ny135.nc
 
 ./zoupa < tests/inputfiles/input_restart91
 
@@ -40,7 +40,7 @@ mv output/h2008_01_01_02_00.94 tests/output
 rm -f output/*.94
 
 ln -sf tests/namelists/namelistSIM5 namelist
-ln -sf forcing/wind/wind_dx32.00_nx160_ny135_2007.nc forcing/wind/wind_dx32.00_nx160_ny135.nc
+ln -sf wind_dx32.00_nx160_ny135_2007.nc forcing/wind/wind_dx32.00_nx160_ny135.nc
 
 ./zoupa < tests/inputfiles/input_norestart95
 

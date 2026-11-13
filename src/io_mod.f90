@@ -411,12 +411,12 @@ CONTAINS
 
       ! Open the file. 
       CALL check( nf90_open(FILE_NAME, NF90_NOWRITE, ncid) )
-         
-
+      
       ! Compute the time index corresponding to the given date.
       ! Start date of file. 
       since = datetime_init(1900,1,1,0) 
       CALL check( nf90_inq_varid(ncid, "time", time_id) )
+
       CALL check( nf90_get_var(ncid, time_id, time0) ) 
       n_units = datetime2num(dt, 'hours', since)
       time_index = INT((n_units-time0)/steps)+1
@@ -563,7 +563,6 @@ CONTAINS
       ! Computing the middle of those months
       mid1 = dt1 + delta_init(hours=12*days_in_month(dt1%year, dt1%month))
       mid2 = dt2 + delta_init(hours=12*days_in_month(dt2%year, dt2%month))
-
 
       IF (dt2 == last_dt2) THEN
          ! Do nothing. 
