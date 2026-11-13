@@ -10,44 +10,44 @@ rm -rf tests/output
 mkdir tests/output
 
 
-ln -s tests/namelists/namelistSIM1 namelist
-ln -s forcing/wind/wind_dx32.00_nx160_ny135_2008.nc forcing/wind/wind_dx32.00_nx160_ny135.nc
+ln -sf tests/namelists/namelistSIM1 namelist
+ln -sf forcing/wind/wind_dx32.00_nx160_ny135_2008.nc forcing/wind/wind_dx32.00_nx160_ny135.nc
 
 ./zoupa < tests/inputfiles/input_restart91
 
 mv output/h2008_01_01_02_00.91 tests/output
 rm -f output/*.91
 
-ln -s tests/namelists/namelistSIM2 namelist
+ln -sf tests/namelists/namelistSIM2 namelist
 
 ./zoupa < tests/inputfiles/input_restart92
 
 mv output/h2008_01_01_02_00.92 tests/output
 rm -f output/*.92
 
-ln -s tests/namelists/namelistSIM3 namelist
+ln -sf tests/namelists/namelistSIM3 namelist
 
 ./zoupa < tests/inputfiles/input_restart93
 
 mv output/h2008_01_01_02_00.93 tests/output
 rm -f output/*.93
 
-ln -s tests/namelists/namelistSIM4 namelist
+ln -sf tests/namelists/namelistSIM4 namelist
 
 ./zoupa < tests/inputfiles/input_restart94
 
 mv output/h2008_01_01_02_00.94 tests/output
 rm -f output/*.94
 
-ln -s tests/namelists/namelistSIM5 namelist
-ln -s forcing/wind/wind_dx32.00_nx160_ny135_2007.nc forcing/wind/wind_dx32.00_nx160_ny135.nc
+ln -sf tests/namelists/namelistSIM5 namelist
+ln -sf forcing/wind/wind_dx32.00_nx160_ny135_2007.nc forcing/wind/wind_dx32.00_nx160_ny135.nc
 
 ./zoupa < tests/inputfiles/input_norestart95
 
 mv output/h2007_01_01_01_00.95 tests/output
 rm -f output/*.95
 
-ln -s tests/namelists/namelistMEB1 namelist
+ln -sf tests/namelists/namelistMEB1 namelist
 
 ./zoupa < tests/inputfiles/input_norestart96
 

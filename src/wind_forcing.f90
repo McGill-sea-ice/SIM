@@ -23,13 +23,6 @@
       integer :: dseconds, delta
       character(len=2) :: cdelta
       character(len=4) :: cnx, cny
-      integer :: nx,ny
-
-      nx = SIZE(v,1)
-      ny = SIZE(u,2)
-
-      write(cnx, '(I0)') int(nx)
-      write(cny, '(I0)') int(ny)
 
       character(LEN=60) file_u, file_v
 
@@ -45,6 +38,10 @@
       double precision uuair(0:nx+2,0:ny+2),uvair(0:nx+2,0:ny+2)
  
       logical :: verbose = .false.
+
+      write(cnx, '(I0)') int(nx)
+      write(cny, '(I0)') int(ny)
+
 
       delta =  int(deltax)/1000
 
