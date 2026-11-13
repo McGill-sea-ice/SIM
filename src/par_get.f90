@@ -123,7 +123,7 @@
       Thermodyn  = .true.            ! ice model type
       BuoyTrack  = .false.
       Buoys      = 'Daily'           ! Buoy traj: 'Track' or 'Daily'
-      Current    = 'clim'            ! clim, specified
+      Current    = 'specified'       ! clim, specified
       Wind       = '6hours'          ! 6hours, clim, specified
       RampupWind  = .false.          ! smooth increase in surface wind
       RampupForcing = .false.        ! smooth increase in surface wind forcing
